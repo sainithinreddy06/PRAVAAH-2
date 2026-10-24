@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, ArrowRightLeft, RefreshCw, ShieldCheck } from 'lucide-react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { AlertCircle, ArrowRightLeft, Plus, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { allowedTransitions, api, ApiError, formatStatus, type Application, type ApplicationStatus } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
 
@@ -15,6 +15,10 @@ const statusOptions: Array<{ value: ApplicationStatus | ''; label: string }> = [
 
 function canReview(role: string): boolean {
   return role === 'regional_officer' || role === 'platform_admin';
+}
+
+function canCreate(role: string): boolean {
+  return ['applicant', 'institution_admin', 'regional_officer', 'platform_admin'].includes(role);
 }
 
 function canSubmit(role: string): boolean {
@@ -35,6 +39,10 @@ export default function ApplicationsPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [institutionId, setInstitutionId] = useState('');
+  const [referenceCode, setReferenceCode] = useState('');
+  const [creating, setCreating] = useState(false);
 
   const loadApplications = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true);
@@ -54,6 +62,31 @@ export default function ApplicationsPage() {
   useEffect(() => {
     void loadApplications();
   }, [loadApplications]);
+
+  const createApplication = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsedInstitutionId = Number(institutionId);
+    if (!Number.isSafeInteger(parsedInstitutionId) || parsedInstitutionId < 1) {
+      setError('Institution ID must be a positive whole number.');
+      return;
+    }
+    setCreating(true);
+    setError('');
+    setNotice('');
+    try {
+      const created = await api.createApplication(parsedInstitutionId, referenceCode.trim());
+      setNotice('Application ' + created.reference_code + ' was created as a draft.');
+      setCreateOpen(false);
+      setInstitutionId('');
+      setReferenceCode('');
+      setStatusFilter('');
+      await loadApplications(true);
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.detail : 'Could not create the application.');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const transition = async (application: Application, target: ApplicationStatus) => {
     const reason = window.prompt('Enter a reason for changing ' + application.reference_code + ' to ' + formatStatus(target) + ' (at least 3 characters):');
@@ -88,9 +121,12 @@ export default function ApplicationsPage() {
           <h2>Applications</h2>
           <p className="muted">Live records returned by the connected PRAVAAH API, limited to your account permissions.</p>
         </div>
-        <button className="secondary-button" type="button" onClick={() => void loadApplications(true)} disabled={loading || refreshing}>
-          <RefreshCw size={15} className={refreshing ? 'spin' : ''} /> Refresh
-        </button>
+        <div className="applications-heading-actions">
+          {canCreate(user.role) && <button className="primary-button" type="button" onClick={() => setCreateOpen((open) => !open)}><Plus size={15} /> New application</button>}
+          <button className="secondary-button" type="button" onClick={() => void loadApplications(true)} disabled={loading || refreshing}>
+            <RefreshCw size={15} className={refreshing ? 'spin' : ''} /> Refresh
+          </button>
+        </div>
       </div>
 
       <div className="applications-toolbar panel">
@@ -101,6 +137,16 @@ export default function ApplicationsPage() {
           </select>
         </label>
       </div>
+
+      {createOpen && <form className="panel application-create-panel" onSubmit={createApplication}>
+        <div className="create-panel-heading"><div><h3>Create application</h3><p>Creates a draft record using an existing institution ID.</p></div><button className="close-create" type="button" onClick={() => setCreateOpen(false)} aria-label="Close form"><X size={17} /></button></div>
+        <div className="create-fields">
+          <label>Institution ID<input type="number" min="1" step="1" required value={institutionId} onChange={(event) => setInstitutionId(event.target.value)} placeholder="e.g. 1" /></label>
+          <label>Reference code<input type="text" required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._/-]*" value={referenceCode} onChange={(event) => setReferenceCode(event.target.value)} placeholder="e.g. APP-2026-0201" /></label>
+        </div>
+        <p className="create-help">Institution records are not exposed through a listing API yet. Ask your database administrator for the correct ID; the server validates that it exists and that your role can access its region.</p>
+        <div className="create-actions"><button className="secondary-button" type="button" onClick={() => setCreateOpen(false)} disabled={creating}>Cancel</button><button className="primary-button" type="submit" disabled={creating}>{creating ? 'Creating…' : 'Create draft'}</button></div>
+      </form>}
 
       {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} /><span>{error}</span><button type="button" onClick={() => void loadApplications(true)}>Retry</button></div>}
       {notice && <div className="feedback feedback-success" role="status"><ShieldCheck size={17} /><span>{notice}</span><button type="button" onClick={() => setNotice('')} aria-label="Dismiss message">Dismiss</button></div>}
