@@ -14,6 +14,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  migrate:
+    build:
+      context: ./backend
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+psycopg://pravaah:${POSTGRES_PASSWORD:-pravaah_local_only}@db:5432/pravaah
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
   api:
     build:
       context: ./backend
@@ -23,11 +34,17 @@ services:
       API_V1_PREFIX: /api/v1
       DATABASE_URL: postgresql+psycopg://pravaah:${POSTGRES_PASSWORD:-pravaah_local_only}@db:5432/pravaah
       CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      EVIDENCE_STORAGE_DIR: /app/.data/evidence
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-development-only-change-me-before-deployment}
     ports:
       - "8000:8000"
+    volumes:
+      - pravaah_evidence_data:/app/.data/evidence
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)"]
       interval: 10s
@@ -35,3 +52,4 @@ services:
       retries: 5
 volumes:
   pravaah_postgres_data:
+  pravaah_evidence_data:
