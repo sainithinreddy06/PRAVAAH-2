@@ -1,12 +1,5 @@
-from sqlalchemy.orm import DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    """Base class for all persisted PRAVAAH entities."""
-
-
-# Import models so Alembic and metadata.create_all can discover them.
-from app.models import (  # noqa: E402,F401
+from app.db.base_class import Base
+from app.models import (  # noqa: F401
     Application,
     AuditEvent,
     Evidence,
@@ -16,3 +9,5 @@ from app.models import (  # noqa: E402,F401
     Policy,
     User,
 )
+
+__all__ = ["Base"]
