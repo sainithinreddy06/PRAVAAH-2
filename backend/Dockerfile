@@ -7,6 +7,7 @@ WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY app ./app
+COPY scripts ./scripts
 COPY migrations ./migrations
 COPY alembic.ini ./alembic.ini
 EXPOSE 8000
