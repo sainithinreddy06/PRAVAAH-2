@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.auth import router as auth_router
 from app.api.routes.applications import router as applications_router
 from app.api.routes.compliance import router as compliance_router
+from app.api.routes.evc import router as evc_router
 from app.api.routes.health import router as health_router
 from app.api.routes.obligations import router as obligations_router
 from app.core.config import settings
@@ -18,7 +19,7 @@ logging.basicConfig(
 app = FastAPI(
     title=settings.app_name,
     description="API foundation for the PRAVAAH approval and compliance platform.",
-    version="0.3.0",
+    version="0.4.0",
     docs_url="/docs" if settings.app_env != "production" else None,
     redoc_url="/redoc" if settings.app_env != "production" else None,
 )
@@ -34,6 +35,7 @@ app.include_router(auth_router, prefix=settings.api_v1_prefix)
 app.include_router(applications_router, prefix=settings.api_v1_prefix)
 app.include_router(compliance_router, prefix=settings.api_v1_prefix)
 app.include_router(obligations_router, prefix=settings.api_v1_prefix)
+app.include_router(evc_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/", tags=["meta"])
