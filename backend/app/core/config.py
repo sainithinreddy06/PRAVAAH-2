@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     jwt_secret_key: str = "development-only-change-me-before-deployment"
     access_token_expire_minutes: int = 30
+    evidence_storage_dir: str = ".data/evidence"
+    max_evidence_size_bytes: int = 10485760
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -20,6 +22,8 @@ class Settings(BaseSettings):
     def validate_auth_settings(self) -> 'Settings':
         if self.access_token_expire_minutes < 1:
             raise ValueError('Access token lifetime must be positive')
+        if self.max_evidence_size_bytes < 1:
+            raise ValueError('Maximum evidence size must be positive')
         if self.app_env.casefold() == 'production' and (
             self.jwt_secret_key == 'development-only-change-me-before-deployment'
             or len(self.jwt_secret_key) < 32
