@@ -9,7 +9,7 @@ def test_root_returns_service_metadata() -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert response.json()["service"] == "PRAVAAH API"
-    assert response.json()["version"] == "0.3.0"
+    assert response.json()["version"] == "0.4.0"
 
 
 def test_health_does_not_require_database() -> None:
