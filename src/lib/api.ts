@@ -127,5 +127,5 @@ export const allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> 
 };
 
 export function formatStatus(status: string): string {
-  return status.replaceAll('_', ' ').replace(/\b\w/g, (character) => character.toUpperCase());
+  return status.replace(/_/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase());
 }
