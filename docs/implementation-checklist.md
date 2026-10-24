@@ -17,3 +17,7 @@ Statuses: NOT_STARTED, IN_PROGRESS, IMPLEMENTED, VERIFIED.
 | 10 | Integration and release hardening | VERIFIED | PostgreSQL migration CI and frontend typecheck/lint/production build CI passed; Compose applies migrations before API startup |
 
 Verification applies to the checks listed above, not a production certification or full end-to-end deployment test. Frontend UI still uses synthetic demonstration data. EVC outcomes and recommendation scores are operational aids, not official compliance decisions or validated predictive models. Audit events are not yet tamper-evident or immutable. Evidence storage requires production-grade private object storage, malware scanning, and retention controls. Production deployment still needs managed secrets, deployment-specific CORS, monitoring, backup/restore testing, and a review of all role/region boundaries.
+
+## Post-phase integration audit (not a new phase)
+
+Status: IN_PROGRESS. The repository-level coverage matrix is recorded in [integration-coverage-matrix.md](integration-coverage-matrix.md). The audit found that the current React workspace pages are not connected to the existing backend APIs; the overview uses synthetic demo data and the other workspace pages are placeholders. This is a static repository audit only. Authenticated browser workflows, local Docker Compose integration, and end-to-end verification remain outstanding. Do not mark integration as verified until those checks have been executed.
