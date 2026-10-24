@@ -30,7 +30,7 @@ Phase 3 adds `POST /api/v1/auth/login` with a JSON body containing `email` and `
 
 Set `JWT_SECRET_KEY` to a cryptographically random value of at least 32 characters in production. The development fallback is not suitable for deployment. Tokens expire after 30 minutes by default; configure `ACCESS_TOKEN_EXPIRE_MINUTES` as needed. No default user or password is seeded: create users through a controlled administrative process, never by committing credentials.
 
-## Tests and lint
+## Application workflow (Phase 4)\n\nThe authenticated application API provides `POST /api/v1/applications` to create a draft, `GET /api/v1/applications` to list visible applications with optional status filtering and pagination, `GET /api/v1/applications/{id}` to view one application, and `POST /api/v1/applications/{id}/transitions` to request a workflow transition. Valid statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions are constrained by a state machine; applicants can see only their own applications, other non-admin roles are scoped to their assigned region, and only regional officers or platform admins can perform review decisions. Creation and status changes write audit events. This phase uses existing schema tables; it does not yet upload or inspect evidence files, enforce official AICTE policy, or provide production-grade immutable audit storage.\n\n## Tests and lint
 
 ```bash
 pytest
