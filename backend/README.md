@@ -22,10 +22,10 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-Set `DATABASE_URL` in `.env` to a reachable PostgreSQL instance before running migrations or the readiness endpoint.
+Set `DATABASE_URL` in `.env` to a reachable PostgreSQL instance before running migrations or the readiness endpoint. To create a local account after migrations, run `python -m scripts.create_user` from the `backend` directory with the virtual environment activated. With Docker Compose, use `docker compose exec api python -m scripts.create_user` from the repository root. The command prompts for identity, role, region, and password, hashes the password with Argon2, and refuses duplicate email addresses. No default accounts are seeded.
 
 ## Authentication (Phase 3)
-`POST /api/v1/auth/login` accepts email and password; `GET /api/v1/auth/me` returns the authenticated profile. Passwords are verified with Argon2 and access tokens are signed JWTs. The user record is reloaded for each authenticated request so inactive accounts are rejected and role/region values come from the database. Set a cryptographically random `JWT_SECRET_KEY` of at least 32 characters in production.
+`POST /api/v1/auth/login` accepts email and password; `GET /api/v1/auth/me` returns the authenticated profile. User provisioning is intentionally an operator-managed CLI task; there is no public self-registration endpoint. Passwords are verified with Argon2 and access tokens are signed JWTs. The user record is reloaded for each authenticated request so inactive accounts are rejected and role/region values come from the database. Set a cryptographically random `JWT_SECRET_KEY` of at least 32 characters in production.
 
 ## Application workflow (Phase 4)
 The authenticated application API provides create, list, detail, and transition endpoints under `/api/v1/applications`. Statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions follow a state machine; applicants are restricted to their own applications, other non-admin roles are scoped to their region, and review decisions are restricted to regional officers or platform admins.
