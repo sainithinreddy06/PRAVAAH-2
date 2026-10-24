@@ -24,35 +24,42 @@ uvicorn app.main:app --reload
 
 Set `DATABASE_URL` in `.env` to a reachable PostgreSQL instance before running migrations or the readiness endpoint.
 
-## Authentication
+## Authentication (Phase 3)
+`POST /api/v1/auth/login` accepts email and password; `GET /api/v1/auth/me` returns the authenticated profile. Passwords are verified with Argon2 and access tokens are signed JWTs. The user record is reloaded for each authenticated request so inactive accounts are rejected and role/region values come from the database.
 
-Phase 3 adds `POST /api/v1/auth/login` with a JSON body containing `email` and `password`, and `GET /api/v1/auth/me` for the authenticated profile. Passwords are verified with Argon2 and access tokens are signed JWTs. The user record is reloaded for each authenticated request so inactive accounts are rejected and role/region values come from the database. Reusable backend dependencies provide role checks and regional-boundary checks for protected routes.
-
-Set `JWT_SECRET_KEY` to a cryptographically random value of at least 32 characters in production. The development fallback is not suitable for deployment. Tokens expire after 30 minutes by default; configure `ACCESS_TOKEN_EXPIRE_MINUTES` as needed. No default user or password is seeded: create users through a controlled administrative process, never by committing credentials.
+Set `JWT_SECRET_KEY` to a cryptographically random value of at least 32 characters in production. No default user or password is seeded.
 
 ## Application workflow (Phase 4)
-
-The authenticated application API provides `POST /api/v1/applications` to create a draft, `GET /api/v1/applications` to list visible applications with optional status filtering and pagination, `GET /api/v1/applications/{id}` to view one application, and `POST /api/v1/applications/{id}/transitions` to request a workflow transition. Valid statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions are constrained by a state machine; applicants can see only their own applications, other non-admin roles are scoped to their assigned region, and only regional officers or platform admins can perform review decisions. Creation and status changes write audit events. This phase uses existing schema tables; it does not yet provide production-grade immutable audit storage.
+The authenticated application API provides create, list, detail, and transition endpoints under `/api/v1/applications`. Valid statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions follow a state machine; applicants can see only their own applications, other non-admin roles are scoped to their region, and only regional officers or platform admins can make review decisions. Changes write audit events.
 
 ## Policy and evidence management (Phase 5)
+- `GET /api/v1/policies` lists policy metadata.
+- `POST /api/v1/policies` creates a policy version and is restricted to platform admins.
+- `POST /api/v1/applications/{id}/evidence` accepts size-limited PDF, JPEG, or PNG uploads and stores a SHA-256 digest.
+- `GET /api/v1/applications/{id}/evidence` lists evidence metadata.
+- `PATCH /api/v1/evidence/{id}/review` lets authorized officers review evidence and records an audit event.
 
-- `GET /api/v1/policies` lists policy metadata, optionally filtered by `policy_key`; `active_only=true` by default.
-- `POST /api/v1/policies` creates a policy version and is restricted to platform administrators. A policy key/version pair cannot be duplicated.
-- `POST /api/v1/applications/{id}/evidence` accepts PDF, JPEG, or PNG uploads for draft or changes-requested applications. Uploads are size-limited, checked against basic file signatures, stored under generated opaque filenames, and recorded with a SHA-256 digest.
-- `GET /api/v1/applications/{id}/evidence` lists evidence metadata for an authorized application.
-- `PATCH /api/v1/evidence/{id}/review` lets authorized regional officers or platform administrators accept, reject, or request changes, with reviewer notes and an audit event.
-
-Configure `EVIDENCE_STORAGE_DIR` and `MAX_EVIDENCE_SIZE_BYTES` through the environment. The default directory is local disk and is suitable only where the deployment provides persistent, private storage and backups. Do not expose this directory as static web content. For production, use a private object store with encryption, malware scanning, retention controls, and signed access URLs. File signature checks are not a malware scanner. Policy records are user-managed metadata, not verified official AICTE rules, and this phase does not automatically decide compliance.
+Configure `EVIDENCE_STORAGE_DIR` and `MAX_EVIDENCE_SIZE_BYTES`. Local disk is the default; production should use private durable object storage, encryption, malware scanning, retention controls, and signed access URLs. File signature checks are not malware scanning. Policy metadata is not verified official AICTE guidance.
 
 ## Obligations, deadlines, and notifications (Phase 6)
+- `POST /api/v1/obligations` creates an application-linked obligation; global obligations are restricted to platform admins.
+- `GET /api/v1/obligations` supports status and due-date filtering and pagination.
+- `PATCH /api/v1/obligations/{id}` updates an obligation and records an audit event. Statuses: `open`, `in_progress`, `fulfilled`, `waived`.
+- `POST /api/v1/obligations/escalate-due` queues idempotent in-app notifications for overdue obligations with assigned owners.
+- `GET /api/v1/notifications` returns the current user's inbox.
 
-- `POST /api/v1/obligations` creates an application-linked obligation; only regional officers, institution admins, or platform admins can create obligations, and global obligations are restricted to platform admins.
-- `GET /api/v1/obligations` lists obligations visible to the caller and supports `status`, `due_before`, `limit`, and `offset` filters.
-- `PATCH /api/v1/obligations/{id}` updates an obligation and records an audit event. Supported statuses are `open`, `in_progress`, `fulfilled`, and `waived`.
-- `POST /api/v1/obligations/escalate-due` queues idempotent in-app notifications for overdue obligations with assigned owners. It is an authenticated operation for regional officers and platform admins; it is not a background scheduler.
-- `GET /api/v1/notifications` returns the authenticated user's in-app notification inbox.
+The escalation endpoint is manually/API triggered, not a background scheduler. Email/SMS delivery and retry workers remain future work. A `pending` notification is queued, not delivered.
 
-Notifications are queued in the database with a unique event key to avoid duplicate overdue alerts. Email/SMS delivery, automatic scheduled execution, retry workers, and operational dashboards remain future work. Notification status `pending` means queued, not delivered.
+## EVC and undertakings (Phase 7)
+
+- `POST /api/v1/undertakings` creates an application-linked undertaking in draft status.
+- `GET /api/v1/applications/{id}/undertakings` lists undertakings for an application.
+- `POST /api/v1/undertakings/{id}/submit` submits a draft or returned undertaking.
+- `POST /api/v1/undertakings/{id}/review` lets regional officers or platform admins accept, reject, or request changes from a submitted undertaking. Reviews include notes and audit events.
+- `POST /api/v1/evc/assessments` snapshots evidence review counts, open obligations, and unaccepted undertakings into a readiness assessment.
+- `GET /api/v1/applications/{id}/evc-assessments` lists assessment history.
+
+EVC outcomes are workflow-readiness indicators only: `needs_attention`, `incomplete`, `insufficient_evidence`, or `ready_for_officer_review`. They are not an official compliance verdict and do not replace officer judgement or verified AICTE policy. The assessment stores a snapshot; create a new assessment after the underlying evidence or obligations change.
 
 ## Tests and lint
 
@@ -61,7 +68,5 @@ pytest
 ruff check app tests migrations
 ```
 
-## Schema
-Alembic migration `20261024_0001` creates initial tables for users, institutions, applications, versioned policy metadata, evidence metadata, obligations, notification records, and audit events. The initial migration contains schema foundations; routes must apply role and region checks explicitly. Evidence storage is local by default and does not include malware scanning or immutable audit enforcement.
-
-The Compose password is for local development only. Never use it in a deployed environment. No official AICTE rules or data are seeded by this phase.
+## Schema and security notes
+Migration `20261024_0001` creates the initial domain schema. Migration `20261025_0002` adds undertakings and EVC assessment snapshots. The Compose password is for local development only. Evidence storage is local by default; production-grade private storage, malware scanning, and immutable audit enforcement remain outstanding. No official AICTE rules or data are seeded.
