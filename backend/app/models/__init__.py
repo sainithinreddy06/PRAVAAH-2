@@ -7,4 +7,13 @@ from app.models.obligation import Obligation
 from app.models.policy import Policy
 from app.models.user import User
 
-__all__ = ["Application", "AuditEvent", "Evidence", "Institution", "Notification", "Obligation", "Policy", "User"]
+__all__ = [
+    "Application",
+    "AuditEvent",
+    "Evidence",
+    "Institution",
+    "Notification",
+    "Obligation",
+    "Policy",
+    "User",
+]
