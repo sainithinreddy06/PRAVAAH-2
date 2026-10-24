@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from fastapi import Depends
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -23,5 +22,8 @@ def readiness_check(db: Session = Depends(get_db)) -> ReadinessResponse:
     try:
         db.execute(text("SELECT 1"))
     except SQLAlchemyError as exc:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database is unavailable") from exc
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable",
+        ) from exc
     return ReadinessResponse()
