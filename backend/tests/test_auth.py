@@ -112,3 +112,41 @@ def test_invalid_bearer_token_is_rejected(client: TestClient) -> None:
         headers={'Authorization': 'Bearer not-a-valid-token'},
     )
     assert response.status_code == 401
+
+
+
+def test_region_access_rejects_cross_region_for_regional_officer(client: TestClient) -> None:
+    from fastapi import HTTPException
+
+    from app.api.deps import ensure_region_access
+
+    with _TestSession() as db:
+        officer = db.query(User).filter_by(email='officer@example.test').one()
+        with pytest.raises(HTTPException) as error:
+            ensure_region_access(officer, 'AP')
+    assert error.value.status_code == 403
+
+
+def test_region_access_allows_matching_region_for_regional_officer(client: TestClient) -> None:
+    from app.api.deps import ensure_region_access
+
+    with _TestSession() as db:
+        officer = db.query(User).filter_by(email='officer@example.test').one()
+        ensure_region_access(officer, 'TS')
+
+
+def test_region_access_allows_platform_admin_across_regions(client: TestClient) -> None:
+    from app.api.deps import ensure_region_access
+
+    with _TestSession() as db:
+        admin = User(
+            email='admin@example.test',
+            full_name='Platform Admin',
+            password_hash=hash_password('admin-test-password'),
+            role='platform_admin',
+            region_code=None,
+            is_active=True,
+        )
+        db.add(admin)
+        db.commit()
+        ensure_region_access(admin, 'AP')
