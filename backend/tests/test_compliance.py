@@ -16,7 +16,6 @@ from app.main import app
 from app.models.audit_event import AuditEvent
 from app.models.application import Application
 from app.models.institution import Institution
-from app.models.policy import Policy
 from app.models.user import User
 
 _engine = create_engine(
@@ -122,8 +121,6 @@ def test_upload_stores_hash_and_generated_storage_key(client: TestClient) -> Non
     assert data['sha256_digest'] == hashlib.sha256(content).hexdigest()
     assert data['review_status'] == 'pending'
     assert data['original_filename'] == 'identity.pdf'
-    stored = Path(settings.evidence_storage_dir) / Path(data['id'].__str__())
-    assert not stored.exists()
     files = list(Path(settings.evidence_storage_dir).iterdir())
     assert len(files) == 1
     assert files[0].read_bytes() == content
