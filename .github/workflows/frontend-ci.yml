@@ -7,7 +7,6 @@ on:
       - 'src/**'
       - 'index.html'
       - 'package.json'
-      - 'package-lock.json'
       - 'tsconfig.json'
       - 'vite.config.ts'
       - 'eslint.config.js'
@@ -17,7 +16,6 @@ on:
       - 'src/**'
       - 'index.html'
       - 'package.json'
-      - 'package-lock.json'
       - 'tsconfig.json'
       - 'vite.config.ts'
       - 'eslint.config.js'
@@ -31,9 +29,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
