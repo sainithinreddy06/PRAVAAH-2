@@ -78,3 +78,18 @@ def test_platform_admin_can_read_global_operational_metrics(client: TestClient) 
     payload = response.json()
     assert payload['applications_total'] == 2
     assert payload['applications_by_status'] == {'draft': 1, 'submitted': 1}
+
+
+def test_recommendations_explain_missing_evidence(client: TestClient) -> None:
+    response = client.get('/api/v1/applications/1/recommendations', headers=_headers(2))
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['application_id'] == 1
+    assert payload['risk_score'] == 25
+    assert payload['recommendations'][0]['code'] == 'evidence_missing'
+    assert 'not an official compliance decision' in payload['disclaimer']
+
+
+def test_regional_officer_cannot_get_recommendations_for_another_region(client: TestClient) -> None:
+    response = client.get('/api/v1/applications/2/recommendations', headers=_headers(2))
+    assert response.status_code == 403
