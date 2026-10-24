@@ -1,0 +1,53 @@
+# PRAVAAH-2 Integration Coverage Matrix
+
+Audit basis: the current `main` branch inspected on 25 October 2026. This is a repository-level static audit; it is not a browser E2E run or a live database test.
+
+## Executive finding
+
+The backend exposes real FastAPI routes for authentication, applications, policies/evidence, obligations/notifications, undertakings/EVC assessments, audit events, operational metrics, and recommendations. The current React app does not yet call those APIs: the overview uses hard-coded synthetic data and the other workspace pages render placeholders. Therefore, the presence of backend endpoints must not be interpreted as end-to-end UI integration.
+
+## Coverage matrix
+
+| User workflow / UI route | Current UI behavior | Backend capability | Integration status | Highest-value next check |
+|---|---|---|---|---|
+| Overview `/` | Hard-coded metrics, cases, alerts, and activity | `GET /api/v1/operations/metrics`; applications, obligations, notifications, audit routes | Not connected; all overview figures are synthetic | Replace static metrics only after mapping response schema and adding loading/error/empty states |
+| Sign in / current user | No sign-in route or form visible in `src/App.tsx` | `POST /api/v1/auth/login`; `GET /api/v1/auth/me` | UI missing | Add authentication flow and token lifecycle; ensure protected routes and clear 401 handling |
+| Applications `/applications` | Placeholder | `POST/GET /api/v1/applications`; `GET /api/v1/applications/{id}`; `POST /api/v1/applications/{id}/transitions` | Not connected | Build list/detail and transitions with role-aware controls and conflict/error handling |
+| Scrutiny queue `/scrutiny` | Placeholder | Application list/status filters and transitions; evidence review endpoints | Not connected; no dedicated queue endpoint identified | Define queue filters from supported API fields; do not imply an endpoint exists until implemented |
+| Compliance `/compliance` | Placeholder | Obligations CRUD/list, notifications, manual overdue escalation; EVC assessment history | Not connected | Connect obligation and notification reads first; verify escalation authorization and idempotency |
+| Evidence library `/evidence` | Placeholder | `POST /api/v1/applications/{application_id}/evidence`; `GET /api/v1/applications/{application_id}/evidence`; `PATCH /api/v1/evidence/{evidence_id}/review` | Not connected; listing is application-scoped, not a global library endpoint | Implement application-scoped upload/list/review and surface upload validation errors |
+| Workflow studio `/workflows` | Placeholder | Application transition rules exist in backend; no workflow configuration API identified | No matching configuration API | Treat as informational or implement a separately specified workflow configuration API; avoid implying configurable workflows exist |
+| Institutions `/institutions` | Placeholder | Institution model is used by application routes; no institution CRUD router registered | No matching management API | Decide whether institution administration is in scope; add authorized CRUD only with requirements/tests |
+| Officers & roles `/officers` | Placeholder | User model and role/region checks exist; no user administration router registered | No matching management API | Decide admin requirements; do not expose user/role changes without a dedicated authorization model |
+| Policy register `/policies` | Placeholder | `GET /api/v1/policies`; `POST /api/v1/policies` | Not connected | Connect versioned policy listing and admin-only creation with validation feedback |
+| Settings `/settings` | Placeholder | No workspace preferences endpoint identified | No matching API | Keep local-only settings clearly labelled until persistence requirements are defined |
+| Undertakings | No dedicated page/route visible | Create/list/submit/review undertaking endpoints; application-scoped list | No dedicated UI | Add to the relevant application detail workflow after core application/evidence integration |
+| EVC readiness | No dedicated page/route visible | Create assessment and list application assessment history | No dedicated UI | Show timestamped snapshots and clearly label them as workflow-readiness aids, not official decisions |
+| Audit events | No dedicated page/route visible | `GET /api/v1/audit/events` | No dedicated UI | Add authorized audit view and preserve the caveat that events are not immutable/tamper-evident |
+| Risk recommendations | No dedicated page/route visible | `GET /api/v1/applications/{application_id}/recommendations` | No dedicated UI | Present explanations and recommended actions; label scores as rule-based, not ML or official decisions |
+| Health / readiness | Not shown in UI | `GET /api/v1/health`; `GET /api/v1/ready` | Backend-only | Use readiness for operational checks; do not treat liveness as proof that the database is ready |
+
+## Cross-cutting integration requirements
+
+1. **API client and configuration:** no frontend API client/service layer was found in the inspected app entry and route implementation. Introduce a single configurable API base URL rather than scattering absolute URLs.
+2. **Authentication:** the backend uses bearer JWTs. Define storage, expiry, logout, and 401 behavior before connecting protected screens; do not ship a demo account or default credentials.
+3. **Authorization:** frontend role-based visibility is only a usability aid. Backend authorization remains authoritative. Test applicant ownership, region isolation, and platform-admin exceptions for every read and mutation.
+4. **State and feedback:** every data-backed screen needs loading, error, empty, success, and permission-denied states. Mutations need pending/disabled states and visible API validation errors.
+5. **Data semantics:** overview demo records and counts are synthetic. Do not mix them with live API results without explicit labelling.
+6. **Uploads:** UI must respect PDF/JPEG/PNG validation and configured size limits. Signature checks do not replace malware scanning; local evidence storage is not a production storage strategy.
+7. **Dates and transitions:** render timestamps consistently, handle stale state and HTTP 409 transition conflicts, and only offer transitions the server can authorize.
+8. **Operational claims:** obligation escalation is API-triggered, not a verified recurring scheduler. EVC and risk recommendations are workflow aids. Audit events are not established as immutable.
+
+## Prioritized work order
+
+- **P0 — Close the integration gap:** add API client/configuration and a tested sign-in/current-user flow, then connect the application list/detail workflow. This establishes the authenticated UI-to-API path.
+- **P1 — Evidence and policy:** connect policy listing/creation and application-scoped evidence upload/list/review; add regression coverage for validation and authorization failures.
+- **P1 — Operational workflows:** connect obligations, notifications, EVC assessments, audit events, metrics, and recommendations to dedicated UI views.
+- **P2 — Product-scope decisions:** specify missing institution/officer administration, configurable workflow studio, global evidence library, and persisted settings before implementing them.
+- **P2 — Runtime validation:** run Docker Compose against a clean local environment, then execute real browser journeys for sign-in, application creation/listing, transitions, evidence upload/review, and regional-access denial.
+
+## Verification status
+
+- Repository files and route registration were inspected on `main`.
+- Recent GitHub Actions history was inspected. The last known Backend CI run (`40121994608`) and Frontend CI run (`40122014079`) report success, but they target different commits and validate backend tests/migrations/lint and frontend typecheck/lint/build respectively.
+- No browser E2E session, live Compose integration run, production deployment test, or external institutional integration was executed as part of this static audit.
