@@ -9,11 +9,11 @@ Statuses: NOT_STARTED, IN_PROGRESS, IMPLEMENTED, VERIFIED.
 | 2 | FastAPI and PostgreSQL foundation | IMPLEMENTED | FastAPI app, health/readiness routes, SQLAlchemy domain models, initial Alembic migration, Compose services, backend tests and CI workflow added; execution results pending |
 | 3 | Authentication and authorization | IMPLEMENTED | Argon2 password verification, JWT login/profile endpoints, inactive-account rejection, reusable role/region guards, and authentication/region-boundary tests added; CI execution still needs confirmation |
 | 4 | Application workflow | IMPLEMENTED | Authenticated create/list/detail/transition endpoints, region and applicant scoping, state-machine validation, audit-event writes, and lifecycle/access tests added; CI execution pending |
-| 5 | Policy and evidence management | NOT_STARTED | — |
+| 5 | Policy and evidence management | IMPLEMENTED | Policy metadata versioning, admin-only policy creation, size-limited PDF/JPEG/PNG evidence uploads with SHA-256 digests, evidence review endpoints, audit events, and compliance tests added; CI execution pending |
 | 6 | Obligations, deadlines, alerts, escalation | NOT_STARTED | — |
 | 7 | EVC, undertakings, compliance operations | NOT_STARTED | — |
 | 8 | Auditability and operational intelligence | NOT_STARTED | — |
 | 9 | Advanced differentiators | NOT_STARTED | — |
 | 10 | Integration and release hardening | NOT_STARTED | — |
 
-Phase 1 and Phase 2 are implemented in source but not marked VERIFIED until the corresponding build, tests, lint, and database migration checks have run successfully. Dashboard examples remain synthetic. Authentication and reusable authorization guards are implemented in source but remain unverified until CI passes. The application workflow is implemented in source but not verified until CI passes. Secure evidence storage, notification dispatch, and audit integrity enforcement remain future phases.
+Phase 1 and Phase 2 are implemented in source but not marked VERIFIED until the corresponding build, tests, lint, and database migration checks have run successfully. Dashboard examples remain synthetic. Authentication and reusable authorization guards are implemented in source but remain unverified until CI passes. The application workflow is implemented in source but not verified until CI passes. Evidence upload and review are implemented in source but remain unverified until CI passes; production-grade private object storage and malware scanning remain outstanding. Notification dispatch and audit integrity enforcement remain future phases.
