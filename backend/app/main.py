@@ -6,7 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.health import router as health_router
 from app.core.config import settings
 
-logging.basicConfig(level=settings.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s %(message)s")
+logging.basicConfig(
+    level=settings.log_level.upper(),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 
 app = FastAPI(
     title=settings.app_name,
@@ -27,4 +30,5 @@ app.include_router(health_router, prefix=settings.api_v1_prefix)
 
 @app.get("/", tags=["meta"])
 def root() -> dict[str, str]:
-    return {"service": settings.app_name, "version": app.version, "docs": "/docs" if settings.app_env != "production" else "disabled"}
+    docs_path = "/docs" if settings.app_env != "production" else "disabled"
+    return {"service": settings.app_name, "version": app.version, "docs": docs_path}
