@@ -106,6 +106,11 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   me: () => request<User>('/api/v1/auth/me'),
+  createApplication: (institution_id: number, reference_code: string) =>
+    request<Application>('/api/v1/applications', {
+      method: 'POST',
+      body: JSON.stringify({ institution_id, reference_code }),
+    }),
   listApplications: (status?: ApplicationStatus) => {
     const query = status ? '?status=' + encodeURIComponent(status) : '';
     return request<Application[]>('/api/v1/applications' + query);
