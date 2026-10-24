@@ -1,13 +1,4 @@
 from app.db.base_class import Base
-from app.models import (  # noqa: F401
-    Application,
-    AuditEvent,
-    Evidence,
-    Institution,
-    Notification,
-    Obligation,
-    Policy,
-    User,
-)
+import app.models as _models  # noqa: F401
 
 __all__ = ["Base"]
