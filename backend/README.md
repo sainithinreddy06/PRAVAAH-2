@@ -24,6 +24,12 @@ uvicorn app.main:app --reload
 
 Set `DATABASE_URL` in `.env` to a reachable PostgreSQL instance before running migrations or the readiness endpoint.
 
+## Authentication
+
+Phase 3 adds `POST /api/v1/auth/login` with a JSON body containing `email` and `password`, and `GET /api/v1/auth/me` for the authenticated profile. Passwords are verified with Argon2 and access tokens are signed JWTs. The user record is reloaded for each authenticated request so inactive accounts are rejected and role/region values come from the database. Reusable backend dependencies provide role checks and regional-boundary checks for protected routes.
+
+Set `JWT_SECRET_KEY` to a cryptographically random value of at least 32 characters in production. The development fallback is not suitable for deployment. Tokens expire after 30 minutes by default; configure `ACCESS_TOKEN_EXPIRE_MINUTES` as needed. No default user or password is seeded: create users through a controlled administrative process, never by committing credentials.
+
 ## Tests and lint
 
 ```bash
@@ -32,6 +38,6 @@ ruff check app tests migrations
 ```
 
 ## Schema
-Alembic migration `20261024_0001` creates initial tables for users, institutions, applications, versioned policy metadata, evidence metadata, obligations, notification records, and audit events. The models are schema foundations only; authorization, workflow rules, secure file storage, notification dispatch, and audit integrity enforcement are not yet implemented.
+Alembic migration `20261024_0001` creates initial tables for users, institutions, applications, versioned policy metadata, evidence metadata, obligations, notification records, and audit events. The models are schema foundations only; application workflow rules, secure file storage, notification dispatch, and audit integrity enforcement are not yet implemented. Role and region checks are implemented as reusable backend dependencies; future resource routes must apply them explicitly.
 
 The Compose password is for local development only. Never use it in a deployed environment. No official AICTE rules or data are seeded by this phase.
