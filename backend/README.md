@@ -58,10 +58,17 @@ Escalation is API-triggered, not scheduled automatically. Email/SMS delivery and
 EVC outcomes are workflow-readiness indicators only, not official compliance verdicts. Assessments are snapshots; create a new one after evidence or obligations change.
 
 ## Auditability and operational intelligence (Phase 8)
-- `GET /api/v1/audit/events` supports filters for entity type/ID, action, actor, date range, and pagination. Access is limited to regional officers and platform admins; regional officers are scoped to their region.
-- `GET /api/v1/operations/metrics` returns application status counts, evidence review counts, obligation statuses, undertaking statuses, and overdue obligation totals. Metrics are global for platform admins and region-scoped for regional officers.
+- `GET /api/v1/audit/events` supports entity, action, actor, date, and pagination filters. Regional officers are scoped to their region; platform admins can query global events.
+- `GET /api/v1/operations/metrics` returns application, evidence, obligation, and undertaking counts plus overdue obligations, scoped to the officer's region or globally for platform admins.
 
-Audit events are currently append-by-convention records written by application workflows, not tamper-evident immutable records. This phase adds read access and visibility, not cryptographic chain verification, retention enforcement, or an external write-once audit sink. Metrics are operational summaries and do not imply official compliance.
+Audit events are not yet tamper-evident immutable records. Metrics are operational summaries and do not imply official compliance.
+
+## Explainable recommendations (Phase 9)
+- `GET /api/v1/applications/{id}/recommendations` evaluates evidence gaps, rejected or pending evidence, overdue and near-due obligations, and undertakings that are not accepted.
+- The response includes a rule-based risk score, risk level, explicit factors, and recommended next actions.
+- Access is restricted to regional officers and platform admins, with regional scoping.
+
+The score is a transparent operational heuristic, not a trained prediction model, an official AICTE rubric, or an approval decision. The recommendations only cover the categories implemented by the current rules; officers must validate requirements against authoritative policy sources.
 
 ## Tests and lint
 
