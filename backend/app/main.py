@@ -10,6 +10,7 @@ from app.api.routes.evc import router as evc_router
 from app.api.routes.health import router as health_router
 from app.api.routes.obligations import router as obligations_router
 from app.api.routes.operations import router as operations_router
+from app.api.routes.recommendations import router as recommendations_router
 from app.core.config import settings
 
 logging.basicConfig(
@@ -20,7 +21,7 @@ logging.basicConfig(
 app = FastAPI(
     title=settings.app_name,
     description="API foundation for the PRAVAAH approval and compliance platform.",
-    version="0.5.0",
+    version="0.6.0",
     docs_url="/docs" if settings.app_env != "production" else None,
     redoc_url="/redoc" if settings.app_env != "production" else None,
 )
@@ -38,6 +39,7 @@ app.include_router(compliance_router, prefix=settings.api_v1_prefix)
 app.include_router(obligations_router, prefix=settings.api_v1_prefix)
 app.include_router(evc_router, prefix=settings.api_v1_prefix)
 app.include_router(operations_router, prefix=settings.api_v1_prefix)
+app.include_router(recommendations_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/", tags=["meta"])
