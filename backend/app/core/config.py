@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +15,17 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    @model_validator(mode='after')
+    def validate_auth_settings(self) -> 'Settings':
+        if self.access_token_expire_minutes < 1:
+            raise ValueError('Access token lifetime must be positive')
+        if self.app_env.casefold() == 'production' and (
+            self.jwt_secret_key == 'development-only-change-me-before-deployment'
+            or len(self.jwt_secret_key) < 32
+        ):
+            raise ValueError('Configure a strong JWT secret of at least 32 characters in production')
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:
