@@ -21,7 +21,7 @@ function canSubmit(role: string): boolean {
   return ['applicant', 'institution_admin', 'regional_officer', 'platform_admin'].includes(role);
 }
 
-function canTransition(role: string, current: ApplicationStatus, target: ApplicationStatus): boolean {
+function canTransition(role: string, target: ApplicationStatus): boolean {
   if (target === 'submitted') return canSubmit(role);
   return canReview(role);
 }
@@ -111,7 +111,7 @@ export default function ApplicationsPage() {
             : applications.length > 0 && <div className="table-wrap"><table className="applications-table"><thead><tr><th>Reference</th><th>Application ID</th><th>Workflow stage</th><th>Status</th><th>Created</th><th>Available action</th></tr></thead><tbody>
               {applications.map((application) => {
                 const transitions = allowedTransitions[application.status] || [];
-                const actionable = transitions.filter((target) => canTransition(user.role, application.status, target));
+                const actionable = transitions.filter((target) => canTransition(user.role, target));
                 return <tr key={application.id}>
                   <td><strong>{application.reference_code}</strong><span className="subtext">Institution #{application.institution_id}</span></td>
                   <td>#{application.id}</td>
