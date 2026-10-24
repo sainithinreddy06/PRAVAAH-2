@@ -1,6 +1,5 @@
 from collections.abc import Generator
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
@@ -128,7 +127,7 @@ def test_applicant_can_submit_draft_and_audit_is_written(client: TestClient) -> 
 
     with _Session() as db:
         events = db.scalars(
-            select(AuditEvent).where(AuditEvent.entity_id == '1')
+            select(AuditEvent).where(AuditEvent.entity_id == '1').order_by(AuditEvent.id)
         ).all()
     assert [event.action for event in events] == [
         'application.created',
