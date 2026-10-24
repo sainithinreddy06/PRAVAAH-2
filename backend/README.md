@@ -30,7 +30,22 @@ Phase 3 adds `POST /api/v1/auth/login` with a JSON body containing `email` and `
 
 Set `JWT_SECRET_KEY` to a cryptographically random value of at least 32 characters in production. The development fallback is not suitable for deployment. Tokens expire after 30 minutes by default; configure `ACCESS_TOKEN_EXPIRE_MINUTES` as needed. No default user or password is seeded: create users through a controlled administrative process, never by committing credentials.
 
-## Application workflow (Phase 4)\n\nThe authenticated application API provides `POST /api/v1/applications` to create a draft, `GET /api/v1/applications` to list visible applications with optional status filtering and pagination, `GET /api/v1/applications/{id}` to view one application, and `POST /api/v1/applications/{id}/transitions` to request a workflow transition. Valid statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions are constrained by a state machine; applicants can see only their own applications, other non-admin roles are scoped to their assigned region, and only regional officers or platform admins can perform review decisions. Creation and status changes write audit events. This phase uses existing schema tables; it does not yet upload or inspect evidence files, enforce official AICTE policy, or provide production-grade immutable audit storage.\n\n## Tests and lint
+## Application workflow (Phase 4)
+
+The authenticated application API provides `POST /api/v1/applications` to create a draft, `GET /api/v1/applications` to list visible applications with optional status filtering and pagination, `GET /api/v1/applications/{id}` to view one application, and `POST /api/v1/applications/{id}/transitions` to request a workflow transition. Valid statuses are `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Transitions are constrained by a state machine; applicants can see only their own applications, other non-admin roles are scoped to their assigned region, and only regional officers or platform admins can perform review decisions. Creation and status changes write audit events. This phase uses existing schema tables; it does not yet upload or inspect evidence files, enforce official AICTE policy, or provide production-grade immutable audit storage.
+
+
+## Policy and evidence management (Phase 5)
+
+- `GET /api/v1/policies` lists policy metadata, optionally filtered by `policy_key`; `active_only=true` by default.
+- `POST /api/v1/policies` creates a policy version and is restricted to platform administrators. A policy key/version pair cannot be duplicated.
+- `POST /api/v1/applications/{id}/evidence` accepts PDF, JPEG, or PNG uploads for draft or changes-requested applications. Uploads are size-limited, checked against basic file signatures, stored under generated opaque filenames, and recorded with a SHA-256 digest.
+- `GET /api/v1/applications/{id}/evidence` lists evidence metadata for an authorized application.
+- `PATCH /api/v1/evidence/{id}/review` lets authorized regional officers or platform administrators accept, reject, or request changes, with reviewer notes and an audit event.
+
+Configure `EVIDENCE_STORAGE_DIR` and `MAX_EVIDENCE_SIZE_BYTES` through the environment. The default directory is local disk and is suitable only where the deployment provides persistent, private storage and backups. Do not expose this directory as static web content. For production, use a private object store with encryption, malware scanning, retention controls, and signed access URLs. File signature checks are not a malware scanner. Policy records are user-managed metadata, not verified official AICTE rules, and this phase does not automatically decide compliance.
+
+## Tests and lint
 
 ```bash
 pytest
