@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -33,6 +33,12 @@ def list_audit_events(
     actor: User = Depends(require_roles(*_AUDIT_ROLES)),
     db: Session = Depends(get_db),
 ) -> list[AuditEvent]:
+    if since is not None and until is not None and since > until:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail='since must be earlier than or equal to until',
+        )
+
     query = select(AuditEvent)
     if entity_type:
         query = query.where(AuditEvent.entity_type == entity_type)
