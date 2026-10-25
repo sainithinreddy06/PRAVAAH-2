@@ -1,16 +1,16 @@
 # PRAVAAH-2 Integration Coverage Matrix
 
-Audit basis: the current `main` branch inspected on 25 October 2026. This is a repository-level static audit; it is not a browser E2E run or a live database test.
+Audit basis: `main` was rechecked on 25 October 2026, then the implementation branch for draft PR #1 was inspected. This is a repository-level static audit plus CI evidence; it is not a browser E2E run or a live database test.
 
 ## Executive finding
 
-The backend exposes real FastAPI routes for authentication, applications, policies/evidence, obligations/notifications, undertakings/EVC assessments, audit events, operational metrics, and recommendations. The current React app does not yet call those APIs: the overview uses hard-coded synthetic data and the other workspace pages render placeholders. Therefore, the presence of backend endpoints must not be interpreted as end-to-end UI integration.
+The backend exposes FastAPI routes for authentication, applications, policies/evidence, obligations/notifications, undertakings/EVC assessments, audit events, operational metrics, and recommendations. In draft PR #1, the public landing page is separate from the authenticated workspace, and the overview requests application records through the existing API client. The dedicated scrutiny, compliance, evidence, workflow, institution, officer, policy and settings pages remain placeholders or unconnected. Backend endpoint existence must not be interpreted as end-to-end UI integration.
 
 ## Coverage matrix
 
 | User workflow / UI route | Current UI behavior | Backend capability | Integration status | Highest-value next check |
 |---|---|---|---|---|
-| Overview `/` | Hard-coded metrics, cases, alerts, and activity | `GET /api/v1/operations/metrics`; applications, obligations, notifications, audit routes | Not connected; all overview figures remain synthetic | Replace static metrics only after mapping response schema and adding loading/error/empty states |
+| Public landing `/` | Public page with top navigation, original copy, workflow explanation and an illustrative UI explicitly labelled as non-live | No API dependency | Static public page in draft PR #1 | Verify desktop/mobile layout, anchor navigation, sign-in route and accessibility in a browser |\n| Overview `/overview` | Fetches applications through `api.listApplications`; shows the returned records sorted by update timestamp, response-scoped status counts, and loading/error/empty states | `GET /api/v1/applications` through existing API client | Connected in draft PR #1; CI and runtime verification must be checked against the latest PR commit | Verify valid/invalid login, API connectivity, empty/error behavior, response limit semantics and regional access in a browser |
 | Sign in / current user | `AuthGate` sign-in form; `/api/v1/auth/login` followed by `/api/v1/auth/me`; workspace gated behind authentication | `POST /api/v1/auth/login`; `GET /api/v1/auth/me` | Implemented in frontend; CI/runtime verification pending. Bearer token stays in module memory and is cleared on sign-out/401; refresh requires signing in again | Verify valid/invalid login, 401 handling, expiry behavior, and backend connectivity in a browser; consider HttpOnly-cookie/BFF session design before production |
 | Applications `/applications` | API-backed list, status filter, refresh, role-aware transition buttons, required reason prompt, loading/error/empty states | `POST/GET /api/v1/applications`; `GET /api/v1/applications/{id}`; `POST /api/v1/applications/{id}/transitions` | List, status filter, create-draft form, and transitions connected; detail UI not implemented. Frontend CI passed typecheck, lint, and production build on commit `81583e4f878561ec93b56176385e4cda353fd4d9` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122685895)) | Verify application listing and transition success, 409 conflict handling, invalid reasons, and applicant/region access boundaries |
 | Scrutiny queue `/scrutiny` | Placeholder | Application list/status filters and transitions; evidence review endpoints | Not connected; no dedicated queue endpoint identified | Define queue filters from supported API fields; do not imply an endpoint exists until implemented |
@@ -33,14 +33,14 @@ The backend exposes real FastAPI routes for authentication, applications, polici
 2. **Authentication:** the frontend now uses the backend bearer JWT login/current-user endpoints, keeps the access token in memory only, clears it on logout/401, and has no built-in demo credentials. This means a page refresh signs the user out. A production-grade HttpOnly-cookie/BFF session remains preferable if the backend is extended to support it.
 3. **Authorization:** frontend role-based visibility is only a usability aid. Backend authorization remains authoritative. Test applicant ownership, region isolation, and platform-admin exceptions for every read and mutation.
 4. **State and feedback:** every data-backed screen needs loading, error, empty, success, and permission-denied states. Mutations need pending/disabled states and visible API validation errors.
-5. **Data semantics:** overview demo records and counts are synthetic. Do not mix them with live API results without explicit labelling.
+5. **Data semantics:** draft PR #1 removes synthetic overview metrics and uses only application records returned by the API. Counts are explicitly scoped to that response and must not be presented as global totals. The landing page's interface illustration is labelled as illustrative, not live data.
 6. **Uploads:** UI must respect PDF/JPEG/PNG validation and configured size limits. Signature checks do not replace malware scanning; local evidence storage is not a production storage strategy.
 7. **Dates and transitions:** render timestamps consistently, handle stale state and HTTP 409 transition conflicts, and only offer transitions the server can authorize.
 8. **Operational claims:** obligation escalation is API-triggered, not a verified recurring scheduler. EVC and risk recommendations are workflow aids. Audit events are not established as immutable.
 
 ## Prioritized work order
 
-- **P0 — Close the integration gap:** API client/configuration, sign-in/current-user gate, and application list/status transitions are implemented. Await frontend CI and perform real browser/API verification; application detail/create UI and the overview remain unconnected.
+- **P0 — Close the integration gap:** API client/configuration, sign-in/current-user gate, application list/status transitions, and API-backed overview are implemented in the current branch. Check CI on the latest PR head and perform real browser/API verification; application detail UI and several workspace pages remain unconnected.
 - **P1 — Evidence and policy:** connect policy listing/creation and application-scoped evidence upload/list/review; add regression coverage for validation and authorization failures.
 - **P1 — Operational workflows:** connect obligations, notifications, EVC assessments, audit events, metrics, and recommendations to dedicated UI views.
 - **P2 — Product-scope decisions:** specify missing institution/officer administration, configurable workflow studio, global evidence library, and persisted settings before implementing them.
@@ -48,7 +48,7 @@ The backend exposes real FastAPI routes for authentication, applications, polici
 
 ## Verification status
 
-- Repository files and route registration were inspected on `main`.
+- `main` and the draft PR #1 implementation branch were inspected. Public routes `/`, `/privacy`, and `/terms` are separated from the authenticated workspace. The legal routes are review drafts and are not suitable for final publication yet.
 - Recent GitHub Actions history was inspected. The last known Backend CI run (`40121994608`) and Frontend CI run (`40122014079`) report success, but they target different commits and validate backend tests/migrations/lint and frontend typecheck/lint/build respectively.
 - No browser E2E session, live Compose integration run, production deployment test, or external institutional integration was executed as part of this static audit.
 
@@ -60,3 +60,14 @@ The backend exposes real FastAPI routes for authentication, applications, polici
 - The application list supports status filtering and backend-validated transitions with a required reason, loading/error/empty feedback, and HTTP 409 conflict messaging.
 - The access token is held in memory, not Web Storage. This reduces persistence and refresh-token exposure but does not eliminate XSS risk; production should evaluate a server-managed HttpOnly session.
 - GitHub Actions Frontend CI passed typecheck, lint, and production build on commit `81583e4f878561ec93b56176385e4cda353fd4d9` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122685895)). Backend CI passed migration checks, PostgreSQL migration application, tests, and Ruff for the account-provisioning work on commit `df8f63b29b5381472e9efdffd907e8fa2e8be187` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122629323)); the institution-provisioning script also passed migration checks, tests, and Ruff on commit `e35379b70c190bb39f9bcb3efe4d70a8b38c6f2f` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122783060)). These checks validate builds and backend tests, not live UI-to-API behavior. No seeded-account browser login, browser E2E, or full Docker Compose workflow test has been performed in this update.
+
+
+## Public website and navigation refresh (25 October 2026, draft PR #1)
+
+- Added a public landing page at `/` with a responsive top navigation, original PRAVAAH copy, an HTML/CSS workflow illustration labelled as non-live, feature explanations and links to the authenticated workspace.
+- Kept the authenticated workspace sidebar and mobile navigation. Removed hard-coded navigation counters and fake search, notification and help actions.
+- Moved the workspace overview to `/overview`. It now uses the existing API client to load application records and displays response-scoped counts with loading, error and empty states. It does not claim to show global totals.
+- Added `public/favicon.svg`, updated document metadata, and set `noindex,follow` while the public pages and legal drafts are unlaunched.
+- Added `/privacy` and `/terms` routes as explicit review drafts. Missing operator identity, retention, provider, contact and legal details are called out. These drafts must be replaced or approved before launch; they are not legal advice or final policies.
+- Draft PR: [#1](https://github.com/sainithinreddy06/PRAVAAH-2/pull/1). Frontend CI passed typecheck, lint and production build on commit `8645ed0cd8e9c9cf41631b3796c20180a86e842e` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40172971775)); later metadata and responsive-navigation changes have separate CI runs and must be checked at the latest PR head before merge.
+- No backend files or API contracts were changed in this design pass. No production deployment, custom-domain verification, HTTPS check, browser E2E, or live database workflow was performed.
