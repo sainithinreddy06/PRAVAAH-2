@@ -102,6 +102,37 @@ def test_applicant_can_create_and_view_own_application(client: TestClient) -> No
     assert detail.json()['reference_code'] == 'TS-APP-001'
 
 
+@pytest.mark.parametrize(
+    'reference_code',
+    [
+        '',
+        'AB',
+        ' contains-space ',
+        '-starts-with-symbol',
+        'x' * 65,
+    ],
+)
+def test_invalid_reference_codes_are_rejected(
+    client: TestClient, reference_code: str
+) -> None:
+    response = client.post(
+        '/api/v1/applications',
+        headers=_headers(1),
+        json={'institution_id': 1, 'reference_code': reference_code},
+    )
+    assert response.status_code == 422
+
+
+def test_unknown_institution_is_rejected(client: TestClient) -> None:
+    response = client.post(
+        '/api/v1/applications',
+        headers=_headers(1),
+        json={'institution_id': 999, 'reference_code': 'TS-APP-UNKNOWN'},
+    )
+    assert response.status_code == 404
+    assert response.json()['detail'] == 'Institution not found'
+
+
 def test_duplicate_reference_is_rejected(client: TestClient) -> None:
     payload = {'institution_id': 1, 'reference_code': 'TS-APP-002'}
     first = client.post('/api/v1/applications', headers=_headers(1), json=payload)
