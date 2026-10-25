@@ -9,3 +9,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+
+# AI Studio exports and temporary media should not enter the application bundle.
+.aistudio/
+public/assets/aistudio/
