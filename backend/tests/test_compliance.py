@@ -109,6 +109,22 @@ def test_duplicate_policy_version_is_rejected(client: TestClient) -> None:
     assert second.status_code == 409
 
 
+def test_policy_version_date_range_must_be_valid(client: TestClient) -> None:
+    response = client.post(
+        '/api/v1/policies',
+        headers=_headers(3),
+        json={
+            'policy_key': 'DOC.DATE',
+            'version': 1,
+            'title': 'Date range validation',
+            'effective_from': '2026-10-25T00:00:00Z',
+            'effective_until': '2026-10-24T00:00:00Z',
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'effective_until must be after effective_from'
+
+
 def test_upload_stores_hash_and_generated_storage_key(client: TestClient) -> None:
     content = b'%PDF-1.7\nminimal test PDF payload'
     response = client.post(
