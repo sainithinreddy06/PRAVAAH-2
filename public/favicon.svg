@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">PRAVAAH</title>
+  <rect width="64" height="64" rx="10" fill="#173b63"/>
+  <path d="M17 18h17a10 10 0 0 1 0 20H27v9h-10V18Zm10 9v3h7a1.5 1.5 0 0 0 0-3h-7Z" fill="#fff"/>
+  <path d="M43 38v9h7v-9" fill="none" stroke="#83b5dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
