@@ -174,7 +174,7 @@ export default function ApplicationsPage() {
                   <td>{formatStatus(application.workflow_stage)}</td>
                   <td><span className={'status status-' + (application.status === 'approved' ? 'green' : application.status === 'rejected' ? 'rose' : application.status === 'under_review' ? 'blue' : application.status === 'changes_requested' ? 'amber' : 'blue')}><i />{formatStatus(application.status)}</span></td>
                   <td>{new Date(application.created_at).toLocaleDateString() + ' ' + new Date(application.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td>{actionable.length > 0 ? <div className="application-actions">{actionable.map((target) => <button key={target} className="table-action" type="button" disabled={pendingId === application.id} onClick={() => void transition(application, target)}>{pendingId === application.id ? 'Saving…' : formatStatus(target)}</button>)}</div> : <span className="muted">No permitted action</span>}</td>
+                  <td>{actionable.length > 0 ? <div className="application-actions">{actionable.map((target) => <button key={target} className="table-action" type="button" disabled={pendingId !== null} onClick={() => void transition(application, target)}>{pendingId === application.id ? 'Saving…' : formatStatus(target)}</button>)}</div> : <span className="muted">No permitted action</span>}</td>
                 </tr>;
               })}
             </tbody></table></div>}
