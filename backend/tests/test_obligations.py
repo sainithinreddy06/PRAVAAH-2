@@ -34,15 +34,28 @@ def client() -> Generator[TestClient, None, None]:
             User(id=3, email='admin@example.test', full_name='Admin', role='platform_admin', region_code=None, is_active=True),
             User(id=4, email='other@example.test', full_name='Other Region User', role='applicant', region_code='AP', is_active=True),
         ])
-        db.add(Institution(id=1, name='TS Institute', institution_code='TS-001', region_code='TS'))
-        db.add(Application(
-            id=1,
-            reference_code='TS-APP-001',
-            institution_id=1,
-            submitted_by_user_id=1,
-            workflow_stage='draft',
-            status='draft',
-        ))
+        db.add_all([
+            Institution(id=1, name='TS Institute', institution_code='TS-001', region_code='TS'),
+            Institution(id=2, name='AP Institute', institution_code='AP-001', region_code='AP'),
+        ])
+        db.add_all([
+            Application(
+                id=1,
+                reference_code='TS-APP-001',
+                institution_id=1,
+                submitted_by_user_id=1,
+                workflow_stage='draft',
+                status='draft',
+            ),
+            Application(
+                id=2,
+                reference_code='AP-APP-001',
+                institution_id=2,
+                submitted_by_user_id=4,
+                workflow_stage='draft',
+                status='draft',
+            ),
+        ])
         db.commit()
 
     def override_get_db() -> Generator[Session, None, None]:
@@ -111,6 +124,32 @@ def test_obligation_owner_cannot_be_reassigned_across_regions(client: TestClient
     unchanged = client.get('/api/v1/obligations', headers=_headers(2))
     assert unchanged.status_code == 200
     assert next(item for item in unchanged.json() if item['id'] == obligation_id)['owner_user_id'] == 1
+
+
+def test_obligation_list_is_scoped_before_pagination(client: TestClient) -> None:
+    for application_id, owner_user_id, title in [
+        (1, 1, 'TS obligation'),
+        (2, 4, 'AP obligation'),
+    ]:
+        created = client.post(
+            '/api/v1/obligations',
+            headers=_headers(3),
+            json={
+                'application_id': application_id,
+                'owner_user_id': owner_user_id,
+                'obligation_type': 'document_submission',
+                'title': title,
+            },
+        )
+        assert created.status_code == 201
+
+    ts_page = client.get('/api/v1/obligations', headers=_headers(2), params={'limit': 1})
+    assert ts_page.status_code == 200
+    assert [item['title'] for item in ts_page.json()] == ['TS obligation']
+
+    ap_page = client.get('/api/v1/obligations', headers=_headers(4), params={'limit': 1})
+    assert ap_page.status_code == 200
+    assert [item['title'] for item in ap_page.json()] == ['AP obligation']
 
 
 def test_applicant_cannot_create_obligation(client: TestClient) -> None:
