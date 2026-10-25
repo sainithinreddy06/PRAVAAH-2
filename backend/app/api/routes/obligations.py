@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import ensure_region_access, get_current_user, require_roles
@@ -193,9 +194,7 @@ def escalate_due_obligations(
         except HTTPException:
             continue
         event_key = f'obligation-overdue:{obligation.id}:{obligation.due_at.isoformat()}'
-        if db.scalar(select(Notification.id).where(Notification.event_key == event_key)) is not None:
-            continue
-        db.add(Notification(
+        notification = Notification(
             recipient_user_id=obligation.owner_user_id,
             event_key=event_key,
             channel='in_app',
@@ -207,7 +206,15 @@ def escalate_due_obligations(
                 'title': obligation.title,
                 'due_at': obligation.due_at.isoformat(),
             }, sort_keys=True),
-        ))
+        )
+        db.add(notification)
+        try:
+            # The unique event_key constraint is the concurrency-safe idempotency guard.
+            # Flush before adding the audit event so a duplicate can be rolled back cleanly.
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            continue
         db.add(AuditEvent(
             actor_user_id=actor.id,
             entity_type='obligation',
