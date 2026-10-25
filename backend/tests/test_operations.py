@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,6 +14,7 @@ from app.main import app
 from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
+from app.models.obligation import Obligation
 from app.models.user import User
 
 _engine = create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
@@ -98,6 +100,23 @@ def test_recommendations_explain_missing_evidence(client: TestClient) -> None:
     assert payload['risk_score'] == 25
     assert payload['recommendations'][0]['code'] == 'evidence_missing'
     assert 'not an official compliance decision' in payload['disclaimer']
+
+
+def test_recommendations_flag_obligation_overdue_earlier_today(client: TestClient) -> None:
+    with _Session() as db:
+        db.add(Obligation(
+            application_id=1,
+            owner_user_id=1,
+            obligation_type='document_submission',
+            title='Deadline passed earlier today',
+            due_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=1),
+            status='open',
+        ))
+        db.commit()
+
+    response = client.get('/api/v1/applications/1/recommendations', headers=_headers(2))
+    assert response.status_code == 200
+    assert 'obligations_overdue' in {item['code'] for item in response.json()['recommendations']}
 
 
 def test_regional_officer_cannot_get_recommendations_for_another_region(client: TestClient) -> None:
