@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
-  ArrowRight, ArrowUpRight, Building2, ChevronDown, CircleHelp,
-  FileText, LayoutDashboard, LogOut, Menu, Settings2,
+  ArrowRight, ArrowUpRight, Building2, ChevronDown,
+  FileText, LayoutDashboard, LogOut, Menu,
   ShieldCheck, Users, Workflow, X, AlertCircle, RefreshCw
 } from 'lucide-react';
 import AuthGate, { useAuth } from './components/AuthGate';
@@ -121,24 +121,12 @@ function Overview() {
   );
 }
 
-function SectionPage({ title, description }: { title: string; description: string }) {
-  return (
-    <section className="panel empty-page">
-      <div className="empty-icon"><Workflow size={22} /></div>
-      <p className="eyebrow">WORKSPACE / NOT CONNECTED</p>
-      <h2>{title}</h2>
-      <p>{description}</p>
-      <div className="notice"><CircleHelp size={17} /><span>This screen is not connected to a live frontend workflow yet. No records or actions are simulated here.</span></div>
-    </section>
-  );
-}
-
 function WorkspaceApp() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
   const closeMobile = () => setMobileOpen(false);
-  const pageLabel = [...navigation, ...administration, { label: 'Settings', to: '/settings', icon: Settings2 }]
+  const pageLabel = [...navigation, ...administration]
     .find((item) => item.to === location.pathname)?.label || 'Overview';
   const initials = user.full_name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
 
@@ -172,7 +160,6 @@ function WorkspaceApp() {
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-note"><ShieldCheck size={16} /><p>Access is checked by the connected backend. Menu visibility does not replace server authorization.</p></div>
-          <NavLink to="/settings" className={({ isActive }) => 'nav-item ' + (isActive ? 'nav-active' : '')} onClick={closeMobile}><Settings2 size={18} /><span>Settings</span></NavLink>
           <div className="profile-row">
             <span className="profile-avatar">{initials}</span>
             <span className="profile-copy"><strong>{user.full_name}</strong><small>{user.role.replace(/_/g, ' ')}</small></span>
@@ -203,7 +190,7 @@ function WorkspaceApp() {
             <Route path="/policies" element={<Navigate to="/overview" replace />} />
             <Route path="/settings" element={<Navigate to="/overview" replace />} />
             <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
-            <Route path="*" element={<SectionPage title="Page not found" description="The requested workspace page does not exist." />} />
+            <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
         </div>
       </main>
