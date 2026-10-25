@@ -190,4 +190,4 @@ docs/                    Integration coverage, checklist, presentation notes
 docker-compose.yml       PostgreSQL, migration, API services
 ```
 
-Additional references: [backend setup and API notes](backend/README.md), [presentation brief](docs/PRESENTATION_README.md), [ZIP inventory review](docs/zip-review-2026-10-25.md).
+Additional references: [backend setup and API notes](backend/README.md), [presentation brief](docs/PRESENTATION_README.md), [implementation master prompt](docs/IMPLEMENTATION_MASTER_PROMPT.md), [ZIP inventory review](docs/zip-review-2026-10-25.md).
