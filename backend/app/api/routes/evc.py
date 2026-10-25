@@ -2,7 +2,7 @@ import json
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.api.deps import ensure_region_access, get_current_user, require_roles
@@ -110,8 +110,19 @@ def submit_undertaking(
         raise HTTPException(status_code=403, detail='You cannot submit this undertaking')
     if undertaking.status not in {'draft', 'changes_requested'}:
         raise HTTPException(status_code=409, detail='Only draft or returned undertakings can be submitted')
-    undertaking.status = 'submitted'
-    undertaking.submitted_at = datetime.now(UTC)
+    submitted_at = datetime.now(UTC)
+    transition = db.execute(
+        update(Undertaking)
+        .where(Undertaking.id == undertaking.id, Undertaking.status == undertaking.status)
+        .values(status='submitted', submitted_at=submitted_at)
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail='Undertaking status changed concurrently; reload and retry',
+        )
     _audit(db, actor, 'undertaking', undertaking.id, 'undertaking.submitted', {'version': undertaking.version})
     db.commit()
     db.refresh(undertaking)
@@ -131,10 +142,24 @@ def review_undertaking(
     _undertaking_access(db, undertaking, actor)
     if undertaking.status != 'submitted':
         raise HTTPException(status_code=409, detail='Only submitted undertakings can be reviewed')
-    undertaking.status = payload.decision
-    undertaking.reviewer_notes = payload.reviewer_notes
-    undertaking.reviewed_by_user_id = actor.id
-    undertaking.reviewed_at = datetime.now(UTC)
+    reviewed_at = datetime.now(UTC)
+    transition = db.execute(
+        update(Undertaking)
+        .where(Undertaking.id == undertaking.id, Undertaking.status == 'submitted')
+        .values(
+            status=payload.decision,
+            reviewer_notes=payload.reviewer_notes,
+            reviewed_by_user_id=actor.id,
+            reviewed_at=reviewed_at,
+        )
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail='Undertaking status changed concurrently; reload and retry',
+        )
     _audit(db, actor, 'undertaking', undertaking.id, 'undertaking.reviewed', {'decision': payload.decision})
     db.commit()
     db.refresh(undertaking)
