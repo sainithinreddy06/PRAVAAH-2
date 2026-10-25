@@ -41,8 +41,12 @@ def application_recommendations(
     rejected = sum(item.review_status == 'rejected' for item in evidence)
     pending = sum(item.review_status == 'pending' for item in evidence)
     overdue = sum(
-        item.status in {'open', 'in_progress'} and item.due_at is not None
-        and item.due_at.date() < now.date() for item in obligations
+        item.status in {'open', 'in_progress'}
+        and item.due_at is not None
+        and (
+            item.due_at.replace(tzinfo=UTC) if item.due_at.tzinfo is None else item.due_at
+        ) < now
+        for item in obligations
     )
     due_soon = sum(
         item.status in {'open', 'in_progress'} and item.due_at is not None
