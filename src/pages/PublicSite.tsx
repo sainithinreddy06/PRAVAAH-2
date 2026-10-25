@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronRight, CircleHelp, ClipboardCheck, Clock, Database,
   FileCheck2, FileText, Globe, Headphones, Layers, Landmark, Lock, MapPin,
   Menu, Phone, Search, Send, ShieldCheck, Workflow, X, Eye, Scale, Users,
-  BadgeCheck, Bell
+  BadgeCheck, Bell, Info
 } from 'lucide-react';
 
 type PolicyCategory = { id: string; title: string; subtitle: string; summary: string; items: { title: string; detail: string }[] };
