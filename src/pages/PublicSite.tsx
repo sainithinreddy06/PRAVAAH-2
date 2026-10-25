@@ -88,6 +88,7 @@ const roles=[
  {label:'Council',name:'Priyanka Verma',role:'COUNCIL_ADMIN',region:'Council review desk'},
 ];
 function Header({onPortal}:{onPortal:()=>void}) {
+ const navLinks: {href:string;icon:typeof Layers;label:string}[] = [{href:'#main-content',icon:Layers,label:'Public Overview'},{href:'#policies',icon:Scale,label:'Policy & Norms (APH)'},{href:'#services',icon:Award,label:'Public & Institutional Services'},{href:'#verification',icon:Search,label:'Track & Verify Status'},{href:'#process',icon:Workflow,label:'Approval Process (How It Works)'},{href:'#compliance-charter',icon:ShieldCheck,label:'Citizen Charter'},{href:'#support',icon:Headphones,label:'Help & Support Desk'}];
  const [menuOpen,setMenuOpen]=useState(false); const [query,setQuery]=useState(''); const [hindi,setHindi]=useState(false);
  const search= (e:FormEvent)=>{e.preventDefault();const target=document.getElementById('verification');if(target){target.scrollIntoView({behavior:'smooth'});window.dispatchEvent(new CustomEvent('pravaah-search',{detail:query}));}};
  return <><div className="pr-top-strip"><div><b>GOVERNMENT WORKFLOW PROTOTYPE</b><span> | </span><span>Smart India Hackathon 2026 · Problem Statement SIH26262</span></div><div><a href="#main-content">Skip to Main Content</a><span> | </span><a href="#support"><Phone size={12}/> Help &amp; Support</a><span> | </span><button onClick={()=>setHindi(!hindi)}><Globe size={12}/>{hindi?'हिंदी':'English / हिंदी'}</button></div></div>
