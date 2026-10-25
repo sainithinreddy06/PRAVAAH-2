@@ -35,6 +35,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   outline: 3px solid #78a9e5;
   outline-offset: 3px;
 }
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 16px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 5px;
+  background: #173b63;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.skip-link:focus { top: 12px; }
+#platform, #workflow, #principles { scroll-margin-top: 92px; }
+#main-content { scroll-margin-top: 86px; }
 .public-site { min-height: 100vh; background: #fff; color: var(--pravaah-ink); }
 .public-header {
   min-height: 76px; width: 100%; display: flex; align-items: center; justify-content: space-between;
