@@ -2,7 +2,7 @@ import json
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -89,26 +89,29 @@ def list_obligations(
     actor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[Obligation]:
-    query = select(Obligation).order_by(Obligation.due_at.asc(), Obligation.id.asc())
+    query = select(Obligation)
+    if actor.role != 'platform_admin':
+        query = query.join(Application, Obligation.application_id == Application.id).join(
+            Institution, Application.institution_id == Institution.id
+        )
+        if actor.role == 'applicant':
+            query = query.where(
+                Application.submitted_by_user_id == actor.id,
+                Institution.region_code == actor.region_code,
+                or_(Obligation.owner_user_id.is_(None), Obligation.owner_user_id == actor.id),
+            )
+        else:
+            if not actor.region_code:
+                return []
+            query = query.where(Institution.region_code == actor.region_code)
     if status_filter is not None:
         if status_filter not in {'open', 'in_progress', 'fulfilled', 'waived'}:
             raise HTTPException(status_code=422, detail='Unknown obligation status')
         query = query.where(Obligation.status == status_filter)
     if due_before is not None:
         query = query.where(Obligation.due_at <= due_before)
-    rows = list(db.scalars(query).all())
-    visible = []
-    for obligation in rows:
-        try:
-            _check_obligation_access(db, obligation, actor)
-        except HTTPException as exc:
-            if exc.status_code in {403, 404}:
-                continue
-            raise
-        if actor.role == 'applicant' and obligation.owner_user_id not in {None, actor.id}:
-            continue
-        visible.append(obligation)
-    return visible[offset:offset + limit]
+    query = query.order_by(Obligation.due_at.asc(), Obligation.id.asc()).offset(offset).limit(limit)
+    return list(db.scalars(query).all())
 
 
 @router.patch('/obligations/{obligation_id}', response_model=ObligationResponse)
