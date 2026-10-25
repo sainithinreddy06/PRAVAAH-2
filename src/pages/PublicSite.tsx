@@ -1,164 +1,107 @@
-import { useState } from 'react';
-import { ArrowRight, ArrowUpRight, Bell, BookOpen, CheckCircle2, ChevronRight, ClipboardCheck, FileCheck2, FileText, Menu, Search, ShieldCheck, Workflow, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight, ArrowUpRight, BookOpen, Building2, CheckCircle2,
+  ChevronDown, ChevronRight, CircleHelp, FileCheck2, FileText,
+  GraduationCap, Landmark, Menu, Search, ShieldCheck, Workflow, X, Zap
+} from 'lucide-react';
 
-type LegalKind = 'privacy' | 'terms';
-
+type PolicyGroup = { title: string; description: string; items: string[] };
+const policyGroups: PolicyGroup[] = [
+  { title: 'Land & Campus Infrastructure Norms', description: 'Requirements for campus land, built-up area, facilities and institutional infrastructure.', items: ['Land area and ownership', 'Built-up area requirements', 'Academic block facilities', 'Library and learning resources', 'Laboratories and workshops', 'Hostel and amenities', 'Barrier-free access', 'Fire and life safety', 'Green campus provisions'] },
+  { title: 'Faculty Cadre Ratios & Salary Scale Norms', description: 'Faculty strength, cadre structure, qualifications and applicable pay-scale requirements.', items: ['Faculty-student ratio', 'Principal and director qualifications', 'Professor cadre', 'Associate professor cadre', 'Assistant professor cadre', 'Technical staff', 'Pay scale and service conditions', 'Faculty development'] },
+  { title: 'Statutory Endowment Corpus & Security Deposits', description: 'Financial instruments and statutory documents required for institutional applications.', items: ['Endowment fund', 'Security deposit', 'Bank guarantee validity', 'Fixed deposit evidence', 'Trust or society documents', 'Audited financial statements', 'Fee and refund policy', 'Financial declarations'] },
+  { title: 'Society, Trust & Mandatory Legal Documentation', description: 'Legal constitution, governance, declarations and institutional records.', items: ['Trust or society registration', 'Memorandum and bye-laws', 'Governing body details', 'Land title documents', 'Building approvals', 'Fire safety certificate', 'Occupancy certificate', 'Affidavits and declarations'] },
+];
+const services = [
+  { tag: 'NEW INSTITUTION', title: 'Grant of New Technical Institution Approval', description: 'Apply for approval to establish a new technical institution and submit the statutory proposal.', icon: Building2, color: 'blue', actions: ['New institution', 'Application guide', 'Required documents'] },
+  { tag: 'EXISTING APPROVAL', title: 'Extension of Approval (EoA) Renewal', description: 'Submit an annual extension request and track compliance with the applicable norms.', icon: FileCheck2, color: 'green', actions: ['EoA renewal', 'Annual compliance', 'Track application'] },
+  { tag: 'CHANGE REQUEST', title: 'Introduction of Emerging Tech Courses & Intake', description: 'Request course introduction, intake variation, or other permitted institutional changes.', icon: GraduationCap, color: 'violet', actions: ['Add a course', 'Change intake', 'Eligibility norms'] },
+];
+const stages = [
+  { title: 'Application Submission', subtitle: 'Statutory Proposal Filing', description: 'Applicant institution completes the online form and uploads the required supporting evidence.', tasks: ['Institution profile and eligibility', 'Course and intake details', 'Land, building and facility evidence'], status: 'APPLICANT ACTION' },
+  { title: 'Scrutiny & Completeness Check', subtitle: 'Document Scrutiny', description: 'Submitted records are checked for completeness, consistency, and required supporting documents.', tasks: ['Document completeness review', 'Clarification requests if needed', 'Eligibility and data validation'], status: 'SCRUTINY' },
+  { title: 'Expert Visit Committee (EVC)', subtitle: 'Physical Verification', description: 'An expert committee verifies relevant facilities and records against the applicable norms.', tasks: ['Visit scheduling and assignment', 'Facility and evidence verification', 'Committee observations and report'], status: 'VERIFICATION' },
+  { title: 'Decision & Communication', subtitle: 'Approval Processing', description: 'The application proceeds through the applicable decision workflow and the outcome is communicated.', tasks: ['Review of findings', 'Decision recording', 'Order and applicant notification'], status: 'DECISION' },
+];
+const faqs = [
+  { q: 'How can I submit a new application through PRAVAAH?', a: 'Choose the relevant regulatory service, review its eligibility and required-document guidance, then sign in to the workspace to begin the application. Complete each mandatory section and submit the proposal for scrutiny.' },
+  { q: 'What documents are required for an institution approval?', a: 'Requirements depend on the service and applicable norms. Common categories include institution registration, land and building records, safety certificates, faculty details, financial instruments and statutory declarations. Use the service-specific checklist before submitting.' },
+  { q: 'How do I track my application status?', a: 'Sign in with your assigned account and open the application workspace. The status and available next actions depend on the current workflow stage and your account permissions.' },
+  { q: 'What happens if a clarification or deficiency is raised?', a: 'Review the remarks associated with the application, provide the requested information or evidence, and resubmit it through the supported workflow. Keep the reference number for future correspondence.' },
+  { q: 'How is an Expert Visit Committee (EVC) scheduled?', a: 'Where the applicable process requires an expert visit, scheduling and verification follow the relevant workflow. The workspace should be used to review notices and submit the requested records.' },
+  { q: 'Where can I find the applicable norms and statutory guidelines?', a: 'Use the Policy Guidelines, Norms & Statutory Benchmarks section on this page to browse the reference categories. Confirm the latest official requirements with the relevant regulator before filing.' },
+];
 function PublicHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
-  return (
-    <header className="public-header">
-      <a className="skip-link" href="#main-content">Skip to content</a>
-      <Link className="public-brand" to="/" aria-label="PRAVAAH home">
-        <span className="public-brand-mark"><Workflow size={21} strokeWidth={1.8} /></span>
-        <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance</small></span>
-      </Link>
-      <nav id="public-navigation" className={"public-nav " + (menuOpen ? "public-nav-open" : "")} aria-label="Main navigation">
-        <a href="/#services" onClick={closeMenu}>Services</a>
-        <a href="/#process" onClick={closeMenu}>Process</a>
-        <a href="/#trust" onClick={closeMenu}>Trust &amp; scope</a>
-        <a href="/#questions" onClick={closeMenu}>FAQs</a>
-      </nav>
-      <Link className="public-nav-action" to="/applications">Sign in <ArrowRight size={15} /></Link>
-      <button className="public-mobile-toggle" type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="public-navigation" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
-    </header>
-  );
+  return <header className="pv-header">
+    <div className="pv-mini-bar"><span>Government of India · Regulatory Approval Portal</span><div><a href="#citizen-charter">Citizen Charter</a><a href="#support">Help &amp; Support</a><a href="#faq">FAQs</a><span className="pv-language">A− A A+ | English⌄</span></div></div>
+    <div className="pv-brand-row">
+      <Link to="/" className="pv-brand" aria-label="PRAVAAH home"><span className="pv-emblem"><Landmark size={23} /></span><span><strong>PRAVAAH <b>प्रवाह</b></strong><small>Approval &amp; Compliance Workflow Foundation</small><small className="pv-brand-sub">Transparent · Accountable · Accessible</small></span></Link>
+      <div className={'pv-nav ' + (menuOpen ? 'pv-nav-open' : '')}><a href="#policies" onClick={() => setMenuOpen(false)}>Policies &amp; Norms</a><a href="#services" onClick={() => setMenuOpen(false)}>Regulatory Services</a><a href="#process" onClick={() => setMenuOpen(false)}>Application Process</a><a href="#citizen-charter" onClick={() => setMenuOpen(false)}>Citizen Charter</a><a href="#support" onClick={() => setMenuOpen(false)}>Support</a></div>
+      <div className="pv-header-actions"><Link className="pv-login" to="/applications">Sign in <ArrowUpRight size={14}/></Link><button className="pv-primary-small" onClick={() => document.getElementById('services')?.scrollIntoView({behavior:'smooth'})}>Apply for Approval <ArrowRight size={14}/></button><button className="pv-mobile-toggle" aria-label="Toggle navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={20}/> : <Menu size={20}/>}</button></div>
+    </div>
+    <div className="pv-utility-row"><span><ShieldCheck size={13}/> Official information portal for technical education approval workflows</span><span>Last updated: 25 October 2026</span></div>
+  </header>;
 }
-
-function PublicFooter() {
-  return (
-    <footer className="public-footer">
-      <Link className="public-brand public-footer-brand" to="/">
-        <span className="public-brand-mark"><Workflow size={19} strokeWidth={1.8} /></span>
-        <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance</small></span>
-      </Link>
-      <p>Workflow software for structured application and evidence review.</p>
-      <nav aria-label="Legal and site links">
-        <Link to="/privacy">Privacy policy</Link>
-        <Link to="/terms">Terms and conditions</Link>
-        <a href="/#services">Services</a>
-      </nav>
-      <small className="public-footer-note">PRAVAAH-2 is an independent demonstration platform and is not an official AICTE service.</small>
-    </footer>
-  );
-}
-
-function LandingPage() {
+function PolicySection() {
+  const [active, setActive] = useState(0);
   const [query, setQuery] = useState('');
-  const services = [
-    { icon: FileText, title: 'Applications', text: 'Create and review application records, check current status, and request transitions allowed for your account.', href: '/applications', tag: 'Connected to API' },
-    { icon: FileCheck2, title: 'Evidence & undertakings', text: 'Review application-linked evidence, record undertakings, and follow up on evidence status.', href: '/applications', tag: 'Application workspace' },
-    { icon: BookOpen, title: 'Policy register', text: 'Browse policy metadata and version history with source and verification status visible.', href: '/policies', tag: 'Metadata register' },
-    { icon: ClipboardCheck, title: 'Compliance obligations', text: 'See obligation records and their links to applications and supporting evidence.', href: '/compliance', tag: 'Connected workflow' },
-    { icon: ShieldCheck, title: 'EVC & recommendations', text: 'Review evidence verification checks and rule-based recommendations within application context.', href: '/applications', tag: 'Rule-based support' },
-    { icon: Bell, title: 'Notifications & metrics', text: 'Inspect notification queue records and workflow metrics available to your operational role.', href: '/operations', tag: 'Role-scoped' },
-    { icon: Bell, title: 'Operations & audit', text: 'Review operational queues, audit events, and available workflow metrics.', href: '/operations', tag: 'Role-scoped' },
-  ];
-  const visibleServices = services.filter((service) => `${service.title} ${service.text}`.toLowerCase().includes(query.toLowerCase()));
-
-  return (
-    <div className="public-site portal-site">
-      <PublicHeader />
-      <div className="portal-notice"><ShieldCheck size={15} /><span>Independent workflow platform · Not an official AICTE service</span></div>
-      <main id="main-content" tabIndex={-1}>
-        <section className="portal-hero">
-          <div className="portal-hero-copy">
-            <p className="public-eyebrow"><span /> APPROVAL &amp; COMPLIANCE WORKSPACE</p>
-            <h1>Every review step, <em>clear and connected.</em></h1>
-            <p className="public-hero-description">A structured workspace for application records, evidence, policy metadata, and compliance follow-up. Access and workflow actions are governed by your assigned account.</p>
-            <div className="public-hero-actions">
-              <Link className="public-primary-action" to="/applications">Open workspace <ArrowRight size={16} /></Link>
-              <a className="public-secondary-action" href="#services">Explore services <ArrowUpRight size={15} /></a>
-            </div>
-            <div className="portal-hero-points"><span><CheckCircle2 size={15} /> Server-validated actions</span><span><CheckCircle2 size={15} /> Role-aware access</span></div>
-          </div>
-          <div className="portal-hero-art" aria-label="Illustration of an application review dashboard">
-            <div className="portal-art-top"><span className="portal-art-mark"><Workflow size={17} /></span><span><small>WORKSPACE OVERVIEW</small><strong>Review at a glance</strong></span><span className="portal-art-pill">Illustration</span></div>
-            <div className="portal-art-stats"><div><small>APPLICATIONS</small><strong>One workspace</strong></div><div><small>EVIDENCE</small><strong>Linked records</strong></div><div><small>ACCESS</small><strong>Role aware</strong></div></div>
-            <div className="portal-art-list"><div className="portal-art-list-head"><span>WORKFLOW AREA</span><span>RECORD VIEW</span><span>ACCESS</span></div><div><b><FileText size={14} /> Applications</b><span>Status &amp; transitions</span><i>Scoped</i></div><div><b><FileCheck2 size={14} /> Evidence</b><span>Linked records</span><i>Scoped</i></div><div><b><BookOpen size={14} /> Policies</b><span>Version metadata</span><i>Scoped</i></div></div>
-            <div className="portal-art-foot"><span className="portal-live-dot" /> Illustration only · no live or sample case data shown</div>
-          </div>
-        </section>
-
-        <section className="portal-value-strip" aria-label="Platform principles">
-          <div><span>01</span><strong>One connected record</strong><p>Application context stays linked to evidence and follow-up.</p></div>
-          <div><span>02</span><strong>Visible workflow state</strong><p>Reviewers can see status and permitted next actions.</p></div>
-          <div><span>03</span><strong>Account-based access</strong><p>The backend enforces access for operational data.</p></div>
-        </section>
-
-        <section className="portal-services" id="services">
-          <div className="portal-section-head"><div><p className="public-eyebrow">WORKFLOW DIRECTORY</p><h2>Tools for the work in front of you.</h2><p>Open a connected workspace area. Availability depends on the account and the APIs currently implemented.</p></div><label className="portal-search"><Search size={17} /><span className="sr-only">Filter workflow areas</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a workflow" /></label></div>
-          <div className="portal-service-grid">{visibleServices.map(({ icon: Icon, title, text, href, tag }) => <Link className="portal-service-card" to={href} key={title}><span className="portal-service-icon"><Icon size={20} /></span><span className="portal-service-tag">{tag}</span><h3>{title}</h3><p>{text}</p><span className="portal-service-link">Open area <ChevronRight size={15} /></span></Link>)}</div>
-          {visibleServices.length === 0 && <p className="portal-no-results" role="status">No workflow areas match “{query}”. Try a different search.</p>}
-          <p className="portal-services-note">Institution and officer administration, a public institution directory, and persistent operator settings are not available as self-service features.</p>
-        </section>
-
-        <section className="portal-process" id="process">
-          <div className="portal-process-copy"><p className="public-eyebrow">THE REVIEW PROCESS</p><h2>Move from submission to an accountable outcome.</h2><p>Each action is checked against the current application state and the signed-in account’s permissions. The available steps depend on backend rules.</p><Link className="public-text-link" to="/applications">Go to applications <ArrowRight size={15} /></Link></div>
-          <ol><li><span>01</span><div><strong>Create or open a record</strong><p>Start a draft where permitted, or open an application in your assigned scope.</p></div></li><li><span>02</span><div><strong>Review evidence and policy context</strong><p>Inspect linked material and policy metadata; verify authoritative sources separately.</p></div></li><li><span>03</span><div><strong>Record the next action</strong><p>Submit an allowed transition with a reason when required. The backend validates the request.</p></div></li></ol>
-        </section>
-
-        <section className="portal-trust" id="trust"><div className="portal-trust-heading"><p className="public-eyebrow">TRUST, SCOPE &amp; LIMITS</p><h2>Know what the platform does—and what it does not.</h2></div><div className="portal-trust-grid"><article><ShieldCheck size={20} /><h3>Access controls</h3><p>Authentication and server-side authorization protect connected API operations. Interface role checks alone are not the security boundary.</p></article><article><BookOpen size={20} /><h3>Policy information</h3><p>The policy area stores metadata and source references. Entries are not represented as verified regulatory advice.</p></article><article><Bell size={20} /><h3>Notifications &amp; records</h3><p>Notification records may be queued without delivery. Audit events are application records and are not claimed to be immutable.</p></article></div></section>
-
-        <section className="portal-faq" id="questions"><div><p className="public-eyebrow">QUESTIONS</p><h2>Clear answers before you begin.</h2></div><div className="portal-faq-list"><details><summary>Is PRAVAAH an official AICTE portal?</summary><p>No. PRAVAAH-2 is an independent demonstration platform and does not make or establish an official regulatory decision.</p></details><details><summary>Can I create an account here?</summary><p>There is no public self-registration. Sign-in requires an account provisioned by an authorized operator.</p></details><details><summary>Are policy entries official or verified?</summary><p>They are policy metadata with source and verification fields. Confirm the authoritative source before relying on any entry.</p></details><details><summary>Does a queued notification mean it was delivered?</summary><p>No. A queued record does not confirm delivery to its intended recipient.</p></details></div></section>
-
-        <section className="portal-final-cta"><div><p className="public-eyebrow">PRAVAAH WORKSPACE</p><h2>Start with the records you are authorized to access.</h2><p>Use an account provisioned by your operator. No public demo credentials are provided.</p></div><Link className="public-primary-action" to="/applications">Continue to sign in <ArrowRight size={16} /></Link></section>
-        <p className="public-disclaimer">PRAVAAH-2 is an independent demonstration platform. It does not represent an official AICTE service, and the interface does not establish an official approval or compliance outcome.</p>
-      </main>
-      <PublicFooter />
+  const group = policyGroups[active];
+  const filtered = useMemo(() => group.items.filter(item => item.toLowerCase().includes(query.toLowerCase())), [group, query]);
+  return <section className="pv-section pv-policy-section" id="policies">
+    <div className="pv-section-heading"><span className="pv-kicker">POLICY &amp; STATUTORY REFERENCE</span><h2>Policy Guidelines, Norms &amp; Statutory<br className="pv-desktop-break"/> Benchmarks</h2><p>Explore requirements and statutory benchmarks by category to prepare a complete application.</p></div>
+    <div className="pv-policy-tabs">{policyGroups.map((p,i)=><button key={p.title} className={active===i?'active':''} onClick={()=>{setActive(i);setQuery('')}}><span>{p.title}</span><small>{p.items.length} topics</small></button>)}</div>
+    <div className="pv-policy-content"><div className="pv-policy-content-head"><div><span className="pv-kicker">REFERENCE CATEGORY {String(active+1).padStart(2,'0')}</span><h3>{group.title}</h3><p>{group.description}</p></div><label className="pv-policy-search"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search within norms…" /></label></div>
+      <div className="pv-norm-grid">{filtered.map((item,i)=><article className="pv-norm-card" key={item}><span className="pv-norm-index">{String(i+1).padStart(2,'0')}</span><div><h4>{item}</h4><p>Requirements, eligibility and supporting evidence</p></div><button aria-label={'View '+item} onClick={()=>document.getElementById('services')?.scrollIntoView({behavior:'smooth'})}><ArrowUpRight size={16}/></button></article>)}</div>
+      {filtered.length===0&&<p className="pv-empty">No norms match “{query}”. Try another search term.</p>}
+      <div className="pv-policy-note"><ShieldCheck size={17}/><span>Reference checklist only. Always verify the latest applicable official notification and amendments before filing.</span><a href="#services">Explore services <ArrowRight size={14}/></a></div>
     </div>
-  );
+  </section>;
 }
-function LegalPage({ kind }: { kind: LegalKind }) {
-  const isPrivacy = kind === 'privacy';
-  const title = isPrivacy ? 'Privacy policy' : 'Terms and conditions';
-  return (
-    <div className="public-site">
-      <PublicHeader />
-      <main id="main-content" tabIndex={-1} className="legal-page">
-        <p className="public-eyebrow">PRAVAAH · POLICY DRAFT</p>
-        <h1>{title}</h1>
-        <div className="legal-draft-notice" role="status"><ShieldCheck size={18} /><p><strong>Publication review required.</strong> This is a working draft, not a final legal notice. PRAVAAH must not launch publicly until the operator confirms the missing details and obtains appropriate legal review.</p></div>
-        {isPrivacy ? (
-          <>
-            <h2>Information the platform may handle</h2>
-            <p>The current application includes account profile fields, authentication requests, application references and workflow status. The backend also defines evidence, policy, obligation, undertaking and audit-event records. The information actually collected in a deployed environment must be confirmed before this policy is published.</p>
-            <h2>Why information is used</h2>
-            <p>Information is intended to support sign-in, access control and application workflow operations. The operator must confirm the actual purposes and lawful basis that apply to the deployed service.</p>
-            <h2>Details that must be confirmed before publication</h2>
-            <ul>
-              <li>Legal identity and contact details of the service operator and privacy contact.</li>
-              <li>Production hosting, database, file storage, logging, analytics and other service providers.</li>
-              <li>Actual retention and deletion schedules for accounts, applications, evidence and audit records.</li>
-              <li>Applicable data-subject rights, request procedures and grievance contact.</li>
-              <li>Security controls, incident handling and any cross-border data processing.</li>
-            </ul>
-            <h2>Contact</h2>
-            <p>Operator contact details have not yet been supplied. This section must be completed before publication.</p>
-          </>
-        ) : (
-          <>
-            <h2>Service scope</h2>
-            <p>PRAVAAH-2 is an independent workflow-platform demonstration. It is not an official AICTE service and does not itself establish an official regulatory approval or compliance decision.</p>
-            <h2>Accounts and authorized use</h2>
-            <p>The current application uses accounts provisioned by an operator. The operator must define acceptable use, account responsibilities, eligibility, suspension and support procedures before these terms are finalized.</p>
-            <h2>Availability, data and responsibilities</h2>
-            <p>Production availability commitments, data ownership, backup and recovery responsibilities, liability terms, dispute handling and governing law have not been supplied. They must be reviewed and completed for the actual service and jurisdiction before publication.</p>
-            <h2>Operator details and effective date</h2>
-            <p>The legal identity, address, contact details and effective date remain to be confirmed. This draft must not be treated as an agreement until reviewed and approved by the service operator.</p>
-          </>
-        )}
-        <div className="legal-review-checklist"><strong>Launch blocker</strong><p>Replace this review draft with an approved policy based on the real deployment, data flows, operator identity and applicable law.</p></div>
-        <Link className="public-text-link" to="/">Return to home <ArrowRight size={15} /></Link>
-      </main>
-      <PublicFooter />
-    </div>
-  );
+function ServicesSection() {
+  const [search, setSearch] = useState('');
+  const filtered = services.filter(s => (s.title+' '+s.description+' '+s.actions.join(' ')).toLowerCase().includes(search.toLowerCase()));
+  return <section className="pv-section pv-services-section" id="services"><div className="pv-section-heading"><span className="pv-kicker">APPLICATIONS &amp; APPROVALS</span><h2>Comprehensive Regulatory Services for<br className="pv-desktop-break"/> Colleges &amp; Public</h2><p>Choose the service that fits your institution and review its requirements before starting.</p></div>
+    <label className="pv-service-search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search services, approvals, course changes or application types…"/><kbd>⌘ K</kbd></label>
+    <div className="pv-service-filter"><span>{filtered.length} services</span><button onClick={()=>setSearch('')}>All services <ChevronDown size={14}/></button><span className="pv-filter-spacer"/><span className="pv-live-label"><i/> Application guidance</span></div>
+    <div className="pv-service-grid">{filtered.map(service=>{const Icon=service.icon;return <article className="pv-service-card" key={service.title}><div className="pv-service-card-top"><span className={'pv-service-icon '+service.color}><Icon size={21}/></span><span className="pv-service-tag">{service.tag}</span></div><h3>{service.title}</h3><p>{service.description}</p><div className="pv-service-links">{service.actions.map(action=><button key={action} onClick={()=>document.getElementById('process')?.scrollIntoView({behavior:'smooth'})}>{action}<ArrowUpRight size={13}/></button>)}</div><Link to="/applications" className="pv-service-cta">View service details <ArrowRight size={15}/></Link></article>})}</div>
+    {filtered.length===0&&<div className="pv-empty">No services found. Try a broader search.</div>}
+  </section>;
 }
-
+function ProcessSection() {
+  const [active, setActive] = useState(0);
+  const stage=stages[active];
+  return <section className="pv-section pv-process-section" id="process"><div className="pv-section-heading"><span className="pv-kicker">END-TO-END WORKFLOW</span><h2>How Technical Approvals Are Executed<br className="pv-desktop-break"/> with Zero Human Direction</h2><p>A transparent, stage-based view of the approval journey, from application filing to final communication.</p></div>
+    <div className="pv-stage-track">{stages.map((s,i)=><button key={s.title} className={'pv-stage-step '+(active===i?'active':'')+(i<active?' complete':'')} onClick={()=>setActive(i)}><span className="pv-stage-number">{i<active?<CheckCircle2 size={17}/>:String(i+1).padStart(2,'0')}</span><span><strong>{s.title}</strong><small>{s.subtitle}</small></span><ChevronRight size={15}/></button>)}</div>
+    <div className="pv-stage-detail"><div className="pv-stage-copy"><span className="pv-kicker">STAGE {active+1} OF {stages.length} · {stage.status}</span><h3>{stage.title}: {stage.subtitle}</h3><p>{stage.description}</p><div className="pv-stage-checks">{stage.tasks.map(task=><span key={task}><CheckCircle2 size={16}/>{task}</span>)}</div><div className="pv-stage-actions"><button className="pv-button-outline" onClick={()=>setActive((active+stages.length-1)%stages.length)}>Previous stage</button><button className="pv-button-blue" onClick={()=>setActive((active+1)%stages.length)}>{active===stages.length-1?'Review process again':'Next stage'} <ArrowRight size={15}/></button></div></div><aside className="pv-stage-aside"><div className="pv-stage-aside-icon"><Workflow size={24}/></div><span className="pv-kicker">PROCESS TRANSPARENCY</span><h4>Clear steps. Accountable review.</h4><p>Application actions and decisions should be recorded against the relevant workflow stage, with status and remarks visible to authorized users.</p><Link to="/applications">Open regulatory workspace <ArrowUpRight size={15}/></Link></aside></div>
+  </section>;
+}
+function CharterSection() {
+  const items=[['01','Government & SLA Timelines','Published service commitments and transparent processing expectations.'],['02','Prohibition of Exploitative Fees','Clear guidance on applicable fees and protection from unauthorized charges.'],['03','Anti-Ragging Mandate','Institutional obligations and student safety commitments.']];
+  return <section className="pv-charter" id="citizen-charter"><div className="pv-section-heading"><span className="pv-kicker">PUBLIC SERVICE COMMITMENTS</span><h2>Citizen Charter Commitments &amp; Student<br className="pv-desktop-break"/> Protections</h2><p>Accessible information, accountable service delivery and clear institutional responsibilities.</p></div><div className="pv-charter-grid">{items.map(([n,title,desc],i)=><article key={n}><span className={'pv-charter-icon c'+i}>{i===0?<ShieldCheck size={22}/>:i===1?<FileText size={22}/>:<GraduationCap size={22}/>}</span><span className="pv-kicker">COMMITMENT {n}</span><h3>{title}</h3><p>{desc}</p><a href="#support">Read commitment <ArrowRight size={13}/></a></article>)}</div></section>;
+}
+function SupportSection() {
+  const [open,setOpen]=useState<number|null>(0);
+  return <section className="pv-section pv-support-section" id="support"><div className="pv-section-heading"><span className="pv-kicker">NEED ASSISTANCE?</span><h2>Help, Support &amp; Regional Directory</h2><p>Find the right support channel and answers to common application questions.</p></div><div className="pv-support-banner"><div><span className="pv-kicker">APPLICANT HELP DESK</span><h3>Need help with your application?</h3><p>Keep your application reference ready when requesting support.</p></div><div className="pv-support-actions"><a href="mailto:support@example.gov.in">Email support <ArrowUpRight size={14}/></a><a href="#faq">Browse FAQs <CircleHelp size={14}/></a></div></div><div className="pv-directory"><h3><Building2 size={18}/> Regional directory</h3><div className="pv-directory-grid">{[['Northern Region','Delhi · Chandigarh · Haryana'],['Southern Region','Chennai · Hyderabad · Bengaluru'],['Western Region','Mumbai · Ahmedabad · Goa'],['Eastern Region','Kolkata · Bhubaneswar · Patna']].map(([title,places])=><article key={title}><strong>{title}</strong><p>{places}</p><a href="#faq">Contact information <ArrowUpRight size={13}/></a></article>)}</div></div><div className="pv-faq" id="faq"><div className="pv-faq-heading"><span className="pv-kicker">QUICK ANSWERS</span><h3>Frequently Asked Questions</h3></div>{faqs.map((faq,i)=><article className={'pv-faq-item '+(open===i?'open':'')} key={faq.q}><button onClick={()=>setOpen(open===i?null:i)} aria-expanded={open===i}><span><CircleHelp size={16}/>{faq.q}</span><ChevronDown size={17}/></button>{open===i&&<p>{faq.a}</p>}</article>)}</div></section>;
+}
+function LandingPage() {
+  const [quickSearch,setQuickSearch]=useState('');
+  return <div className="pv-site"><PublicHeader/><main>
+    <section className="pv-hero"><div className="pv-hero-copy"><span className="pv-kicker pv-hero-kicker"><span/> PUBLIC SERVICE PORTAL · TECHNICAL EDUCATION</span><h1>PRAVAAH <span>प्रवाह</span></h1><h2>Transparent Approval Automation, Statutory Policy Norms &amp; Citizen Service.</h2><p>A unified, transparent digital platform for regulatory approvals, statutory compliance and institution-facing services — designed around clarity, accountability and accessible guidance.</p><div className="pv-hero-actions"><a className="pv-button-blue" href="#services">Explore regulatory services <ArrowRight size={16}/></a><a className="pv-button-outline" href="#policies">Browse policy norms <BookOpen size={15}/></a></div><div className="pv-hero-trust"><span><CheckCircle2 size={15}/> Guided application process</span><span><ShieldCheck size={15}/> Accountable workflow</span><span><Zap size={15}/> Clear service information</span></div></div>
+      <div className="pv-hero-panel"><div className="pv-hero-panel-head"><span><span className="pv-online-dot"/> APPLICATION ASSISTANT</span><span className="pv-assistant-pill">GUIDED HELP</span></div><div className="pv-assistant-body"><div className="pv-assistant-icon"><Workflow size={20}/></div><div><strong>How can we help you today?</strong><p>Choose a task to get started with PRAVAAH.</p></div></div><label className="pv-quick-search"><Search size={15}/><input value={quickSearch} onChange={e=>setQuickSearch(e.target.value)} placeholder="Search services or application guidance…"/><button onClick={()=>{document.getElementById('services')?.scrollIntoView({behavior:'smooth'});}} aria-label="Search services"><ArrowRight size={15}/></button></label><div className="pv-quick-options"><button onClick={()=>document.getElementById('services')?.scrollIntoView({behavior:'smooth'})}><Building2 size={15}/> New institution approval</button><button onClick={()=>document.getElementById('services')?.scrollIntoView({behavior:'smooth'})}><FileCheck2 size={15}/> Extension of Approval</button><button onClick={()=>document.getElementById('policies')?.scrollIntoView({behavior:'smooth'})}><BookOpen size={15}/> Find applicable norms</button><button onClick={()=>document.getElementById('process')?.scrollIntoView({behavior:'smooth'})}><Workflow size={15}/> Understand the process</button></div><div className="pv-assistant-footer"><ShieldCheck size={14}/> Guidance to help you prepare your application</div></div>
+      <div className="pv-hero-stats"><div><strong>01</strong><span>Unified portal</span></div><div><strong>04</strong><span>Workflow stages</span></div><div><strong>24×7</strong><span>Access to guidance</span></div></div></section>
+    <div className="pv-announcement"><span><span className="pv-announcement-dot"/> PORTAL NOTICE</span><p>Review the applicable statutory norms and service-specific checklist before submitting an application.</p><a href="#policies">View policy guidance <ArrowRight size={13}/></a></div>
+    <PolicySection/><ServicesSection/><ProcessSection/><CharterSection/><SupportSection/>
+    <section className="pv-final-cta"><div><span className="pv-kicker">READY TO GET STARTED?</span><h2>Ready to access PRAVAAH Regulatory<br/> Workspace?</h2><p>Sign in to access your assigned workspace, review application records and continue supported workflow actions.</p></div><div className="pv-final-actions"><Link to="/applications" className="pv-button-gold">Access workspace <ArrowRight size={15}/></Link><a href="#policies" className="pv-final-link">Explore policy norms <ArrowUpRight size={14}/></a></div></section>
+  </main><footer className="pv-footer"><div className="pv-footer-main"><div className="pv-brand pv-footer-brand"><span className="pv-emblem"><Landmark size={23}/></span><span><strong>PRAVAAH <b>प्रवाह</b></strong><small>Approval &amp; Compliance Workflow Foundation</small><small className="pv-brand-sub">Transparent · Accountable · Accessible</small></span></div><div><strong>POLICIES &amp; NORMS</strong><a href="#policies">Infrastructure norms</a><a href="#policies">Faculty and salary norms</a><a href="#policies">Statutory documentation</a></div><div><strong>REGULATORY SERVICES</strong><a href="#services">New institution approval</a><a href="#services">Extension of Approval</a><a href="#services">Course and intake changes</a></div><div><strong>SUPPORT</strong><a href="#support">Help and directory</a><a href="#faq">FAQs</a><Link to="/privacy">Privacy policy</Link><Link to="/terms">Terms of use</Link></div></div><div className="pv-footer-bottom"><span>© 2026 PRAVAAH · Approval &amp; Compliance Workflow Foundation</span><span>Independent demonstration interface · Verify official requirements before filing</span></div></footer><button className="pv-floating-help" onClick={()=>document.getElementById('support')?.scrollIntoView({behavior:'smooth'})}><CircleHelp size={17}/><span>Need help? <strong>Ask PRAVAAH</strong></span><ArrowUpRight size={14}/></button></div>;
+}
+function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
+  const isPrivacy=kind==='privacy';
+  return <div className="pv-site"><PublicHeader/><main className="pv-legal"><span className="pv-kicker">PRAVAAH · PUBLIC INFORMATION</span><h1>{isPrivacy?'Privacy policy':'Terms of use'}</h1><p className="pv-legal-lead">This page is a review draft for the PRAVAAH-2 demonstration interface.</p>{isPrivacy?<><h2>Information the platform may handle</h2><p>The application may process account profile fields, authentication requests, application references and workflow status. Actual information collected depends on the connected deployment.</p><h2>Why information is used</h2><p>Information supports sign-in, access control and application workflow operations. The operator must confirm the purposes and lawful basis applicable to the deployed service.</p></>:<><h2>Service scope</h2><p>PRAVAAH-2 is an independent workflow-platform demonstration. It is not an official AICTE service and does not itself establish an official regulatory approval or compliance decision.</p><h2>Authorized use</h2><p>Use assigned accounts and follow the operating rules established by the service owner. Production terms must be reviewed and completed before publication.</p></>}<div className="pv-legal-warning"><ShieldCheck size={18}/><p>Review draft — confirm operator identity, applicable law, contact details and production data handling before publication.</p></div><Link className="pv-button-outline" to="/">Return to home <ArrowRight size={15}/></Link></main><footer className="pv-footer-bottom pv-legal-footer">© 2026 PRAVAAH · Independent demonstration interface</footer></div>;
+}
 export default function PublicSite({ path }: { path: string }) {
-  if (path === '/privacy') return <LegalPage kind="privacy" />;
-  if (path === '/terms') return <LegalPage kind="terms" />;
-  return <LandingPage />;
+  if(path==='/privacy') return <LegalPage kind="privacy"/>;
+  if(path==='/terms') return <LegalPage kind="terms"/>;
+  return <LandingPage/>;
 }
