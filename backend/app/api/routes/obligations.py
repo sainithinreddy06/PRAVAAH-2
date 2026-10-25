@@ -128,6 +128,18 @@ def update_obligation(
         owner = db.get(User, changes['owner_user_id'])
         if owner is None or not owner.is_active:
             raise HTTPException(status_code=422, detail='Obligation owner does not exist or is inactive')
+        if obligation.application_id is not None:
+            application = db.get(Application, obligation.application_id)
+            if application is None:
+                raise HTTPException(status_code=404, detail='Linked application not found')
+            institution = db.get(Institution, application.institution_id)
+            if institution is None:
+                raise HTTPException(status_code=404, detail='Linked institution not found')
+            if owner.region_code not in {None, institution.region_code}:
+                raise HTTPException(
+                    status_code=422,
+                    detail='Obligation owner must belong to the application region',
+                )
     previous_status = obligation.status
     for field, value in changes.items():
         setattr(obligation, field, value)
