@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import ensure_region_access, get_current_user, require_roles
@@ -107,12 +108,26 @@ def create_policy_version(
 
     policy = Policy(**payload.model_dump(), is_active=True)
     db.add(policy)
-    db.flush()
-    _audit(
-        db, actor, 'policy', policy.id, 'policy.version_created',
-        'Policy version created', {'policy_key': policy.policy_key, 'version': policy.version},
-    )
-    db.commit()
+    try:
+        # The database constraint is authoritative if simultaneous requests
+        # race after the pre-insert duplicate check.
+        db.flush()
+        _audit(
+            db, actor, 'policy', policy.id, 'policy.version_created',
+            'Policy version created', {'policy_key': policy.policy_key, 'version': policy.version},
+        )
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        duplicate = db.scalar(
+            select(Policy).where(
+                Policy.policy_key == payload.policy_key,
+                Policy.version == payload.version,
+            )
+        )
+        if duplicate is not None:
+            raise HTTPException(status_code=409, detail='Policy version already exists') from None
+        raise
     db.refresh(policy)
     return policy
 
