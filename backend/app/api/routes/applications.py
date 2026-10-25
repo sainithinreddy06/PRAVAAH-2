@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import ensure_region_access, get_current_user
@@ -105,7 +106,21 @@ def create_application(
         'Application created',
         {'status': 'draft', 'institution_id': institution.id},
     )
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # The pre-insert check improves the common case; the unique database
+        # constraint remains authoritative when two requests race.
+        duplicate = db.scalar(
+            select(Application).where(Application.reference_code == payload.reference_code)
+        )
+        if duplicate is not None:
+            raise HTTPException(
+                status_code=409,
+                detail='Application reference already exists',
+            ) from None
+        raise
     db.refresh(application)
     return application
 
