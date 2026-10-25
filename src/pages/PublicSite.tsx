@@ -103,7 +103,7 @@ function LandingPage() {
           </div>
           <div className="public-feature-grid">
             <article className="public-feature-card"><span className="public-feature-icon"><FileText size={20} /></span><h3>Application records</h3><p>View records returned by the connected API, filter by status, create draft applications where permitted, and request allowed transitions.</p><span className="feature-reference">Connected workflow</span></article>
-            <article className="public-feature-card"><span className="public-feature-icon"><FileCheck2 size={20} /></span><h3>Evidence and policy</h3><p>Keep evidence review and policy management within the broader product structure. Dedicated screens still require implementation and verification.</p><span className="feature-reference feature-reference-planned">Integration in progress</span></article>
+            <article className="public-feature-card"><span className="public-feature-icon"><FileCheck2 size={20} /></span><h3>Evidence and policy</h3><p>Upload and review application-linked evidence, and view versioned policy metadata with its source and verification status.</p><span className="feature-reference">Connected workflow</span></article>
             <article className="public-feature-card"><span className="public-feature-icon"><ShieldCheck size={20} /></span><h3>Operational controls</h3><p>Authentication and server-side authorization form the access boundary. Interface-level role checks do not replace backend enforcement.</p><span className="feature-reference">Backend-controlled access</span></article>
           </div>
         </section>

@@ -1,73 +1,47 @@
 # PRAVAAH-2 Integration Coverage Matrix
 
-Audit basis: `main` was rechecked on 25 October 2026, then the implementation branch for draft PR #1 was inspected. This is a repository-level static audit plus CI evidence; it is not a browser E2E run or a live database test.
+Audit basis: clean `main` at `10ede68` was audited on 25 October 2026, then the frontend integration work in this checkout was implemented and verified. This matrix describes the current local working tree; it does not describe a merged or deployed release.
 
-## Executive finding
+## Workflow coverage
 
-The backend exposes FastAPI routes for authentication, applications, policies/evidence, obligations/notifications, undertakings/EVC assessments, audit events, operational metrics, and recommendations. In draft PR #1, the public landing page is separate from the authenticated workspace, and the overview requests application records through the existing API client. The dedicated scrutiny, compliance, evidence, workflow, institution, officer, policy and settings pages remain placeholders or unconnected. Backend endpoint existence must not be interpreted as end-to-end UI integration.
+| Workflow | UI and API integration | Verification and limits |
+|---|---|---|
+| Public site and legal pages | `/`, `/privacy`, `/terms`; public product overview and review-draft legal pages | Browser was used for the authenticated workspace. Legal copy still needs owner, retention, provider, and contact details before launch. |
+| Sign-in / current user | `AuthGate` calls `/auth/login` and `/auth/me`; bearer token stays in memory | Browser login and current-user calls succeeded against the local API. Refresh requires signing in again. |
+| Overview | `/overview` shows the authenticated user's API-returned application records, response-scoped counts, refresh/error/empty states | Browser flow reached this page during app use. Counts are capped by API response and are not global totals. |
+| Applications | `/applications` supports list, status filtering, draft creation and backend-validated transitions; `/applications/{id}` shows detail and status | Browser created an application and read its detail. Existing backend suite covers lifecycle and authorization. |
+| Evidence | Detail view supports PDF/JPEG/PNG upload, optional policy link, metadata list, and officer review action | UI/API integrated; no file-upload browser journey performed. Server validation applies; local disk is not production storage and signature checks are not malware scanning. |
+| Policies | `/policies` lists policy metadata; authorized users can create versions using API-supported fields | UI/API integrated; no policy mutation browser journey performed. Metadata is not verified official guidance. |
+| Obligations and notifications | `/compliance` supports obligation listing/filtering, create/update flows, overdue escalation trigger, and current-user inbox | UI/API integrated; browser journey not executed. Escalation is API-triggered, not scheduled, and pending notifications are not delivered messages. |
+| Undertakings | Application detail supports draft creation, submission, and reviewer decision | Browser created and read back a draft through the UI and API. The workflow does not provide a digital signature. |
+| EVC | Application detail lists assessment snapshots and allows authorized reviewers to create a snapshot | UI/API integrated; browser journey not executed. Readiness indicators are workflow aids, not official compliance verdicts. |
+| Audit and metrics | `/operations` shows scoped metrics and filtered audit events for authorized officers/admins | UI/API integrated; browser journey not executed. Audit events are not tamper-evident or immutable. |
+| Recommendations | Reviewer view on application detail displays rule-based factors and suggested actions | API and detail UI integrated; browser journey not executed. Not a validated predictive model or official decision. |
+| Institution/officer administration | Routes explain that there is no self-service management API; backend has interactive operator provisioning scripts | Deliberately not exposed as an unapproved management surface. A real management API requires explicit scope, authorization model, and tests. |
+| Settings | Route explains that no persistent settings API exists | No false local persistence UI is presented. |
+| Configurable workflow studio / global evidence library | No matching configuration API/global evidence endpoint exists | `/workflows` redirects to applications and `/evidence` redirects to application-scoped records. |
 
-## Coverage matrix
+## Authorization and data semantics
 
-| User workflow / UI route | Current UI behavior | Backend capability | Integration status | Highest-value next check |
-|---|---|---|---|---|
-| Public landing `/` | Public page with top navigation, original copy, workflow explanation and an illustrative UI explicitly labelled as non-live | No API dependency | Static public page in draft PR #1 | Verify desktop/mobile layout, anchor navigation, sign-in route and accessibility in a browser |\n| Overview `/overview` | Fetches applications through `api.listApplications`; shows the returned records sorted by update timestamp, response-scoped status counts, and loading/error/empty states | `GET /api/v1/applications` through existing API client | Connected in draft PR #1; CI and runtime verification must be checked against the latest PR commit | Verify valid/invalid login, API connectivity, empty/error behavior, response limit semantics and regional access in a browser |
-| Sign in / current user | `AuthGate` sign-in form; `/api/v1/auth/login` followed by `/api/v1/auth/me`; workspace gated behind authentication | `POST /api/v1/auth/login`; `GET /api/v1/auth/me` | Implemented in frontend; CI/runtime verification pending. Bearer token stays in module memory and is cleared on sign-out/401; refresh requires signing in again | Verify valid/invalid login, 401 handling, expiry behavior, and backend connectivity in a browser; consider HttpOnly-cookie/BFF session design before production |
-| Applications `/applications` | API-backed list, status filter, refresh, role-aware transition buttons, required reason prompt, loading/error/empty states | `POST/GET /api/v1/applications`; `GET /api/v1/applications/{id}`; `POST /api/v1/applications/{id}/transitions` | List, status filter, create-draft form, and transitions connected; detail UI not implemented. Frontend CI passed typecheck, lint, and production build on commit `81583e4f878561ec93b56176385e4cda353fd4d9` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122685895)) | Verify application listing and transition success, 409 conflict handling, invalid reasons, and applicant/region access boundaries |
-| Scrutiny queue `/scrutiny` | Placeholder | Application list/status filters and transitions; evidence review endpoints | Not connected; no dedicated queue endpoint identified | Define queue filters from supported API fields; do not imply an endpoint exists until implemented |
-| Compliance `/compliance` | Placeholder | Obligations CRUD/list, notifications, manual overdue escalation; EVC assessment history | Not connected | Connect obligation and notification reads first; verify escalation authorization and idempotency |
-| Evidence library `/evidence` | Placeholder | `POST /api/v1/applications/{application_id}/evidence`; `GET /api/v1/applications/{application_id}/evidence`; `PATCH /api/v1/evidence/{evidence_id}/review` | Not connected; listing is application-scoped, not a global library endpoint | Implement application-scoped upload/list/review and surface upload validation errors |
-| Workflow studio `/workflows` | Placeholder | Application transition rules exist in backend; no workflow configuration API identified | No matching configuration API | Treat as informational or implement a separately specified workflow configuration API; avoid implying configurable workflows exist |
-| Institutions `/institutions` | Placeholder | Institution model is used by application routes; no institution CRUD router registered | No matching management API | Decide whether institution administration is in scope; add authorized CRUD only with requirements/tests |
-| Officers & roles `/officers` | Placeholder | User model and role/region checks exist; no user administration router registered | No matching management API | Decide admin requirements; do not expose user/role changes without a dedicated authorization model |
-| Policy register `/policies` | Placeholder | `GET /api/v1/policies`; `POST /api/v1/policies` | Not connected | Connect versioned policy listing and admin-only creation with validation feedback |
-| Settings `/settings` | Placeholder | No workspace preferences endpoint identified | No matching API | Keep local-only settings clearly labelled until persistence requirements are defined |
-| Undertakings | No dedicated page/route visible | Create/list/submit/review undertaking endpoints; application-scoped list | No dedicated UI | Add to the relevant application detail workflow after core application/evidence integration |
-| EVC readiness | No dedicated page/route visible | Create assessment and list application assessment history | No dedicated UI | Show timestamped snapshots and clearly label them as workflow-readiness aids, not official decisions |
-| Audit events | No dedicated page/route visible | `GET /api/v1/audit/events` | No dedicated UI | Add authorized audit view and preserve the caveat that events are not immutable/tamper-evident |
-| Risk recommendations | No dedicated page/route visible | `GET /api/v1/applications/{application_id}/recommendations` | No dedicated UI | Present explanations and recommended actions; label scores as rule-based, not ML or official decisions |
-| Health / readiness | Not shown in UI | `GET /api/v1/health`; `GET /api/v1/ready` | Backend-only | Use readiness for operational checks; do not treat liveness as proof that the database is ready |
+Frontend visibility is a usability aid only; backend authorization remains authoritative. Backend tests cover application ownership, regional access, role-specific mutations, and platform-admin scope. Before deployment, verify the same boundaries through browser-to-API tests using separate applicant, officer, and administrator accounts.
 
-## Cross-cutting integration requirements
+Overview status counts reflect only the returned (limited) list. Evidence stores local files by default; use private durable storage, encryption, malware scanning, retention controls, and signed access before production. EVC and recommendations are aids. Notification escalation has no scheduler or external delivery worker. Audit records are not established as immutable.
 
-1. **API client and configuration:** `src/lib/api.ts` now centralizes API calls and uses `VITE_API_BASE_URL` (defaults to `http://127.0.0.1:8000`); `.env.example` documents the setting.
-2. **Authentication:** the frontend now uses the backend bearer JWT login/current-user endpoints, keeps the access token in memory only, clears it on logout/401, and has no built-in demo credentials. This means a page refresh signs the user out. A production-grade HttpOnly-cookie/BFF session remains preferable if the backend is extended to support it.
-3. **Authorization:** frontend role-based visibility is only a usability aid. Backend authorization remains authoritative. Test applicant ownership, region isolation, and platform-admin exceptions for every read and mutation.
-4. **State and feedback:** every data-backed screen needs loading, error, empty, success, and permission-denied states. Mutations need pending/disabled states and visible API validation errors.
-5. **Data semantics:** draft PR #1 removes synthetic overview metrics and uses only application records returned by the API. Counts are explicitly scoped to that response and must not be presented as global totals. The landing page's interface illustration is labelled as illustrative, not live data.
-6. **Uploads:** UI must respect PDF/JPEG/PNG validation and configured size limits. Signature checks do not replace malware scanning; local evidence storage is not a production storage strategy.
-7. **Dates and transitions:** render timestamps consistently, handle stale state and HTTP 409 transition conflicts, and only offer transitions the server can authorize.
-8. **Operational claims:** obligation escalation is API-triggered, not a verified recurring scheduler. EVC and risk recommendations are workflow aids. Audit events are not established as immutable.
+## Verification run for this checkout
 
-## Prioritized work order
+- `npm run typecheck`: passed.
+- `npm run build`: passed after the undertaking form fix.
+- `npm run lint`: passed with one existing Fast Refresh warning in `src/components/AuthGate.tsx`.
+- Backend pytest: **57 passed**, using the repository's SQLite test fixtures; two third-party deprecation warnings.
+- `ruff check app tests migrations`: passed.
+- `alembic history`: passed and showed `20261025_0002` as head.
+- Browser-to-API: login/current-user, application creation/list/detail, and undertaking draft creation/readback passed against a disposable local SQLite database.
+- PostgreSQL-backed migration/application test: **not run**. The local PostgreSQL service rejected the documented Compose development credential, and Docker was unavailable, so no database was modified. Existing suite results do not establish PostgreSQL runtime compatibility.
+- Browser authorization matrix, evidence upload/review, policy mutation, compliance operations, EVC, metrics, and recommendations: not exercised in browser.
 
-- **P0 — Close the integration gap:** API client/configuration, sign-in/current-user gate, application list/status transitions, and API-backed overview are implemented in the current branch. Check CI on the latest PR head and perform real browser/API verification; application detail UI and several workspace pages remain unconnected.
-- **P1 — Evidence and policy:** connect policy listing/creation and application-scoped evidence upload/list/review; add regression coverage for validation and authorization failures.
-- **P1 — Operational workflows:** connect obligations, notifications, EVC assessments, audit events, metrics, and recommendations to dedicated UI views.
-- **P2 — Product-scope decisions:** specify missing institution/officer administration, configurable workflow studio, global evidence library, and persisted settings before implementing them.
-- **P2 — Runtime validation:** run Docker Compose against a clean local environment, then execute real browser journeys for sign-in, application creation/listing, transitions, evidence upload/review, and regional-access denial.
+## Follow-up verification before release
 
-## Verification status
-
-- `main` and the draft PR #1 implementation branch were inspected. Public routes `/`, `/privacy`, and `/terms` are separated from the authenticated workspace. The legal routes are review drafts and are not suitable for final publication yet.
-- Recent GitHub Actions history was inspected. The last known Backend CI run (`40121994608`) and Frontend CI run (`40122014079`) report success, but they target different commits and validate backend tests/migrations/lint and frontend typecheck/lint/build respectively.
-- No browser E2E session, live Compose integration run, production deployment test, or external institutional integration was executed as part of this static audit.
-
-
-## Integration slice update (25 October 2026)
-
-- Added `src/lib/api.ts`, `src/components/AuthGate.tsx`, and `src/pages/ApplicationsPage.tsx`; routed `/applications` to the API-backed list/create/transition UI and added `.env.example` plus `src/vite-env.d.ts`.
-- Added `backend/scripts/create_user.py` and `backend/scripts/create_institution.py` for interactive local/operator provisioning and included the scripts in the API container image. No default accounts/institutions or public management/self-registration endpoints are introduced.
-- The application list supports status filtering and backend-validated transitions with a required reason, loading/error/empty feedback, and HTTP 409 conflict messaging.
-- The access token is held in memory, not Web Storage. This reduces persistence and refresh-token exposure but does not eliminate XSS risk; production should evaluate a server-managed HttpOnly session.
-- GitHub Actions Frontend CI passed typecheck, lint, and production build on commit `81583e4f878561ec93b56176385e4cda353fd4d9` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122685895)). Backend CI passed migration checks, PostgreSQL migration application, tests, and Ruff for the account-provisioning work on commit `df8f63b29b5381472e9efdffd907e8fa2e8be187` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122629323)); the institution-provisioning script also passed migration checks, tests, and Ruff on commit `e35379b70c190bb39f9bcb3efe4d70a8b38c6f2f` ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40122783060)). These checks validate builds and backend tests, not live UI-to-API behavior. No seeded-account browser login, browser E2E, or full Docker Compose workflow test has been performed in this update.
-
-
-## Public website and navigation refresh (25 October 2026, draft PR #1)
-
-- Added a public landing page at `/` with a responsive top navigation, original PRAVAAH copy, an HTML/CSS workflow illustration labelled as non-live, feature explanations and links to the authenticated workspace.
-- Kept the authenticated workspace sidebar and mobile navigation. Removed hard-coded navigation counters and fake search, notification and help actions.
-- Moved the workspace overview to `/overview`. It now uses the existing API client to load application records and displays response-scoped counts with loading, error and empty states. It does not claim to show global totals.
-- Added `public/favicon.svg`, updated document metadata, and set `noindex,follow` while the public pages and legal drafts are unlaunched.
-- Added `/privacy` and `/terms` routes as explicit review drafts. Missing operator identity, retention, provider, contact and legal details are called out. These drafts must be replaced or approved before launch; they are not legal advice or final policies.
-- Draft PR: [#1](https://github.com/sainithinreddy06/PRAVAAH-2/pull/1). Frontend CI passed typecheck, lint and production build on frontend implementation commit `e233c88841f97c7fab4c5f2f7b725e438d1f3119` (subsequent commits update documentation only) ([run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40173136494)).
-- No backend files or API contracts were changed in this design pass. No production deployment, custom-domain verification, HTTPS check, browser E2E, or live database workflow was performed.
+1. Run migrations and backend tests on a known disposable PostgreSQL 16 instance; verify migration apply and downgrade/reapply behavior.
+2. Run browser journeys with separate applicant, regional officer, and platform admin accounts, including expected 403/404 boundaries.
+3. Exercise evidence upload/review and each operational mutation through browser-to-API.
+4. Validate production authentication/session strategy, CORS, storage, notification delivery/scheduling, audit immutability, monitoring, backups, and legal notices.

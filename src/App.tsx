@@ -3,16 +3,24 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import {
   ArrowRight, ArrowUpRight, Building2,
   FileText, LayoutDashboard, LogOut, Menu,
-  ShieldCheck, Workflow, X, AlertCircle, RefreshCw
+  ShieldCheck, Workflow, X, AlertCircle, RefreshCw, Bell, ScrollText, Activity, Settings, Users
 } from 'lucide-react';
 import AuthGate, { useAuth } from './components/AuthGate';
 import ApplicationsPage from './pages/ApplicationsPage';
 import PublicSite from './pages/PublicSite';
+import ApplicationDetailPage from './pages/ApplicationDetailPage';
+import { AdminScopePage, CompliancePage, OperationsPage, PoliciesPage } from './pages/OperationsPages';
 import { api, ApiError, formatStatus, type Application } from './lib/api';
 
 const navigation = [
   { label: 'Overview', to: '/overview', icon: LayoutDashboard },
   { label: 'Applications', to: '/applications', icon: FileText },
+  { label: 'Policy register', to: '/policies', icon: ScrollText },
+  { label: 'Obligations & inbox', to: '/compliance', icon: Bell },
+  { label: 'Audit & metrics', to: '/operations', icon: Activity },
+  { label: 'Institutions', to: '/institutions', icon: Building2 },
+  { label: 'Officers & users', to: '/officers', icon: Users },
+  { label: 'Settings', to: '/settings', icon: Settings },
 ];
 function Overview() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -104,7 +112,7 @@ function Overview() {
               <thead><tr><th>Reference</th><th>Workflow stage</th><th>Status</th><th>Last updated</th></tr></thead>
               <tbody>{latestApplications.map((application) => (
                 <tr key={application.id}>
-                  <td><strong>{application.reference_code}</strong><span className="subtext">Application #{application.id}</span></td>
+                  <td><NavLink className="application-reference-link" to={'/applications/' + application.id}><strong>{application.reference_code}</strong></NavLink><span className="subtext">Application #{application.id}</span></td>
                   <td>{formatStatus(application.workflow_stage)}</td>
                   <td><span className={'status status-' + (application.status === 'approved' ? 'green' : application.status === 'rejected' ? 'rose' : application.status === 'under_review' ? 'blue' : application.status === 'changes_requested' ? 'amber' : 'blue')}><i />{formatStatus(application.status)}</span></td>
                   <td>{new Date(application.updated_at).toLocaleString()}</td>
@@ -132,7 +140,7 @@ function WorkspaceApp() {
   const location = useLocation();
   const closeMobile = () => setMobileOpen(false);
   const pageLabel = [...navigation]
-    .find((item) => item.to === location.pathname)?.label || 'Overview';
+    .find((item) => item.to === location.pathname)?.label || (location.pathname.startsWith('/applications/') ? 'Application details' : 'Overview');
   const initials = user.full_name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
 
   return (
@@ -182,14 +190,17 @@ function WorkspaceApp() {
           <Routes>
             <Route path="/overview" element={<Overview />} />
             <Route path="/applications" element={<ApplicationsPage />} />
-            <Route path="/scrutiny" element={<Navigate to="/overview" replace />} />
-            <Route path="/compliance" element={<Navigate to="/overview" replace />} />
-            <Route path="/evidence" element={<Navigate to="/overview" replace />} />
-            <Route path="/workflows" element={<Navigate to="/overview" replace />} />
-            <Route path="/institutions" element={<Navigate to="/overview" replace />} />
-            <Route path="/officers" element={<Navigate to="/overview" replace />} />
-            <Route path="/policies" element={<Navigate to="/overview" replace />} />
-            <Route path="/settings" element={<Navigate to="/overview" replace />} />
+            <Route path="/applications/:id" element={<ApplicationDetailPage />} />
+            <Route path="/scrutiny" element={<ApplicationsPage />} />
+            <Route path="/compliance" element={<CompliancePage />} />
+            <Route path="/evidence" element={<Navigate to="/applications" replace />} />
+            <Route path="/workflows" element={<Navigate to="/applications" replace />} />
+            <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/audit" element={<Navigate to="/operations" replace />} />
+            <Route path="/institutions" element={<AdminScopePage kind="institutions" />} />
+            <Route path="/officers" element={<AdminScopePage kind="officers" />} />
+            <Route path="/policies" element={<PoliciesPage />} />
+            <Route path="/settings" element={<AdminScopePage kind="settings" />} />
             <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>

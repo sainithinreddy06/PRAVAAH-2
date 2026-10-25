@@ -39,6 +39,17 @@ export type Application = {
   updated_at: string;
 };
 
+export type Policy = { id: number; policy_key: string; version: number; title: string; description: string | null; source_reference: string | null; effective_from: string | null; effective_until: string | null; is_active: boolean; created_at: string };
+export type Evidence = { id: number; application_id: number; policy_id: number | null; original_filename: string; content_type: string | null; sha256_digest: string | null; review_status: string; reviewer_notes: string | null; valid_until: string | null; created_at: string };
+export type Obligation = { id: number; application_id: number | null; owner_user_id: number | null; obligation_type: string; title: string; description: string | null; due_at: string | null; status: 'open' | 'in_progress' | 'fulfilled' | 'waived'; policy_reference: string | null; created_at: string };
+export type Notification = { id: number; recipient_user_id: number | null; event_key: string; channel: string; status: string; attempt_count: number; payload_json: string; last_error: string | null; created_at: string };
+export type Undertaking = { id: number; application_id: number; created_by_user_id: number | null; undertaking_type: string; statement: string; status: string; version: number; submitted_at: string | null; reviewed_by_user_id: number | null; reviewed_at: string | null; reviewer_notes: string | null; created_at: string };
+export type EvcAssessment = { id: number; application_id: number; assessed_by_user_id: number | null; evidence_total: number; evidence_accepted: number; evidence_pending: number; evidence_rejected: number; open_obligations: number; undertaking_count: number; outcome: string; notes: string | null; created_at: string };
+export type Recommendation = { code: string; severity: 'high' | 'medium' | 'low'; title: string; explanation: string; suggested_action: string; evidence_count: number };
+export type ApplicationRecommendations = { application_id: number; risk_score: number; risk_level: string; assessed_at: string; factors: string[]; recommendations: Recommendation[]; disclaimer: string };
+export type AuditEvent = { id: number; actor_user_id: number | null; entity_type: string; entity_id: string; action: string; reason: string | null; details_json: string; created_at: string };
+export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
+
 export class ApiError extends Error {
   status: number;
   detail: string;
@@ -62,7 +73,7 @@ export function hasAccessToken(): boolean {
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
-  if (init.body !== undefined) headers.set('Content-Type', 'application/json');
+  if (init.body !== undefined && !(init.body instanceof FormData)) headers.set('Content-Type', 'application/json');
   if (accessToken) headers.set('Authorization', 'Bearer ' + accessToken);
 
   let response: Response;
@@ -120,6 +131,26 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ target_status, reason }),
     }),
+  getApplication: (id: number) => request<Application>('/api/v1/applications/' + id),
+  listPolicies: (activeOnly = true) => request<Policy[]>('/api/v1/policies?active_only=' + activeOnly),
+  createPolicy: (payload: { policy_key: string; version: number; title: string; description?: string; source_reference?: string; effective_from?: string; effective_until?: string }) => request<Policy>('/api/v1/policies', { method: 'POST', body: JSON.stringify(payload) }),
+  listEvidence: (id: number) => request<Evidence[]>('/api/v1/applications/' + id + '/evidence'),
+  uploadEvidence: (id: number, file: File, policyId?: number) => { const body = new FormData(); body.append('file', file); if (policyId) body.append('policy_id', String(policyId)); return request<Evidence>('/api/v1/applications/' + id + '/evidence', { method: 'POST', body }); },
+  reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
+  listObligations: (filters: { status?: string; due_before?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<Obligation[]>('/api/v1/obligations?' + query.toString()); },
+  createObligation: (payload: { application_id: number; owner_user_id?: number; obligation_type: string; title: string; description?: string; due_at?: string; policy_reference?: string }) => request<Obligation>('/api/v1/obligations', { method: 'POST', body: JSON.stringify(payload) }),
+  updateObligation: (id: number, payload: Partial<Pick<Obligation, 'title' | 'description' | 'due_at' | 'status' | 'policy_reference'>>) => request<Obligation>('/api/v1/obligations/' + id, { method: 'PATCH', body: JSON.stringify(payload) }),
+  listNotifications: () => request<Notification[]>('/api/v1/notifications'),
+  escalateDue: () => request<{ notifications_created: number }>('/api/v1/obligations/escalate-due', { method: 'POST' }),
+  listUndertakings: (id: number) => request<Undertaking[]>('/api/v1/applications/' + id + '/undertakings'),
+  createUndertaking: (payload: { application_id: number; undertaking_type: string; statement: string }) => request<Undertaking>('/api/v1/undertakings', { method: 'POST', body: JSON.stringify(payload) }),
+  submitUndertaking: (id: number) => request<Undertaking>('/api/v1/undertakings/' + id + '/submit', { method: 'POST' }),
+  reviewUndertaking: (id: number, decision: 'accepted' | 'changes_requested' | 'rejected', reviewer_notes: string) => request<Undertaking>('/api/v1/undertakings/' + id + '/review', { method: 'POST', body: JSON.stringify({ decision, reviewer_notes }) }),
+  listAssessments: (id: number) => request<EvcAssessment[]>('/api/v1/applications/' + id + '/evc-assessments'),
+  createAssessment: (application_id: number, notes?: string) => request<EvcAssessment>('/api/v1/evc/assessments', { method: 'POST', body: JSON.stringify({ application_id, notes }) }),
+  recommendations: (id: number) => request<ApplicationRecommendations>('/api/v1/applications/' + id + '/recommendations'),
+  listAuditEvents: (filters: { entity_type?: string; entity_id?: string; action?: string; actor_user_id?: number; since?: string; until?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<AuditEvent[]>('/api/v1/audit/events?' + query.toString()); },
+  metrics: () => request<OperationalMetrics>('/api/v1/operations/metrics'),
 };
 
 export const allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRightLeft, Plus, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { allowedTransitions, api, ApiError, formatStatus, type Application, type ApplicationStatus } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
@@ -79,6 +80,10 @@ export default function ApplicationsPage() {
       setError('Institution ID must be a positive whole number.');
       return;
     }
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(referenceCode.trim())) {
+      setError('Reference code must start with a letter or number and contain only letters, numbers, periods, underscores, slashes, or hyphens.');
+      return;
+    }
     setCreating(true);
     setError('');
     setNotice('');
@@ -155,7 +160,7 @@ export default function ApplicationsPage() {
         <div className="create-panel-heading"><div><h3>Create application</h3><p>Creates a draft record using an existing institution ID.</p></div><button className="close-create" type="button" onClick={() => setCreateOpen(false)} aria-label="Close form"><X size={17} /></button></div>
         <div className="create-fields">
           <label>Institution ID<input type="number" min="1" step="1" required value={institutionId} onChange={(event) => setInstitutionId(event.target.value)} placeholder="e.g. 1" /></label>
-          <label>Reference code<input type="text" required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9._/-]*" value={referenceCode} onChange={(event) => setReferenceCode(event.target.value)} placeholder="e.g. APP-2026-0201" /></label>
+          <label>Reference code<input type="text" required minLength={3} maxLength={64}  value={referenceCode} onChange={(event) => setReferenceCode(event.target.value)} placeholder="e.g. APP-2026-0201" /></label>
         </div>
         <p className="create-help">Institution records are not exposed through a listing API yet. Ask your database administrator for the correct ID; the server validates that it exists and that your role can access its region.</p>
         <div className="create-actions"><button className="secondary-button" type="button" onClick={() => setCreateOpen(false)} disabled={creating}>Cancel</button><button className="primary-button" type="submit" disabled={creating}>{creating ? 'Creating…' : 'Create draft'}</button></div>
@@ -173,7 +178,7 @@ export default function ApplicationsPage() {
                 const transitions = allowedTransitions[application.status] || [];
                 const actionable = transitions.filter((target) => canTransition(user.role, target));
                 return <tr key={application.id}>
-                  <td><strong>{application.reference_code}</strong><span className="subtext">Institution #{application.institution_id}</span></td>
+                  <td><Link className="application-reference-link" to={'/applications/' + application.id}><strong>{application.reference_code}</strong></Link><span className="subtext">Institution #{application.institution_id}</span></td>
                   <td>#{application.id}</td>
                   <td>{formatStatus(application.workflow_stage)}</td>
                   <td><span className={'status status-' + (application.status === 'approved' ? 'green' : application.status === 'rejected' ? 'rose' : application.status === 'under_review' ? 'blue' : application.status === 'changes_requested' ? 'amber' : 'blue')}><i />{formatStatus(application.status)}</span></td>
