@@ -104,6 +104,10 @@ export default function ApplicationsPage() {
       setError('A reason of at least 3 characters is required. No change was submitted.');
       return;
     }
+    if (reason.trim().length > 2000) {
+      setError('The reason must be 2,000 characters or fewer. No change was submitted.');
+      return;
+    }
     setPendingId(application.id);
     setError('');
     setNotice('');
