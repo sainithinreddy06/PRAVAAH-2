@@ -9,17 +9,18 @@ function PublicHeader() {
   const closeMenu = () => setMenuOpen(false);
   return (
     <header className="public-header">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <Link className="public-brand" to="/" aria-label="PRAVAAH home">
         <span className="public-brand-mark"><Workflow size={21} strokeWidth={1.8} /></span>
         <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance</small></span>
       </Link>
-      <nav className={"public-nav " + (menuOpen ? "public-nav-open" : "")} aria-label="Main navigation">
+      <nav id="public-navigation" className={"public-nav " + (menuOpen ? "public-nav-open" : "")} aria-label="Main navigation">
         <a href="/#platform" onClick={closeMenu}>Platform</a>
         <a href="/#workflow" onClick={closeMenu}>How it works</a>
         <a href="/#principles" onClick={closeMenu}>Principles</a>
       </nav>
       <Link className="public-nav-action" to="/applications">Sign in <ArrowRight size={15} /></Link>
-      <button className="public-mobile-toggle" type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
+      <button className="public-mobile-toggle" type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="public-navigation" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
     </header>
   );
 }
@@ -46,7 +47,7 @@ function LandingPage() {
   return (
     <div className="public-site">
       <PublicHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="public-hero">
           <div className="public-hero-copy">
             <p className="public-eyebrow"><span /> APPLICATION WORKFLOW PLATFORM</p>
@@ -138,7 +139,7 @@ function LegalPage({ kind }: { kind: LegalKind }) {
   return (
     <div className="public-site">
       <PublicHeader />
-      <main className="legal-page">
+      <main id="main-content" tabIndex={-1} className="legal-page">
         <p className="public-eyebrow">PRAVAAH · POLICY DRAFT</p>
         <h1>{title}</h1>
         <div className="legal-draft-notice" role="status"><ShieldCheck size={18} /><p><strong>Publication review required.</strong> This is a working draft, not a final legal notice. PRAVAAH must not launch publicly until the operator confirms the missing details and obtains appropriate legal review.</p></div>
