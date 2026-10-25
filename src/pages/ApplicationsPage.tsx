@@ -153,8 +153,9 @@ export default function ApplicationsPage() {
 
       <div className="panel applications-table-panel">
         {loading ? <div className="applications-state"><span className="state-spinner" /><strong>Loading applications</strong><p>Contacting the configured API.</p></div>
-          : !error && applications.length === 0 ? <div className="applications-state"><span className="state-empty"><ArrowRightLeft size={20} /></span><strong>No applications found</strong><p>There are no records for the selected status and your account scope.</p></div>
-            : applications.length > 0 && <div className="table-wrap"><table className="applications-table"><thead><tr><th>Reference</th><th>Application ID</th><th>Workflow stage</th><th>Status</th><th>Created</th><th>Available action</th></tr></thead><tbody>
+          : error && applications.length === 0 ? <div className="applications-state"><span className="state-empty"><AlertCircle size={20} /></span><strong>Applications could not be loaded</strong><p>Check your connection and try again. The API did not return a usable record list.</p><button className="secondary-button" type="button" onClick={() => void loadApplications(true)} disabled={refreshing}>{refreshing ? 'Retrying…' : 'Retry loading records'}</button></div>
+            : applications.length === 0 ? <div className="applications-state"><span className="state-empty"><ArrowRightLeft size={20} /></span><strong>No applications found</strong><p>There are no records for the selected status and your account scope.</p></div>
+              : <div className="table-wrap"><table className="applications-table"><thead><tr><th>Reference</th><th>Application ID</th><th>Workflow stage</th><th>Status</th><th>Created</th><th>Available action</th></tr></thead><tbody>
               {applications.map((application) => {
                 const transitions = allowedTransitions[application.status] || [];
                 const actionable = transitions.filter((target) => canTransition(user.role, target));
