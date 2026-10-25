@@ -52,6 +52,8 @@ export default function ApplicationsPage() {
       const result = await api.listApplications(statusFilter || undefined);
       setApplications(result);
     } catch (reason) {
+      // A failed filter/load must not leave records from a previous result set looking current.
+      if (!quiet) setApplications([]);
       setError(reason instanceof ApiError ? reason.detail : 'Could not load applications.');
     } finally {
       setLoading(false);
