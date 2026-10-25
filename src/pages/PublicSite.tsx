@@ -8,6 +8,7 @@ import {
   BadgeCheck, Bell
 } from 'lucide-react';
 
+// Reference-matched public portal: all records on this page are explicitly labelled as demonstration data.
 type PolicyCategory = { id: string; title: string; subtitle: string; summary: string; items: { title: string; detail: string }[] };
 const policyCategories: PolicyCategory[] = [
   { id:'land', title:'Land & Campus Infrastructure Norms', subtitle:'LAND, BUILDINGS & FACILITIES', summary:'Campus land, building, accessibility and infrastructure requirements for technical institutions.', items:[
