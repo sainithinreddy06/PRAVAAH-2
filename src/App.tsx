@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, Building2, ChevronDown, CircleHelp,
-  ClipboardCheck, FileCheck2, FileText, LayoutDashboard, LogOut, Menu, Settings2,
+  FileText, LayoutDashboard, LogOut, Menu, Settings2,
   ShieldCheck, Users, Workflow, X, AlertCircle, RefreshCw
 } from 'lucide-react';
 import AuthGate, { useAuth } from './components/AuthGate';
@@ -13,14 +13,8 @@ import { api, ApiError, formatStatus, type Application } from './lib/api';
 const navigation = [
   { label: 'Overview', to: '/overview', icon: LayoutDashboard },
   { label: 'Applications', to: '/applications', icon: FileText },
-  { label: 'Scrutiny queue', to: '/scrutiny', icon: ClipboardCheck },
-  { label: 'Compliance', to: '/compliance', icon: ShieldCheck },
-  { label: 'Evidence library', to: '/evidence', icon: FileCheck2 },
-  { label: 'Workflow studio', to: '/workflows', icon: Workflow },
 ];
 const administration = [
-  { label: 'Institutions', to: '/institutions', icon: Building2 },
-  { label: 'Officers & roles', to: '/officers', icon: Users },
 ];
 
 function Overview() {
@@ -200,14 +194,14 @@ function WorkspaceApp() {
           <Routes>
             <Route path="/overview" element={<Overview />} />
             <Route path="/applications" element={<ApplicationsPage />} />
-            <Route path="/scrutiny" element={<SectionPage title="Scrutiny queue" description="The dedicated scrutiny queue is not connected to live records yet." />} />
-            <Route path="/compliance" element={<SectionPage title="Compliance and obligations" description="The compliance workspace is not connected to live obligation and notification records yet." />} />
-            <Route path="/evidence" element={<SectionPage title="Evidence library" description="Evidence endpoints exist in the backend, but this page is not connected to upload, listing or review workflows." />} />
-            <Route path="/workflows" element={<SectionPage title="Workflow studio" description="A workflow configuration interface and configuration API have not been implemented." />} />
-            <Route path="/institutions" element={<SectionPage title="Institutions" description="Institution management is not connected to a listing or administration API." />} />
-            <Route path="/officers" element={<SectionPage title="Officers and roles" description="User and role administration is not connected to a management API." />} />
+            <Route path="/scrutiny" element={<Navigate to="/overview" replace />} />
+            <Route path="/compliance" element={<Navigate to="/overview" replace />} />
+            <Route path="/evidence" element={<Navigate to="/overview" replace />} />
+            <Route path="/workflows" element={<Navigate to="/overview" replace />} />
+            <Route path="/institutions" element={<Navigate to="/overview" replace />} />
+            <Route path="/officers" element={<Navigate to="/overview" replace />} />
             <Route path="/policies" element={<Navigate to="/overview" replace />} />
-            <Route path="/settings" element={<SectionPage title="Settings" description="Persistent workspace preferences have not been implemented." />} />
+            <Route path="/settings" element={<Navigate to="/overview" replace />} />
             <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
             <Route path="*" element={<SectionPage title="Page not found" description="The requested workspace page does not exist." />} />
           </Routes>
