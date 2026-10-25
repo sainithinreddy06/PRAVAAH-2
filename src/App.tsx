@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
-  ArrowRight, ArrowUpRight, BookOpenCheck, Building2, ChevronDown, CircleHelp,
+  ArrowRight, ArrowUpRight, Building2, ChevronDown, CircleHelp,
   ClipboardCheck, FileCheck2, FileText, LayoutDashboard, LogOut, Menu, Settings2,
   ShieldCheck, Users, Workflow, X, AlertCircle, RefreshCw
 } from 'lucide-react';
@@ -21,7 +21,6 @@ const navigation = [
 const administration = [
   { label: 'Institutions', to: '/institutions', icon: Building2 },
   { label: 'Officers & roles', to: '/officers', icon: Users },
-  { label: 'Policy register', to: '/policies', icon: BookOpenCheck },
 ];
 
 function Overview() {
@@ -207,7 +206,7 @@ function WorkspaceApp() {
             <Route path="/workflows" element={<SectionPage title="Workflow studio" description="A workflow configuration interface and configuration API have not been implemented." />} />
             <Route path="/institutions" element={<SectionPage title="Institutions" description="Institution management is not connected to a listing or administration API." />} />
             <Route path="/officers" element={<SectionPage title="Officers and roles" description="User and role administration is not connected to a management API." />} />
-            <Route path="/policies" element={<SectionPage title="Policy register" description="Policy endpoints exist in the backend, but this page is not connected to policy listing or creation." />} />
+            <Route path="/policies" element={<Navigate to="/overview" replace />} />
             <Route path="/settings" element={<SectionPage title="Settings" description="Persistent workspace preferences have not been implemented." />} />
             <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
             <Route path="*" element={<SectionPage title="Page not found" description="The requested workspace page does not exist." />} />
