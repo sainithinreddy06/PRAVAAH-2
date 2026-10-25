@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, BookOpenCheck, Building2, ChevronDown, CircleHelp,
@@ -30,7 +30,7 @@ function Overview() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
-  const load = async (refresh = false) => {
+  const load = useCallback(async (refresh = false) => {
     if (refresh) setRefreshing(true);
     else setLoading(true);
     setError('');
@@ -43,11 +43,11 @@ function Overview() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const statusCounts = applications.reduce<Record<string, number>>((counts, application) => {
     counts[application.status] = (counts[application.status] || 0) + 1;
