@@ -3,7 +3,7 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import {
   ArrowRight, ArrowUpRight, Building2, ChevronDown,
   FileText, LayoutDashboard, LogOut, Menu,
-  ShieldCheck, Users, Workflow, X, AlertCircle, RefreshCw
+  ShieldCheck, Workflow, X, AlertCircle, RefreshCw
 } from 'lucide-react';
 import AuthGate, { useAuth } from './components/AuthGate';
 import ApplicationsPage from './pages/ApplicationsPage';
@@ -14,9 +14,6 @@ const navigation = [
   { label: 'Overview', to: '/overview', icon: LayoutDashboard },
   { label: 'Applications', to: '/applications', icon: FileText },
 ];
-const administration = [
-];
-
 function Overview() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +123,7 @@ function WorkspaceApp() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const closeMobile = () => setMobileOpen(false);
-  const pageLabel = [...navigation, ...administration]
+  const pageLabel = [...navigation]
     .find((item) => item.to === location.pathname)?.label || 'Overview';
   const initials = user.full_name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
 
@@ -148,12 +145,6 @@ function WorkspaceApp() {
           <p className="nav-label">WORKSPACE</p>
           {navigation.map(({ label, to, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === '/overview'} onClick={closeMobile} className={({ isActive }) => 'nav-item ' + (isActive ? 'nav-active' : '')}>
-              <Icon size={18} /><span>{label}</span>
-            </NavLink>
-          ))}
-          <p className="nav-label nav-label-spaced">ADMINISTRATION</p>
-          {administration.map(({ label, to, icon: Icon }) => (
-            <NavLink key={to} to={to} onClick={closeMobile} className={({ isActive }) => 'nav-item ' + (isActive ? 'nav-active' : '')}>
               <Icon size={18} /><span>{label}</span>
             </NavLink>
           ))}
