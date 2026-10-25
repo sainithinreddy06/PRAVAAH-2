@@ -194,6 +194,41 @@ def test_only_officer_can_start_review(client: TestClient) -> None:
     assert reviewed.json()['status'] == 'under_review'
 
 
+def test_rejected_transition_does_not_change_status_or_write_audit_event(
+    client: TestClient,
+) -> None:
+    created = client.post(
+        '/api/v1/applications',
+        headers=_headers(1),
+        json={'institution_id': 1, 'reference_code': 'TS-APP-AUDIT-001'},
+    )
+    assert created.status_code == 201
+
+    before_count_response = client.get(
+        '/api/v1/applications/1',
+        headers=_headers(1),
+    )
+    assert before_count_response.json()['status'] == 'draft'
+
+    # Applicants may submit a draft, but they may not approve it.
+    rejected = client.post(
+        '/api/v1/applications/1/transitions',
+        headers=_headers(1),
+        json={'target_status': 'approved', 'reason': 'Attempted unauthorized approval'},
+    )
+    assert rejected.status_code == 409
+
+    current = client.get('/api/v1/applications/1', headers=_headers(1))
+    assert current.status_code == 200
+    assert current.json()['status'] == 'draft'
+
+    with _Session() as db:
+        events = db.scalars(
+            select(AuditEvent).where(AuditEvent.entity_id == '1').order_by(AuditEvent.id)
+        ).all()
+    assert [event.action for event in events] == ['application.created']
+
+
 def test_cross_region_access_is_denied(client: TestClient) -> None:
     created = client.post(
         '/api/v1/applications',
