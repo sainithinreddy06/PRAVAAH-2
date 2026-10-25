@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowDown, ArrowRight, ArrowUpRight, BookOpen, Building2, CheckCircle2,
-  ChevronDown, ChevronRight, CircleHelp, ClipboardCheck, FileCheck2, FileText,
+  ArrowRight, ArrowUpRight, BookOpen, Building2, CheckCircle2,
+  ChevronDown, ChevronRight, CircleHelp, FileCheck2, FileText,
   GraduationCap, Landmark, Menu, Search, ShieldCheck, Workflow, X, Zap
 } from 'lucide-react';
 
