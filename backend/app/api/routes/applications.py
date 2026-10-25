@@ -2,7 +2,7 @@ import json
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -190,8 +190,18 @@ def transition_application(
             raise HTTPException(status_code=403, detail='Only authorized officers can review applications')
 
     previous = application.status
-    application.status = target
-    application.workflow_stage = target
+    transition = db.execute(
+        update(Application)
+        .where(Application.id == application.id, Application.status == previous)
+        .values(status=target, workflow_stage=target)
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail='Application status changed concurrently; reload and retry',
+        )
     _record_event(
         db,
         actor,
