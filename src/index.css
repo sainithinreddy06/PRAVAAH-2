@@ -264,3 +264,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+.public-mobile-toggle { display: none; place-items: center; width: 38px; height: 38px; border: 1px solid #dfe6ee; border-radius: 6px; background: #fff; color: #344b62; }
+@media (max-width: 760px) {
+  .public-mobile-toggle { display: grid; flex-shrink: 0; }
+  .public-nav.public-nav-open { display: flex; position: absolute; top: 65px; left: 0; right: 0; margin: 0; padding: 18px 20px 21px; flex-direction: column; align-items: flex-start; gap: 18px; border-bottom: 1px solid #e4eaf0; background: #fff; box-shadow: 0 12px 22px rgba(23, 38, 59, .07); }
+}
