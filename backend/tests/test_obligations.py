@@ -12,6 +12,7 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.application import Application
+from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
 from app.models.user import User
 
@@ -147,3 +148,10 @@ def test_overdue_escalation_is_idempotent_and_in_app(client: TestClient) -> None
     assert inbox.status_code == 200
     assert len(inbox.json()) == 1
     assert 'Overdue evidence' in inbox.json()[0]['payload_json']
+
+    with _Session() as db:
+        audit_events = db.query(AuditEvent).filter_by(
+            entity_type='obligation',
+            action='obligation.overdue_notified',
+        ).all()
+    assert len(audit_events) == 1
