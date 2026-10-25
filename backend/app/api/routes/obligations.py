@@ -207,13 +207,12 @@ def escalate_due_obligations(
                 'due_at': obligation.due_at.isoformat(),
             }, sort_keys=True),
         )
-        db.add(notification)
         try:
-            # The unique event_key constraint is the concurrency-safe idempotency guard.
-            # Flush before adding the audit event so a duplicate can be rolled back cleanly.
-            db.flush()
+            # Isolate duplicate-key conflicts so earlier queued notifications remain intact.
+            with db.begin_nested():
+                db.add(notification)
+                db.flush()
         except IntegrityError:
-            db.rollback()
             continue
         db.add(AuditEvent(
             actor_user_id=actor.id,
