@@ -5,7 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -237,14 +237,22 @@ def review_evidence(
         raise HTTPException(status_code=404, detail='Evidence not found')
     _application_for_actor(db, evidence.application_id, actor)
 
-    if evidence.review_status != 'pending':
+    reviewer_notes = payload.reviewer_notes.strip()
+    # Make the pending-to-reviewed transition atomic so concurrent reviewers
+    # cannot overwrite each other's decision or create duplicate audit events.
+    result = db.execute(
+        update(Evidence)
+        .where(Evidence.id == evidence.id, Evidence.review_status == 'pending')
+        .values(review_status=payload.review_status, reviewer_notes=reviewer_notes)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        db.rollback()
         raise HTTPException(status_code=409, detail='Evidence has already been reviewed')
-    evidence.review_status = payload.review_status
-    evidence.reviewer_notes = payload.reviewer_notes.strip()
     _audit(
         db, actor, 'evidence', evidence.id, 'evidence.reviewed',
-        payload.reviewer_notes.strip(),
-        {'review_status': evidence.review_status, 'application_id': evidence.application_id},
+        reviewer_notes,
+        {'review_status': payload.review_status, 'application_id': evidence.application_id},
     )
     db.commit()
     db.refresh(evidence)
