@@ -183,6 +183,40 @@ def test_officer_can_review_evidence_and_audit_is_written(client: TestClient) ->
     assert [event.action for event in events] == ['evidence.uploaded', 'evidence.reviewed']
 
 
+def test_evidence_cannot_be_reviewed_twice(client: TestClient) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+
+    first = client.patch(
+        f'/api/v1/evidence/{evidence_id}/review',
+        headers=_headers(2),
+        json={'review_status': 'accepted', 'reviewer_notes': 'First review decision'},
+    )
+    second = client.patch(
+        f'/api/v1/evidence/{evidence_id}/review',
+        headers=_headers(2),
+        json={'review_status': 'rejected', 'reviewer_notes': 'Conflicting second decision'},
+    )
+    assert first.status_code == 200
+    assert second.status_code == 409
+    assert second.json()['detail'] == 'Evidence has already been reviewed'
+
+    with _Session() as db:
+        events = db.scalars(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.entity_id == str(evidence_id),
+                AuditEvent.action == 'evidence.reviewed',
+            )
+        ).all()
+    assert len(events) == 1
+
+
 def test_applicant_cannot_review_evidence(client: TestClient) -> None:
     upload = client.post(
         '/api/v1/applications/1/evidence',
