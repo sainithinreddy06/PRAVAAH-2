@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.core.security import hash_password
+from app.core.security import create_access_token, hash_password
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
@@ -104,6 +104,27 @@ def test_profile_returns_database_role_and_region(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.json()['role'] == 'regional_officer'
     assert response.json()['region_code'] == 'TS'
+
+
+def test_expired_access_token_is_rejected(client: TestClient) -> None:
+    token = create_access_token('1', expires_minutes=-1)
+    response = client.get(
+        '/api/v1/auth/me',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == 401
+
+
+def test_inactive_user_cannot_use_access_token(client: TestClient) -> None:
+    with _TestSession() as db:
+        inactive_user = db.query(User).filter_by(email='disabled@example.test').one()
+        token = create_access_token(str(inactive_user.id))
+
+    response = client.get(
+        '/api/v1/auth/me',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == 401
 
 
 def test_invalid_bearer_token_is_rejected(client: TestClient) -> None:
