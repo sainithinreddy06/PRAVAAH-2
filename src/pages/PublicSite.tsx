@@ -1,9 +1,12 @@
-import { ArrowRight, ArrowUpRight, CheckCircle2, FileCheck2, FileText, ShieldCheck, Workflow } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, ArrowUpRight, CheckCircle2, FileCheck2, FileText, Menu, ShieldCheck, Workflow, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 type LegalKind = 'privacy' | 'terms';
 
 function PublicHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
   return (
     <header className="public-header">
       <Link className="public-brand" to="/" aria-label="PRAVAAH home">
