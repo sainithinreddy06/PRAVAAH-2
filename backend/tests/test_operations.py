@@ -65,6 +65,16 @@ def test_regional_officer_only_sees_audit_events_for_own_region(client: TestClie
     assert [event['entity_id'] for event in response.json()] == ['1']
 
 
+def test_audit_events_rejects_reversed_date_range(client: TestClient) -> None:
+    response = client.get(
+        '/api/v1/audit/events',
+        headers=_headers(3),
+        params={'since': '2026-10-25T12:00:00Z', 'until': '2026-10-24T12:00:00Z'},
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'since must be earlier than or equal to until'
+
+
 def test_applicant_cannot_read_audit_log_or_operational_metrics(client: TestClient) -> None:
     audit = client.get('/api/v1/audit/events', headers=_headers(1))
     metrics = client.get('/api/v1/operations/metrics', headers=_headers(1))
