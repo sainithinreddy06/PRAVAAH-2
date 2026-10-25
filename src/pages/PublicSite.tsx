@@ -13,12 +13,13 @@ function PublicHeader() {
         <span className="public-brand-mark"><Workflow size={21} strokeWidth={1.8} /></span>
         <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance</small></span>
       </Link>
-      <nav className="public-nav" aria-label="Main navigation">
-        <a href="/#platform">Platform</a>
-        <a href="/#workflow">How it works</a>
-        <a href="/#principles">Principles</a>
+      <nav className={"public-nav " + (menuOpen ? "public-nav-open" : "")} aria-label="Main navigation">
+        <a href="/#platform" onClick={closeMenu}>Platform</a>
+        <a href="/#workflow" onClick={closeMenu}>How it works</a>
+        <a href="/#principles" onClick={closeMenu}>Principles</a>
       </nav>
       <Link className="public-nav-action" to="/applications">Sign in <ArrowRight size={15} /></Link>
+      <button className="public-mobile-toggle" type="button" aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? <X size={19} /> : <Menu size={19} />}</button>
     </header>
   );
 }
