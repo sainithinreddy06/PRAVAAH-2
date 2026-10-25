@@ -35,7 +35,7 @@ const faqs = [
 function PublicHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   return <header className="pv-header">
-    <div className="pv-mini-bar"><span>Government of India · Regulatory Approval Portal</span><div><a href="#citizen-charter">Citizen Charter</a><a href="#support">Help &amp; Support</a><a href="#faq">FAQs</a><span className="pv-language">A−　A　A+　|　English⌄</span></div></div>
+    <div className="pv-mini-bar"><span>Government of India · Regulatory Approval Portal</span><div><a href="#citizen-charter">Citizen Charter</a><a href="#support">Help &amp; Support</a><a href="#faq">FAQs</a><span className="pv-language">A− A A+ | English⌄</span></div></div>
     <div className="pv-brand-row">
       <Link to="/" className="pv-brand" aria-label="PRAVAAH home"><span className="pv-emblem"><Landmark size={23} /></span><span><strong>PRAVAAH <b>प्रवाह</b></strong><small>Approval &amp; Compliance Workflow Foundation</small><small className="pv-brand-sub">Transparent · Accountable · Accessible</small></span></Link>
       <div className={'pv-nav ' + (menuOpen ? 'pv-nav-open' : '')}><a href="#policies" onClick={() => setMenuOpen(false)}>Policies &amp; Norms</a><a href="#services" onClick={() => setMenuOpen(false)}>Regulatory Services</a><a href="#process" onClick={() => setMenuOpen(false)}>Application Process</a><a href="#citizen-charter" onClick={() => setMenuOpen(false)}>Citizen Charter</a><a href="#support" onClick={() => setMenuOpen(false)}>Support</a></div>
