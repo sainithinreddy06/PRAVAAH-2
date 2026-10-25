@@ -84,6 +84,29 @@ def test_undertaking_requires_submission_before_review(client: TestClient) -> No
     assert reviewed.json()['status'] == 'accepted'
 
 
+def test_undertaking_cannot_be_reviewed_twice(client: TestClient) -> None:
+    created = client.post('/api/v1/undertakings', headers=_headers(1), json={
+        'application_id': 1,
+        'undertaking_type': 'accuracy_declaration',
+        'statement': 'I confirm that the information submitted is accurate to the best of my knowledge.',
+    })
+    undertaking_id = created.json()['id']
+    submitted = client.post(f'/api/v1/undertakings/{undertaking_id}/submit', headers=_headers(1))
+    assert submitted.status_code == 200
+
+    first = client.post(f'/api/v1/undertakings/{undertaking_id}/review', headers=_headers(2), json={
+        'decision': 'accepted',
+        'reviewer_notes': 'Declaration accepted after review',
+    })
+    second = client.post(f'/api/v1/undertakings/{undertaking_id}/review', headers=_headers(2), json={
+        'decision': 'rejected',
+        'reviewer_notes': 'Conflicting second decision',
+    })
+    assert first.status_code == 200
+    assert second.status_code == 409
+    assert second.json()['detail'] == 'Only submitted undertakings can be reviewed'
+
+
 def test_evc_assessment_reports_incomplete_without_evidence(client: TestClient) -> None:
     response = client.post('/api/v1/evc/assessments', headers=_headers(2), json={
         'application_id': 1,
