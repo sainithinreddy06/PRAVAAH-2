@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { AlertCircle, ArrowRightLeft, Plus, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { allowedTransitions, api, ApiError, formatStatus, type Application, type ApplicationStatus } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
@@ -43,21 +43,28 @@ export default function ApplicationsPage() {
   const [institutionId, setInstitutionId] = useState('');
   const [referenceCode, setReferenceCode] = useState('');
   const [creating, setCreating] = useState(false);
+  const latestLoadId = useRef(0);
 
   const loadApplications = useCallback(async (quiet = false) => {
+    const loadId = ++latestLoadId.current;
     if (quiet) setRefreshing(true);
     else setLoading(true);
     setError('');
     try {
       const result = await api.listApplications(statusFilter || undefined);
+      // Ignore out-of-order responses so an older filter cannot overwrite newer results.
+      if (loadId !== latestLoadId.current) return;
       setApplications(result);
     } catch (reason) {
+      if (loadId !== latestLoadId.current) return;
       // A failed filter/load must not leave records from a previous result set looking current.
       if (!quiet) setApplications([]);
       setError(reason instanceof ApiError ? reason.detail : 'Could not load applications.');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (loadId === latestLoadId.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [statusFilter]);
 
