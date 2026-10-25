@@ -92,7 +92,6 @@ def list_audit_events(
         except (ValueError, TypeError):
             continue
         except Exception as exc:
-            from fastapi import HTTPException
             if isinstance(exc, HTTPException):
                 continue
             raise
