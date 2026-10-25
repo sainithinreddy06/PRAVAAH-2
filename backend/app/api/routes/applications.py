@@ -97,16 +97,18 @@ def create_application(
         status='draft',
     )
     db.add(application)
-    db.flush()
-    _record_event(
-        db,
-        actor,
-        application,
-        'application.created',
-        'Application created',
-        {'status': 'draft', 'institution_id': institution.id},
-    )
     try:
+        # Flush can raise before commit when the unique reference constraint
+        # is hit by a concurrent request, so it must be inside the handler.
+        db.flush()
+        _record_event(
+            db,
+            actor,
+            application,
+            'application.created',
+            'Application created',
+            {'status': 'draft', 'institution_id': institution.id},
+        )
         db.commit()
     except IntegrityError:
         db.rollback()
