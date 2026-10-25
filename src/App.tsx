@@ -163,7 +163,10 @@ function WorkspaceApp() {
           <button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileOpen(true)}><Menu size={20} /></button>
           <div className="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong>{pageLabel}</strong></div>
           <div className="topbar-actions">
-            <span className="topbar-context">PRAVAAH workspace</span>
+            <div className="workspace-topbar-meta">
+              <span className="workspace-topbar-label">SECURE WORKSPACE</span>
+              <span className="topbar-context">PRAVAAH workspace</span>
+            </div>
             <span className="topbar-divider" />
             <span className="top-avatar" aria-label={'Signed in as ' + user.full_name}>{initials}</span>
           </div>
