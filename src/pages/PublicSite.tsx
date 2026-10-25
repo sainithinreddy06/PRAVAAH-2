@@ -162,4 +162,3 @@ export default function PublicSite({ path }: { path: string }) {
   if (path === '/terms') return <LegalPage kind="terms" />;
   return <LandingPage />;
 }
-
