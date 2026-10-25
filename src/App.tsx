@@ -19,7 +19,6 @@ function Overview() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [refreshFailed, setRefreshFailed] = useState(false);
   const latestLoadId = useRef(0);
 
   const load = useCallback(async (refresh = false) => {
@@ -27,7 +26,6 @@ function Overview() {
     if (refresh) setRefreshing(true);
     else setLoading(true);
     setError('');
-    setRefreshFailed(false);
     try {
       const result = await api.listApplications();
       if (loadId !== latestLoadId.current) return;
@@ -36,7 +34,6 @@ function Overview() {
       if (loadId !== latestLoadId.current) return;
       // Never present stale records as if they were the result of a failed refresh.
       setApplications([]);
-      setRefreshFailed(refresh);
       setError(reason instanceof ApiError ? reason.detail : 'Could not load application records.');
     } finally {
       if (loadId === latestLoadId.current) {
@@ -74,8 +71,6 @@ function Overview() {
           <NavLink className="primary-button" to="/applications">Open applications <ArrowRight size={15} /></NavLink>
         </div>
       </div>
-
-      {refreshFailed && <div className="feedback feedback-error" role="status"><AlertCircle size={17} /><span>Refresh failed. The displayed records were cleared to avoid showing outdated information.</span><button type="button" onClick={() => void load(true)} disabled={refreshing}>{refreshing ? 'Retrying…' : 'Retry'}</button></div>}
 
       <div className="overview-summary panel">
         <div>
