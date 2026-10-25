@@ -31,6 +31,7 @@ def client() -> Generator[TestClient, None, None]:
             User(id=1, email='applicant@example.test', full_name='Applicant', role='applicant', region_code='TS', is_active=True),
             User(id=2, email='officer@example.test', full_name='Officer', role='regional_officer', region_code='TS', is_active=True),
             User(id=3, email='admin@example.test', full_name='Admin', role='platform_admin', region_code=None, is_active=True),
+            User(id=4, email='other@example.test', full_name='Other Region User', role='applicant', region_code='AP', is_active=True),
         ])
         db.add(Institution(id=1, name='TS Institute', institution_code='TS-001', region_code='TS'))
         db.add(Application(
@@ -82,6 +83,33 @@ def test_officer_can_create_and_update_region_obligation(client: TestClient) -> 
     )
     assert updated.status_code == 200
     assert updated.json()['status'] == 'fulfilled'
+
+
+def test_obligation_owner_cannot_be_reassigned_across_regions(client: TestClient) -> None:
+    created = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'owner_user_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Region-scoped owner check',
+        },
+    )
+    assert created.status_code == 201
+    obligation_id = created.json()['id']
+
+    response = client.patch(
+        f'/api/v1/obligations/{obligation_id}',
+        headers=_headers(2),
+        json={'owner_user_id': 4},
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'Obligation owner must belong to the application region'
+
+    unchanged = client.get('/api/v1/obligations', headers=_headers(2))
+    assert unchanged.status_code == 200
+    assert next(item for item in unchanged.json() if item['id'] == obligation_id)['owner_user_id'] == 1
 
 
 def test_applicant_cannot_create_obligation(client: TestClient) -> None:
