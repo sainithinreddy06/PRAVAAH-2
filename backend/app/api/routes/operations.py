@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import String, and_, cast, exists, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import ensure_region_access, require_roles
@@ -52,50 +52,72 @@ def list_audit_events(
         query = query.where(AuditEvent.created_at >= since)
     if until is not None:
         query = query.where(AuditEvent.created_at <= until)
-    query = query.order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc()).offset(offset).limit(limit)
-    events = list(db.scalars(query).all())
-    if actor.role == 'platform_admin':
-        return events
 
-    visible = []
-    for event in events:
-        try:
-            if event.entity_type == 'application':
-                application_id = int(event.entity_id)
-            elif event.entity_type == 'evidence':
-                evidence = db.get(Evidence, int(event.entity_id))
-                if evidence is None:
-                    continue
-                application_id = evidence.application_id
-            elif event.entity_type == 'obligation':
-                obligation = db.get(Obligation, int(event.entity_id))
-                if obligation is None or obligation.application_id is None:
-                    continue
-                application_id = obligation.application_id
-            elif event.entity_type in {'undertaking', 'evc_assessment'}:
-                model = Undertaking if event.entity_type == 'undertaking' else EvcAssessment
-                record = db.get(model, int(event.entity_id))
-                if record is None:
-                    continue
-                application_id = record.application_id
-            else:
-                continue
-            row = db.execute(
-                select(Application, Institution)
-                .join(Institution, Application.institution_id == Institution.id)
-                .where(Application.id == application_id)
-            ).first()
-            if row is None:
-                continue
-            ensure_region_access(actor, row[1].region_code)
-            visible.append(event)
-        except (ValueError, TypeError):
-            continue
-        except Exception as exc:
-            if isinstance(exc, HTTPException):
-                continue
-            raise
-    return visible
+    if actor.role != 'platform_admin':
+        region = actor.region_code
+        if not region:
+            return []
+        in_region_application = exists(
+            select(1)
+            .select_from(Application)
+            .join(Institution, Application.institution_id == Institution.id)
+            .where(
+                cast(Application.id, String) == AuditEvent.entity_id,
+                Institution.region_code == region,
+            )
+        )
+        in_region_evidence = exists(
+            select(1)
+            .select_from(Evidence)
+            .join(Application, Evidence.application_id == Application.id)
+            .join(Institution, Application.institution_id == Institution.id)
+            .where(
+                cast(Evidence.id, String) == AuditEvent.entity_id,
+                Institution.region_code == region,
+            )
+        )
+        in_region_obligation = exists(
+            select(1)
+            .select_from(Obligation)
+            .join(Application, Obligation.application_id == Application.id)
+            .join(Institution, Application.institution_id == Institution.id)
+            .where(
+                cast(Obligation.id, String) == AuditEvent.entity_id,
+                Institution.region_code == region,
+            )
+        )
+        in_region_undertaking = exists(
+            select(1)
+            .select_from(Undertaking)
+            .join(Application, Undertaking.application_id == Application.id)
+            .join(Institution, Application.institution_id == Institution.id)
+            .where(
+                cast(Undertaking.id, String) == AuditEvent.entity_id,
+                Institution.region_code == region,
+            )
+        )
+        in_region_evc_assessment = exists(
+            select(1)
+            .select_from(EvcAssessment)
+            .join(Application, EvcAssessment.application_id == Application.id)
+            .join(Institution, Application.institution_id == Institution.id)
+            .where(
+                cast(EvcAssessment.id, String) == AuditEvent.entity_id,
+                Institution.region_code == region,
+            )
+        )
+        query = query.where(
+            or_(
+                and_(AuditEvent.entity_type == 'application', in_region_application),
+                and_(AuditEvent.entity_type == 'evidence', in_region_evidence),
+                and_(AuditEvent.entity_type == 'obligation', in_region_obligation),
+                and_(AuditEvent.entity_type == 'undertaking', in_region_undertaking),
+                and_(AuditEvent.entity_type == 'evc_assessment', in_region_evc_assessment),
+            )
+        )
+
+    query = query.order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc()).offset(offset).limit(limit)
+    return list(db.scalars(query).all())
 
 
 def _count_by(db: Session, model: type, column: object) -> dict[str, int]:
