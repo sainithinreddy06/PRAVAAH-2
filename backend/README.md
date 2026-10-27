@@ -79,3 +79,8 @@ ruff check app tests migrations
 
 ## Schema and security notes
 Migration `20261024_0001` creates the initial domain schema; `20261025_0002` adds undertakings and EVC assessment snapshots. The Compose password is for local development only. Evidence storage is local by default; production-grade private storage and malware scanning remain outstanding. No official AICTE rules or data are seeded.
+
+
+## Evidence retention (Phase 14)
+
+The cleanup command is report-only by default. From the `backend` directory, run `python -m scripts.cleanup_expired_evidence --limit 100` to count eligible records. Only after policy-owner approval and operational review, run `python -m scripts.cleanup_expired_evidence --execute --limit 100` to delete eligible objects. Set `EVIDENCE_RETENTION_DAYS` to the approved interval. This setting is not itself a statement of legal requirements. Successful deletions preserve evidence metadata as an expired tombstone and write an audit event.
