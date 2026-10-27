@@ -259,12 +259,14 @@ def download_evidence(
     evidence_id: int,
     actor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     evidence = db.get(Evidence, evidence_id)
     if evidence is None:
         raise HTTPException(status_code=404, detail='Evidence not found')
 
     _application_for_actor(db, evidence.application_id, actor)
+    if evidence.review_status == 'expired':
+        raise HTTPException(status_code=410, detail='Evidence has expired under the retention policy')
     try:
         content = get_evidence_storage().get(evidence.storage_key)
     except FileNotFoundError as exc:
