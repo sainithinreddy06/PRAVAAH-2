@@ -36,7 +36,6 @@ def audit_event_payload(
             "details_json": details_json,
             "entity_id": entity_id,
             "entity_type": entity_type,
-            "event_id": event_id,
             "previous_hash": previous_hash,
             "reason": reason,
         },
