@@ -381,6 +381,26 @@ def test_applicant_cannot_review_evidence(client: TestClient) -> None:
 
 
 
+
+def test_evidence_upload_rejects_malware_scan_detection(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def reject_content(content: bytes) -> None:
+        raise ValueError('Malware detected in evidence file')
+
+    monkeypatch.setattr('app.api.routes.compliance.scan_evidence', reject_content)
+    response = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('suspect.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'Evidence failed the malware scan'
+    assert list(Path(settings.evidence_storage_dir).iterdir()) == []
+    with _Session() as db:
+        assert db.query(Evidence).filter_by(original_filename='suspect.pdf').count() == 0
+
+
 def test_audit_checkpoint_signature_is_verifiable(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     secret = 'checkpoint-test-secret-' + ('x' * 32)
     monkeypatch.setattr(settings, 'audit_checkpoint_secret', secret)
