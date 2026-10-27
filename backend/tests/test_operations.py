@@ -198,3 +198,36 @@ def test_recommendations_flag_obligation_overdue_earlier_today(client: TestClien
 def test_regional_officer_cannot_get_recommendations_for_another_region(client: TestClient) -> None:
     response = client.get('/api/v1/applications/2/recommendations', headers=_headers(2))
     assert response.status_code == 403
+
+
+def test_regional_metrics_are_scoped_to_the_actor_region(client: TestClient) -> None:
+    past_due = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=1)
+    with _Session() as db:
+        db.add_all([
+            Obligation(
+                application_id=1,
+                owner_user_id=1,
+                obligation_type='document_submission',
+                title='TS open obligation',
+                due_at=past_due,
+                status='open',
+            ),
+            Obligation(
+                application_id=2,
+                owner_user_id=1,
+                obligation_type='document_submission',
+                title='AP open obligation',
+                due_at=past_due,
+                status='open',
+            ),
+        ])
+        db.commit()
+
+    response = client.get('/api/v1/operations/metrics', headers=_headers(2))
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['applications_total'] == 1
+    assert payload['applications_by_status'] == {'draft': 1}
+    assert payload['obligations_total'] == 1
+    assert payload['obligations_by_status'] == {'open': 1}
+    assert payload['overdue_obligations'] == 1
