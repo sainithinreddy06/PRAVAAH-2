@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import json
 from collections.abc import Generator
 from pathlib import Path
@@ -377,3 +378,39 @@ def test_applicant_cannot_review_evidence(client: TestClient) -> None:
         json={'review_status': 'accepted', 'reviewer_notes': 'Self approval attempt'},
     )
     assert response.status_code == 403
+
+
+
+def test_audit_checkpoint_signature_is_verifiable(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    secret = 'checkpoint-test-secret-' + ('x' * 32)
+    monkeypatch.setattr(settings, 'audit_checkpoint_secret', secret)
+
+    response = client.get('/api/v1/audit/checkpoint', headers=_headers(3))
+    assert response.status_code == 200
+    checkpoint = response.json()
+    assert checkpoint['signature_algorithm'] == 'HMAC-SHA256'
+
+    signed_payload = json.dumps(
+        {
+            'event_count': checkpoint['event_count'],
+            'generated_at': checkpoint['generated_at'],
+            'head_hash': checkpoint['head_hash'],
+        },
+        sort_keys=True,
+        separators=(',', ':'),
+    )
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        signed_payload.encode('utf-8'),
+        hashlib.sha256,
+    ).hexdigest()
+    assert hmac.compare_digest(checkpoint['signature'], expected_signature)
+
+
+def test_audit_checkpoint_fails_closed_without_signing_secret(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, 'audit_checkpoint_secret', '')
+    response = client.get('/api/v1/audit/checkpoint', headers=_headers(3))
+    assert response.status_code == 503
+    assert response.json()['detail'] == 'Audit checkpoint signing is not configured'
