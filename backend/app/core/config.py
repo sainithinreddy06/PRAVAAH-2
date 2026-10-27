@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     evidence_clamav_port: int = 3310
     evidence_clamav_timeout_seconds: float = 10.0
     max_evidence_size_bytes: int = 10485760
+    evidence_retention_days: int = 365
     audit_checkpoint_secret: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -34,6 +35,8 @@ class Settings(BaseSettings):
             raise ValueError('Access token lifetime must be positive')
         if self.max_evidence_size_bytes < 1:
             raise ValueError('Maximum evidence size must be positive')
+        if self.evidence_retention_days < 1:
+            raise ValueError('Evidence retention period must be positive')
         if self.evidence_storage_backend not in {'local', 's3'}:
             raise ValueError('Evidence storage backend must be local or s3')
         if self.evidence_clamav_port < 1 or self.evidence_clamav_port > 65535:
