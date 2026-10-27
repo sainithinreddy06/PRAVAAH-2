@@ -125,6 +125,53 @@ def test_policy_version_date_range_must_be_valid(client: TestClient) -> None:
     assert response.json()['detail'] == 'effective_until must be after effective_from'
 
 
+def test_upload_rejects_policy_version_not_yet_effective(client: TestClient) -> None:
+    policy = client.post(
+        '/api/v1/policies',
+        headers=_headers(3),
+        json={
+            'policy_key': 'DOC.FUTURE',
+            'version': 1,
+            'title': 'Future policy',
+            'effective_from': '2099-01-01T00:00:00Z',
+        },
+    )
+    assert policy.status_code == 201
+
+    response = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        data={'policy_id': str(policy.json()['id'])},
+        files={'file': ('identity.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'Policy version is not yet effective'
+
+
+def test_upload_rejects_expired_policy_version(client: TestClient) -> None:
+    policy = client.post(
+        '/api/v1/policies',
+        headers=_headers(3),
+        json={
+            'policy_key': 'DOC.EXPIRED',
+            'version': 1,
+            'title': 'Expired policy',
+            'effective_from': '2000-01-01T00:00:00Z',
+            'effective_until': '2001-01-01T00:00:00Z',
+        },
+    )
+    assert policy.status_code == 201
+
+    response = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        data={'policy_id': str(policy.json()['id'])},
+        files={'file': ('identity.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'Policy version has expired'
+
+
 def test_upload_stores_hash_and_generated_storage_key(client: TestClient) -> None:
     content = b'%PDF-1.7\nminimal test PDF payload'
     response = client.post(
