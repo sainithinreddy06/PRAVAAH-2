@@ -22,7 +22,7 @@ The assigned inspector must be active and belong to the application region, unle
 - `POST /api/v1/evc/visits/{visit_id}/start` starts a scheduled visit. The assigned inspector or platform admin can start it.
 - `POST /api/v1/evc/visits/{visit_id}/complete` submits findings and checklist results. Required checklist items must have a result; required items cannot be marked `not_applicable`; unknown or duplicate result IDs are rejected.
 
-Completion stores checklist results and findings, sets `completed_at`, increments `report_revision`, and writes a tamper-evident audit event. The current implementation records the first completed report revision; editing and versioning subsequent report revisions is not yet supported.
+Completion stores checklist results and findings, sets `completed_at`, increments `report_revision`, and writes a tamper-evident audit event. The first completion creates immutable report revision 1. To amend a completed report, use `POST /api/v1/evc/visits/{visit_id}/reports` with revised findings, checklist results and a required change reason. `GET /api/v1/evc/visits/{visit_id}/reports` lists the full revision history in order. Each amendment adds a new immutable report row, updates the visit's current snapshot and increments `report_revision`; earlier revisions remain unchanged. Concurrent amendments are guarded by a conditional revision update.
 
 ## Migration and verification
 
