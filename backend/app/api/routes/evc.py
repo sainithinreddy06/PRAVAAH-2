@@ -12,6 +12,7 @@ from app.models.audit_event import AuditEvent
 from app.models.evidence import Evidence
 from app.models.evc_assessment import EvcAssessment
 from app.models.evc_visit import EvcVisit
+from app.models.evc_visit_report import EvcVisitReport
 from app.models.institution import Institution
 from app.models.obligation import Obligation
 from app.models.undertaking import Undertaking
@@ -19,9 +20,12 @@ from app.models.user import User
 from app.schemas.evc import (
     EvcAssessmentCreate,
     EvcAssessmentResponse,
+    EvcChecklistResult,
+    EvcReportAmendment,
     EvcVisitComplete,
     EvcVisitCreate,
     EvcVisitResponse,
+    EvcVisitReportResponse,
     UndertakingCreate,
     UndertakingResponse,
     UndertakingReview,
@@ -48,6 +52,43 @@ def _application_access(db: Session, application_id: int, actor: User) -> Applic
 
 def _undertaking_access(db: Session, undertaking: Undertaking, actor: User) -> None:
     _application_access(db, undertaking.application_id, actor)
+
+
+def _validated_evc_results(checklist_json: str, results: list[EvcChecklistResult]) -> tuple[str, list[str]]:
+    checklist = json.loads(checklist_json)
+    checklist_by_id = {item['item_id']: item for item in checklist}
+    result_ids = [item.item_id for item in results]
+    if len(result_ids) != len(set(result_ids)):
+        raise HTTPException(status_code=422, detail='Checklist result IDs must be unique')
+    unknown_ids = sorted(set(result_ids) - set(checklist_by_id))
+    if unknown_ids:
+        raise HTTPException(status_code=422, detail='Results contain unknown checklist item IDs')
+    result_id_set = set(result_ids)
+    missing_required = sorted(
+        item['item_id'] for item in checklist
+        if item.get('required', True) and item['item_id'] not in result_id_set
+    )
+    if missing_required:
+        raise HTTPException(
+            status_code=422,
+            detail={'message': 'All required checklist items need a result', 'item_ids': missing_required},
+        )
+    required_not_applicable = sorted(
+        result.item_id for result in results
+        if checklist_by_id[result.item_id].get('required', True) and result.outcome == 'not_applicable'
+    )
+    if required_not_applicable:
+        raise HTTPException(
+            status_code=422,
+            detail={'message': 'Required checklist items cannot be marked not applicable', 'item_ids': required_not_applicable},
+        )
+    results_json = json.dumps(
+        [result.model_dump() for result in results],
+        sort_keys=True,
+        separators=(',', ':'),
+    )
+    failed_ids = sorted(result.item_id for result in results if result.outcome == 'fail')
+    return results_json, failed_ids
 
 
 def _audit(db: Session, actor: User, entity_type: str, entity_id: int, action: str, details: dict[str, object]) -> None:
@@ -234,6 +275,81 @@ def create_evc_assessment(
     return assessment
 
 
+@router.get('/evc/visits/{visit_id}/reports', response_model=list[EvcVisitReportResponse])
+def list_evc_visit_reports(
+    visit_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[EvcVisitReport]:
+    visit = db.get(EvcVisit, visit_id)
+    if visit is None:
+        raise HTTPException(status_code=404, detail='EVC visit not found')
+    _application_access(db, visit.application_id, actor)
+    return list(db.scalars(
+        select(EvcVisitReport)
+        .where(EvcVisitReport.visit_id == visit.id)
+        .order_by(EvcVisitReport.revision.asc())
+    ).all())
+
+
+@router.post('/evc/visits/{visit_id}/reports', response_model=EvcVisitReportResponse, status_code=status.HTTP_201_CREATED)
+def amend_evc_visit_report(
+    visit_id: int,
+    payload: EvcReportAmendment,
+    actor: User = Depends(require_roles(*_REVIEW_ROLES)),
+    db: Session = Depends(get_db),
+) -> EvcVisitReport:
+    visit = db.get(EvcVisit, visit_id)
+    if visit is None:
+        raise HTTPException(status_code=404, detail='EVC visit not found')
+    _application_access(db, visit.application_id, actor)
+    if actor.role != 'platform_admin' and visit.assigned_to_user_id != actor.id:
+        raise HTTPException(status_code=403, detail='Only the assigned inspector can amend this report')
+    if visit.status != 'completed':
+        raise HTTPException(status_code=409, detail='Only completed visits can have report amendments')
+
+    results_json, failed_ids = _validated_evc_results(visit.checklist_json, payload.results)
+    next_revision = visit.report_revision + 1
+    now = datetime.now(UTC)
+    transition = db.execute(
+        update(EvcVisit)
+        .where(
+            EvcVisit.id == visit.id,
+            EvcVisit.status == 'completed',
+            EvcVisit.report_revision == visit.report_revision,
+        )
+        .values(
+            findings=payload.findings,
+            results_json=results_json,
+            report_revision=next_revision,
+            updated_at=now,
+        )
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Report revision changed concurrently; reload and retry')
+
+    report = EvcVisitReport(
+        visit_id=visit.id,
+        revision=next_revision,
+        findings=payload.findings,
+        results_json=results_json,
+        change_reason=payload.change_reason,
+        created_by_user_id=actor.id,
+    )
+    db.add(report)
+    _audit(db, actor, 'evc_visit', visit.id, 'evc.report_amended', {
+        'application_id': visit.application_id,
+        'report_revision': next_revision,
+        'change_reason': payload.change_reason,
+        'failed_items': failed_ids,
+    })
+    db.commit()
+    db.refresh(report)
+    return report
+
+
 @router.get('/applications/{application_id}/evc-assessments', response_model=list[EvcAssessmentResponse])
 def list_evc_assessments(
     application_id: int,
@@ -363,39 +479,8 @@ def complete_evc_visit(
     if visit.status != 'in_progress':
         raise HTTPException(status_code=409, detail='Only in-progress visits can be completed')
 
-    checklist = json.loads(visit.checklist_json)
-    checklist_by_id = {item['item_id']: item for item in checklist}
-    result_ids = [item.item_id for item in payload.results]
-    if len(result_ids) != len(set(result_ids)):
-        raise HTTPException(status_code=422, detail='Checklist result IDs must be unique')
-    unknown_ids = sorted(set(result_ids) - set(checklist_by_id))
-    if unknown_ids:
-        raise HTTPException(status_code=422, detail='Results contain unknown checklist item IDs')
-    missing_required = sorted(
-        item['item_id'] for item in checklist
-        if item.get('required', True) and item['item_id'] not in set(result_ids)
-    )
-    if missing_required:
-        raise HTTPException(
-            status_code=422,
-            detail={'message': 'All required checklist items need a result', 'item_ids': missing_required},
-        )
-    required_not_applicable = sorted(
-        result.item_id for result in payload.results
-        if checklist_by_id[result.item_id].get('required', True) and result.outcome == 'not_applicable'
-    )
-    if required_not_applicable:
-        raise HTTPException(
-            status_code=422,
-            detail={'message': 'Required checklist items cannot be marked not applicable', 'item_ids': required_not_applicable},
-        )
-
+    results_json, failed_ids = _validated_evc_results(visit.checklist_json, payload.results)
     now = datetime.now(UTC)
-    results_json = json.dumps(
-        [result.model_dump() for result in payload.results],
-        sort_keys=True,
-        separators=(',', ':'),
-    )
     transition = db.execute(
         update(EvcVisit)
         .where(EvcVisit.id == visit.id, EvcVisit.status == 'in_progress')
@@ -416,8 +501,16 @@ def complete_evc_visit(
         'application_id': visit.application_id,
         'report_revision': visit.report_revision + 1,
         'result_count': len(payload.results),
-        'failed_items': sorted(result.item_id for result in payload.results if result.outcome == 'fail'),
+        'failed_items': failed_ids,
     })
+    db.add(EvcVisitReport(
+        visit_id=visit.id,
+        revision=visit.report_revision + 1,
+        findings=payload.findings,
+        results_json=results_json,
+        change_reason='Initial inspection report',
+        created_by_user_id=actor.id,
+    ))
     db.commit()
     db.refresh(visit)
     return visit
