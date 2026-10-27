@@ -17,7 +17,6 @@ from app.db.session import get_db
 from app.main import app
 from app.models.audit_event import AuditEvent
 from app.models.evidence import Evidence
-from app.models.evidence import Evidence
 from app.models.application import Application
 from app.models.institution import Institution
 from app.models.user import User
