@@ -210,6 +210,9 @@ async def upload_evidence(
                 'application_id': application.id,
                 'sha256_digest': evidence.sha256_digest,
                 'policy_id': evidence.policy_id,
+                'policy_key': policy.policy_key if policy else None,
+                'policy_version': policy.version if policy else None,
+                'policy_source_reference': policy.source_reference if policy else None,
             },
         )
         db.commit()
