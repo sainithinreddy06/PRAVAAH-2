@@ -101,7 +101,25 @@ export function CompliancePage() {
     <div className="applications-toolbar panel"><div><strong>Obligations</strong><span>Showing up to 50 records in your account scope</span></div><div className="workflow-filters"><label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option value="">All statuses</option>{['open','in_progress','fulfilled','waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}</select></label><label>Due before<input type="datetime-local" value={dueBefore} onChange={e => setDueBefore(e.target.value)} /></label></div></div>
     <div className="panel workflow-list">{loading ? <p className="empty-copy">Loading obligations…</p> : items.length ? items.map(item => {
       const overdue = item.due_at && new Date(item.due_at).getTime() < Date.now() && ['open','in_progress'].includes(item.status);
-      return <article className="workflow-item" key={item.id}><div><strong>{item.title} {overdue && <span className="overdue-tag">Overdue</span>}</strong><p>#{item.id} · {item.obligation_type} · Application {item.application_id ? <Link to={'/applications/' + item.application_id}>#{item.application_id}</Link> : 'global'} · {item.owner_user_id ? 'Owner #' + item.owner_user_id : 'No owner'}</p><p>Due {dateTime(item.due_at)} · {formatStatus(item.status)}{item.policy_reference ? ' · ' + item.policy_reference : ''}</p><p>Deadline rule: {formatStatus(item.deadline_rule)}{item.deadline_days ? ' · ' + item.deadline_days + ' days' : ''}{item.policy_key_snapshot ? ' · Policy ' + item.policy_key_snapshot + ' v' + item.policy_version_snapshot : ''}</p>{item.deadline_calculation_json && <details><summary>Deadline calculation details</summary><code className="digest">{parsePayload(item.deadline_calculation_json)}</code></details>}{item.description && <p>{item.description}</p></div>{['regional_officer','platform_admin','institution_admin'].includes(user.role) && <label className="inline-select">Update status<select value={item.status} disabled={working} onChange={e => void updateStatus(item, e.target.value as Obligation['status'])}>{['open','in_progress','fulfilled','waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}</select></label>}</article>;
+      return (
+        <article className="workflow-item" key={item.id}>
+          <div>
+            <strong>{item.title} {overdue && <span className="overdue-tag">Overdue</span>}</strong>
+            <p>#{item.id} · {item.obligation_type} · Application {item.application_id ? <Link to={'/applications/' + item.application_id}>#{item.application_id}</Link> : 'global'} · {item.owner_user_id ? 'Owner #' + item.owner_user_id : 'No owner'}</p>
+            <p>Due {dateTime(item.due_at)} · {formatStatus(item.status)}{item.policy_reference ? ' · ' + item.policy_reference : ''}</p>
+            <p>Deadline rule: {formatStatus(item.deadline_rule)}{item.deadline_days ? ' · ' + item.deadline_days + ' days' : ''}{item.policy_key_snapshot ? ' · Policy ' + item.policy_key_snapshot + ' v' + item.policy_version_snapshot : ''}</p>
+            {item.deadline_calculation_json ? <details><summary>Deadline calculation details</summary><code className="digest">{parsePayload(item.deadline_calculation_json)}</code></details> : null}
+            {item.description ? <p>{item.description}</p> : null}
+          </div>
+          {['regional_officer', 'platform_admin', 'institution_admin'].includes(user.role) ? (
+            <label className="inline-select">Update status
+              <select value={item.status} disabled={working} onChange={e => void updateStatus(item, e.target.value as Obligation['status'])}>
+                {['open', 'in_progress', 'fulfilled', 'waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
+              </select>
+            </label>
+          ) : null}
+        </article>
+      );
     }) : <p className="empty-copy">No obligations match these filters in your account scope.</p>}</div>
     <section className="panel workflow-section"><header className="panel-heading"><div><h3>My notification inbox</h3><p>Records returned for the signed-in account only.</p></div></header>
       {notifications.length ? <div className="workflow-list">{notifications.map(item => <article className="workflow-item" key={item.id}><div><strong>{item.event_key}</strong><p>{formatStatus(item.channel)} · {formatStatus(item.status)} · {item.attempt_count} attempt(s) · {dateTime(item.created_at)}</p><p>{parsePayload(item.payload_json)}</p>{item.next_attempt_at && <p>Next attempt: {dateTime(item.next_attempt_at)}</p>}{item.processed_at && <p>Processed: {dateTime(item.processed_at)}</p>}{item.last_error && <p>Last error: {item.last_error}</p>}</div></article>)}</div> : <p className="empty-copy">{loading ? 'Loading inbox…' : 'No notifications are returned for this account.'}</p>}
