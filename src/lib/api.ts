@@ -114,6 +114,35 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function requestBlob(path: string): Promise<Blob> {
+  const headers = new Headers({ Accept: 'application/octet-stream' });
+  if (accessToken) headers.set('Authorization', 'Bearer ' + accessToken);
+  let response: Response;
+  try {
+    response = await fetch(API_BASE_URL + path, { headers });
+  } catch {
+    throw new ApiError(0, 'Could not reach the API. Check that the backend is running and VITE_API_BASE_URL is correct.');
+  }
+  if (response.status === 401) {
+    accessToken = null;
+    window.dispatchEvent(new Event('pravaah:unauthorized'));
+  }
+  if (!response.ok) {
+    let detail = 'Request failed (' + response.status + ').';
+    try {
+      const body: unknown = await response.json();
+      if (body && typeof body === 'object' && 'detail' in body) {
+        const value = (body as { detail?: unknown }).detail;
+        if (typeof value === 'string') detail = value;
+      }
+    } catch {
+      // Preserve the status-based message for non-JSON responses.
+    }
+    throw new ApiError(response.status, detail);
+  }
+  return response.blob();
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<TokenResponse>('/api/v1/auth/login', {
@@ -141,6 +170,7 @@ export const api = {
   listEvidence: (id: number) => request<Evidence[]>('/api/v1/applications/' + id + '/evidence'),
   uploadEvidence: (id: number, file: File, policyId?: number) => { const body = new FormData(); body.append('file', file); if (policyId) body.append('policy_id', String(policyId)); return request<Evidence>('/api/v1/applications/' + id + '/evidence', { method: 'POST', body }); },
   reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
+  downloadEvidence: (id: number) => requestBlob('/api/v1/evidence/' + id + '/download'),
   listObligations: (filters: { status?: string; due_before?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<Obligation[]>('/api/v1/obligations?' + query.toString()); },
   createObligation: (payload: { application_id: number; owner_user_id?: number; obligation_type: string; title: string; description?: string; due_at?: string; policy_reference?: string }) => request<Obligation>('/api/v1/obligations', { method: 'POST', body: JSON.stringify(payload) }),
   updateObligation: (id: number, payload: Partial<Pick<Obligation, 'title' | 'description' | 'due_at' | 'status' | 'policy_reference'>>) => request<Obligation>('/api/v1/obligations/' + id, { method: 'PATCH', body: JSON.stringify(payload) }),
