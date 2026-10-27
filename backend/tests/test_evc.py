@@ -175,6 +175,40 @@ def test_evc_visit_requires_assignment_and_complete_checklist(client: TestClient
     assert completed.json()['completed_at'] is not None
     assert 'Emergency exit sign missing' in completed.json()['results_json']
 
+    initial_reports = client.get(
+        f"/api/v1/evc/visits/{visit['id']}/reports",
+        headers=_headers(2),
+    )
+    assert initial_reports.status_code == 200
+    assert len(initial_reports.json()) == 1
+    assert initial_reports.json()[0]['revision'] == 1
+    original_findings = initial_reports.json()[0]['findings']
+
+    amended = client.post(
+        f"/api/v1/evc/visits/{visit['id']}/reports",
+        headers=_headers(2),
+        json={
+            'findings': 'Amended report clarifies the site safety remediation requirement.',
+            'change_reason': 'Clarify inspection finding after evidence review',
+            'results': [
+                {'item_id': 'site-safety', 'outcome': 'fail', 'notes': 'Emergency exit sign missing'},
+                {'item_id': 'records', 'outcome': 'pass'},
+            ],
+        },
+    )
+    assert amended.status_code == 201
+    assert amended.json()['revision'] == 2
+    assert amended.json()['change_reason'] == 'Clarify inspection finding after evidence review'
+
+    all_reports = client.get(
+        f"/api/v1/evc/visits/{visit['id']}/reports",
+        headers=_headers(2),
+    )
+    assert all_reports.status_code == 200
+    assert [item['revision'] for item in all_reports.json()] == [1, 2]
+    assert all_reports.json()[0]['findings'] == original_findings
+    assert all_reports.json()[1]['findings'] == amended.json()['findings']
+
     second_completion = client.post(
         f"/api/v1/evc/visits/{visit['id']}/complete",
         headers=_headers(2),
