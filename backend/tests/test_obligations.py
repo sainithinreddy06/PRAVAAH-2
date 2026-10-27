@@ -1,4 +1,5 @@
 from collections.abc import Generator
+import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -15,6 +16,7 @@ from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
 from app.models.notification import Notification
+from app.models.policy import Policy
 from app.models.user import User
 from app.services.notification_worker import run_notification_cycle
 
@@ -256,3 +258,95 @@ def test_notification_worker_retries_unsupported_channel_with_backoff(client: Te
     assert notification.last_error == 'RuntimeError: Unsupported notification channel: external_email'
     assert notification.next_attempt_at is not None
     assert notification.processed_at is None
+
+
+
+def test_policy_pinned_deadline_rule_records_calculation_provenance(client: TestClient) -> None:
+    with _Session() as db:
+        db.add(Policy(
+            id=1,
+            policy_key='DOC.DEADLINE',
+            version=3,
+            title='Document submission deadline',
+            source_reference='official-guidance-2026',
+            effective_from=datetime.now(UTC) - timedelta(days=10),
+            is_active=True,
+        ))
+        db.commit()
+
+    created = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'owner_user_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Policy deadline obligation',
+            'policy_id': 1,
+            'deadline_rule': 'fixed_days_from_creation',
+            'deadline_days': 14,
+        },
+    )
+    assert created.status_code == 201
+    data = created.json()
+    assert data['deadline_rule'] == 'fixed_days_from_creation'
+    assert data['deadline_days'] == 14
+    assert data['policy_id'] == 1
+    assert data['policy_key_snapshot'] == 'DOC.DEADLINE'
+    assert data['policy_version_snapshot'] == 3
+    assert data['due_at_calculated_at'] is not None
+    assert data['due_at'] is not None
+    calculation = json.loads(data['deadline_calculation_json'])
+    assert calculation['anchor'] == 'obligation_created_at'
+    assert calculation['offset_days'] == 14
+    assert calculation['policy_key'] == 'DOC.DEADLINE'
+    assert calculation['policy_version'] == 3
+    assert calculation['source'] == 'policy_version'
+
+    due_at = datetime.fromisoformat(data['due_at'])
+    assert timedelta(days=13, hours=23) < due_at - datetime.now(UTC) < timedelta(days=14, hours=1)
+
+    updated_due_at = (datetime.now(UTC) + timedelta(days=30)).isoformat()
+    updated = client.patch(
+        f"/api/v1/obligations/{data['id']}",
+        headers=_headers(2),
+        json={'due_at': updated_due_at},
+    )
+    assert updated.status_code == 200
+    updated_data = updated.json()
+    assert updated_data['deadline_rule'] == 'manual'
+    assert updated_data['deadline_days'] is None
+    override = json.loads(updated_data['deadline_calculation_json'])
+    assert override['source'] == 'manager_override'
+    assert override['previous_rule'] == 'fixed_days_from_creation'
+    assert override['policy_version'] == 3
+
+
+def test_calculated_obligation_deadline_requires_policy_and_days(client: TestClient) -> None:
+    missing_policy = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Missing policy reference',
+            'deadline_rule': 'fixed_days_from_creation',
+            'deadline_days': 10,
+        },
+    )
+    assert missing_policy.status_code == 422
+    assert missing_policy.json()['detail'] == 'A policy version is required for a rule-based deadline'
+
+    with_policy_but_no_days = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Missing deadline days',
+            'policy_id': 1,
+            'deadline_rule': 'fixed_days_from_creation',
+        },
+    )
+    assert with_policy_but_no_days.status_code == 422
+    assert with_policy_but_no_days.json()['detail'] == 'deadline_days is required for a rule-based deadline'
