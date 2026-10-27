@@ -11,6 +11,7 @@ from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.evidence import Evidence
 from app.models.evc_assessment import EvcAssessment
+from app.models.evc_visit import EvcVisit
 from app.models.institution import Institution
 from app.models.obligation import Obligation
 from app.models.undertaking import Undertaking
@@ -18,6 +19,9 @@ from app.models.user import User
 from app.schemas.evc import (
     EvcAssessmentCreate,
     EvcAssessmentResponse,
+    EvcVisitComplete,
+    EvcVisitCreate,
+    EvcVisitResponse,
     UndertakingCreate,
     UndertakingResponse,
     UndertakingReview,
@@ -240,3 +244,180 @@ def list_evc_assessments(
     return list(db.scalars(
         select(EvcAssessment).where(EvcAssessment.application_id == application_id).order_by(EvcAssessment.created_at.desc(), EvcAssessment.id.desc())
     ).all())
+
+
+
+@router.post('/evc/visits', response_model=EvcVisitResponse, status_code=status.HTTP_201_CREATED)
+def schedule_evc_visit(
+    payload: EvcVisitCreate,
+    actor: User = Depends(require_roles(*_REVIEW_ROLES)),
+    db: Session = Depends(get_db),
+) -> EvcVisit:
+    application = _application_access(db, payload.application_id, actor)
+    if payload.scheduled_at.tzinfo is None or payload.scheduled_at.utcoffset() is None:
+        raise HTTPException(status_code=422, detail='scheduled_at must include a timezone')
+    scheduled_at = payload.scheduled_at.astimezone(UTC)
+    if scheduled_at <= datetime.now(UTC):
+        raise HTTPException(status_code=422, detail='scheduled_at must be in the future')
+
+    assigned_user = db.get(User, payload.assigned_to_user_id)
+    if assigned_user is None or not assigned_user.is_active:
+        raise HTTPException(status_code=422, detail='Assigned inspector does not exist or is inactive')
+    if assigned_user.role not in {'regional_officer', 'platform_admin'}:
+        raise HTTPException(status_code=422, detail='Assigned user must be an inspector or platform administrator')
+    institution = db.get(Institution, application.institution_id)
+    if institution is None:
+        raise HTTPException(status_code=404, detail='Application institution not found')
+    if assigned_user.role != 'platform_admin' and assigned_user.region_code != institution.region_code:
+        raise HTTPException(status_code=422, detail='Assigned inspector must belong to the application region')
+
+    item_ids = [item.item_id for item in payload.checklist_items]
+    if len(item_ids) != len(set(item_ids)):
+        raise HTTPException(status_code=422, detail='Checklist item IDs must be unique')
+
+    visit = EvcVisit(
+        application_id=application.id,
+        scheduled_by_user_id=actor.id,
+        assigned_to_user_id=assigned_user.id,
+        scheduled_at=scheduled_at,
+        status='scheduled',
+        checklist_json=json.dumps(
+            [item.model_dump() for item in payload.checklist_items],
+            sort_keys=True,
+            separators=(',', ':'),
+        ),
+        results_json='[]',
+        report_revision=0,
+    )
+    db.add(visit)
+    db.flush()
+    _audit(db, actor, 'evc_visit', visit.id, 'evc.visit_scheduled', {
+        'application_id': application.id,
+        'assigned_to_user_id': assigned_user.id,
+        'scheduled_at': scheduled_at.isoformat(),
+        'checklist_items': len(item_ids),
+    })
+    db.commit()
+    db.refresh(visit)
+    return visit
+
+
+@router.get('/applications/{application_id}/evc-visits', response_model=list[EvcVisitResponse])
+def list_evc_visits(
+    application_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[EvcVisit]:
+    _application_access(db, application_id, actor)
+    return list(db.scalars(
+        select(EvcVisit)
+        .where(EvcVisit.application_id == application_id)
+        .order_by(EvcVisit.scheduled_at.desc(), EvcVisit.id.desc())
+    ).all())
+
+
+@router.post('/evc/visits/{visit_id}/start', response_model=EvcVisitResponse)
+def start_evc_visit(
+    visit_id: int,
+    actor: User = Depends(require_roles(*_REVIEW_ROLES)),
+    db: Session = Depends(get_db),
+) -> EvcVisit:
+    visit = db.get(EvcVisit, visit_id)
+    if visit is None:
+        raise HTTPException(status_code=404, detail='EVC visit not found')
+    _application_access(db, visit.application_id, actor)
+    if actor.role != 'platform_admin' and visit.assigned_to_user_id != actor.id:
+        raise HTTPException(status_code=403, detail='Only the assigned inspector can start this visit')
+    if visit.status != 'scheduled':
+        raise HTTPException(status_code=409, detail='Only scheduled visits can be started')
+
+    now = datetime.now(UTC)
+    transition = db.execute(
+        update(EvcVisit)
+        .where(EvcVisit.id == visit.id, EvcVisit.status == 'scheduled')
+        .values(status='in_progress', started_at=now, updated_at=now)
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Visit status changed concurrently; reload and retry')
+    _audit(db, actor, 'evc_visit', visit.id, 'evc.visit_started', {'application_id': visit.application_id})
+    db.commit()
+    db.refresh(visit)
+    return visit
+
+
+@router.post('/evc/visits/{visit_id}/complete', response_model=EvcVisitResponse)
+def complete_evc_visit(
+    visit_id: int,
+    payload: EvcVisitComplete,
+    actor: User = Depends(require_roles(*_REVIEW_ROLES)),
+    db: Session = Depends(get_db),
+) -> EvcVisit:
+    visit = db.get(EvcVisit, visit_id)
+    if visit is None:
+        raise HTTPException(status_code=404, detail='EVC visit not found')
+    _application_access(db, visit.application_id, actor)
+    if actor.role != 'platform_admin' and visit.assigned_to_user_id != actor.id:
+        raise HTTPException(status_code=403, detail='Only the assigned inspector can complete this visit')
+    if visit.status != 'in_progress':
+        raise HTTPException(status_code=409, detail='Only in-progress visits can be completed')
+
+    checklist = json.loads(visit.checklist_json)
+    checklist_by_id = {item['item_id']: item for item in checklist}
+    result_ids = [item.item_id for item in payload.results]
+    if len(result_ids) != len(set(result_ids)):
+        raise HTTPException(status_code=422, detail='Checklist result IDs must be unique')
+    unknown_ids = sorted(set(result_ids) - set(checklist_by_id))
+    if unknown_ids:
+        raise HTTPException(status_code=422, detail='Results contain unknown checklist item IDs')
+    missing_required = sorted(
+        item['item_id'] for item in checklist
+        if item.get('required', True) and item['item_id'] not in set(result_ids)
+    )
+    if missing_required:
+        raise HTTPException(
+            status_code=422,
+            detail={'message': 'All required checklist items need a result', 'item_ids': missing_required},
+        )
+    required_not_applicable = sorted(
+        result.item_id for result in payload.results
+        if checklist_by_id[result.item_id].get('required', True) and result.outcome == 'not_applicable'
+    )
+    if required_not_applicable:
+        raise HTTPException(
+            status_code=422,
+            detail={'message': 'Required checklist items cannot be marked not applicable', 'item_ids': required_not_applicable},
+        )
+
+    now = datetime.now(UTC)
+    results_json = json.dumps(
+        [result.model_dump() for result in payload.results],
+        sort_keys=True,
+        separators=(',', ':'),
+    )
+    transition = db.execute(
+        update(EvcVisit)
+        .where(EvcVisit.id == visit.id, EvcVisit.status == 'in_progress')
+        .values(
+            status='completed',
+            results_json=results_json,
+            findings=payload.findings,
+            report_revision=visit.report_revision + 1,
+            completed_at=now,
+            updated_at=now,
+        )
+        .execution_options(synchronize_session=False)
+    )
+    if transition.rowcount != 1:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Visit status changed concurrently; reload and retry')
+    _audit(db, actor, 'evc_visit', visit.id, 'evc.visit_completed', {
+        'application_id': visit.application_id,
+        'report_revision': visit.report_revision + 1,
+        'result_count': len(payload.results),
+        'failed_items': sorted(result.item_id for result in payload.results if result.outcome == 'fail'),
+    })
+    db.commit()
+    db.refresh(visit)
+    return visit
