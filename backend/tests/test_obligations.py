@@ -304,6 +304,8 @@ def test_policy_pinned_deadline_rule_records_calculation_provenance(client: Test
     assert calculation['source'] == 'policy_version'
 
     due_at = datetime.fromisoformat(data['due_at'])
+    if due_at.tzinfo is None:
+        due_at = due_at.replace(tzinfo=UTC)
     assert timedelta(days=13, hours=23) < due_at - datetime.now(UTC) < timedelta(days=14, hours=1)
 
     updated_due_at = (datetime.now(UTC) + timedelta(days=30)).isoformat()
@@ -323,6 +325,17 @@ def test_policy_pinned_deadline_rule_records_calculation_provenance(client: Test
 
 
 def test_calculated_obligation_deadline_requires_policy_and_days(client: TestClient) -> None:
+    with _Session() as db:
+        db.add(Policy(
+            id=1,
+            policy_key='DOC.DEADLINE',
+            version=1,
+            title='Document submission deadline',
+            source_reference='official-guidance',
+            is_active=True,
+        ))
+        db.commit()
+
     missing_policy = client.post(
         '/api/v1/obligations',
         headers=_headers(2),
