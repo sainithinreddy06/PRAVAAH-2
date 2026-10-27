@@ -13,12 +13,13 @@
 2. Authentication reloads active user data from the database; role and region checks are centralized but still need route-by-route tests.
 3. Policy versions store a key, integer version, source reference, effective dates and active flag.
 4. Evidence uploads now reject selected policy versions that are not yet effective or have expired. The upload audit event also snapshots the policy key, version and source reference alongside the policy ID and evidence SHA-256 digest, improving traceability if policy metadata is later reviewed.
-5. A regression test verifies that the evidence record and its upload audit event retain the selected policy version details. CI is running for this latest test and implementation; do not treat it as passed until the run concludes.
-6. Evidence files are still stored on the local filesystem. Production object storage, malware scanning, OCR provenance and discrepancy-review records remain separate gaps.
-7. Obligations lack a versioned source rule and explainable deadline calculation in the model. Notifications have a unique event key and attempt/error fields, but a durable scheduler/outbox/retry worker was not found in the inspected files.
-8. EVC is currently a readiness snapshot model. Separate visits, schedules, assignments, inspection checklists, findings and report revisions are not represented in the inspected model inventory.
-9. Audit events are queryable but do not yet have canonical hash-chain fields or a verification mechanism.
-10. Regional audit filtering has been moved into the SQL query before ordering and pagination; a regression assertion covers the case where a newer out-of-region event must not hide an in-region event on a small page.
+5. A regression test verifies that the evidence record and its upload audit event retain the selected policy version details. CI passed for the policy effective-window validation and its tests; CI for the later audit-snapshot change is pending.
+6. An authenticated evidence download endpoint now checks application access, constrains the resolved path to the configured evidence storage directory, and returns the original bytes as an attachment. Tests cover successful download and cross-region denial; latest CI is pending.
+7. Evidence files are still stored on the local filesystem. Production object storage, malware scanning, OCR provenance and discrepancy-review records remain separate gaps.
+8. Obligations lack a versioned source rule and explainable deadline calculation in the model. Notifications have a unique event key and attempt/error fields, but a durable scheduler/outbox/retry worker was not found in the inspected files.
+9. EVC is currently a readiness snapshot model. Separate visits, schedules, assignments, inspection checklists, findings and report revisions are not represented in the inspected model inventory.
+10. Audit events are queryable but do not yet have canonical hash-chain fields or a verification mechanism.
+11. Regional audit filtering has been moved into the SQL query before ordering and pagination; a regression assertion covers the case where a newer out-of-region event must not hide an in-region event on a small page.
 
 ## Phase 0 checklist
 - [x] Repository metadata, branch and baseline SHA recorded.
@@ -26,7 +27,8 @@
 - [x] Backend CI and frontend CI wired to run on `nithin-pravaah`.
 - [x] Regional audit pagination visibility fix and regression assertion committed.
 - [x] Policy effective-window validation and tests committed; CI passed for those commits.
-- [x] Evidence policy-version audit snapshot and regression test committed; latest CI pending.
+- [x] Evidence policy-version audit snapshot and regression test committed; CI pending.
+- [x] Authenticated evidence download endpoint and authorization tests committed; CI pending.
 - [ ] Finish reviewing all routes, test assertions, migrations and workflow YAML.
 - [ ] Confirm latest CI for policy traceability changes.
 - [ ] Complete remaining PostgreSQL integration, deployment configuration and environment checks.
