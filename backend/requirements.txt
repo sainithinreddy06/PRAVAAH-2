@@ -11,3 +11,4 @@ ruff>=0.8,<1.0
 argon2-cffi>=23.1,<26
 PyJWT>=2.9,<3.0
 python-multipart>=0.0.9,<1.0
+boto3>=1.35,<2.0
