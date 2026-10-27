@@ -184,12 +184,12 @@ def list_obligations(
     return list(db.scalars(query).all())
 
 
-@router.patch('/obligations/{obligation_id}', response_model=ObligationResponse)
 def _obligation_for_update_statement(obligation_id: int):
     """Lock an obligation row before applying a read-modify-write update."""
     return select(Obligation).where(Obligation.id == obligation_id).with_for_update()
 
 
+@router.patch('/obligations/{obligation_id}', response_model=ObligationResponse)
 def update_obligation(
     obligation_id: int,
     payload: ObligationUpdate,

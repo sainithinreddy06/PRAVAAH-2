@@ -16,6 +16,7 @@ from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
 from app.models.notification import Notification
+from app.models.obligation import Obligation
 from app.models.policy import Policy
 from app.models.user import User
 from app.services.notification_worker import run_notification_cycle
