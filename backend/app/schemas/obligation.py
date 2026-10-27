@@ -15,6 +15,9 @@ class ObligationCreate(BaseModel):
     description: str | None = Field(default=None, max_length=5000)
     due_at: datetime | None = None
     policy_reference: str | None = Field(default=None, max_length=240)
+    policy_id: int | None = Field(default=None, gt=0)
+    deadline_rule: Literal['manual', 'fixed_days_from_creation'] = 'manual'
+    deadline_days: int | None = Field(default=None, ge=1, le=3650)
 
 
 class ObligationUpdate(BaseModel):
@@ -38,6 +41,13 @@ class ObligationResponse(BaseModel):
     due_at: datetime | None
     status: str
     policy_reference: str | None
+    policy_id: int | None
+    policy_key_snapshot: str | None
+    policy_version_snapshot: int | None
+    deadline_rule: str
+    deadline_days: int | None
+    deadline_calculation_json: str | None
+    due_at_calculated_at: datetime | None
     created_at: datetime
 
 
