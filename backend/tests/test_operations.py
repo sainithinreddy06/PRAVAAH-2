@@ -73,6 +73,36 @@ def test_regional_officer_only_sees_audit_events_for_own_region(client: TestClie
     assert [event['entity_id'] for event in first_page.json()] == ['1']
 
 
+def test_platform_admin_can_verify_audit_hash_chain(client: TestClient) -> None:
+    response = client.get('/api/v1/audit/verify-chain', headers=_headers(3))
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['verified'] is True
+    assert payload['event_count'] == 2
+    assert payload['first_invalid_event_id'] is None
+    assert payload['head_matches'] is True
+
+
+def test_audit_hash_chain_verifier_detects_event_tampering(client: TestClient) -> None:
+    with _Session() as db:
+        event = db.get(AuditEvent, 1)
+        assert event is not None
+        event.details_json = '{"tampered":true}'
+        db.commit()
+
+    response = client.get('/api/v1/audit/verify-chain', headers=_headers(3))
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['verified'] is False
+    assert payload['first_invalid_event_id'] == 1
+    assert payload['head_matches'] is False
+
+
+def test_non_admin_cannot_verify_global_audit_chain(client: TestClient) -> None:
+    response = client.get('/api/v1/audit/verify-chain', headers=_headers(2))
+    assert response.status_code == 403
+
+
 def test_audit_events_rejects_reversed_date_range(client: TestClient) -> None:
     response = client.get(
         '/api/v1/audit/events',
