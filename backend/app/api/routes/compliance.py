@@ -6,7 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -20,6 +20,7 @@ from app.models.evidence import Evidence
 from app.models.institution import Institution
 from app.models.policy import Policy
 from app.models.user import User
+from app.services.evidence_storage import get_evidence_storage, scan_evidence
 from app.schemas.compliance import (
     EvidenceResponse,
     EvidenceReviewRequest,
@@ -185,13 +186,19 @@ async def upload_evidence(
     if signature is None or not content.startswith(signature[0]):
         raise HTTPException(status_code=415, detail='Only valid PDF, JPEG, and PNG files are accepted')
 
+    try:
+        scan_evidence(content)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail='Evidence failed the malware scan') from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Evidence scanning is unavailable') from exc
+
     storage_key = f'{uuid4().hex}{signature[1]}'
-    storage_root = Path(settings.evidence_storage_dir).resolve()
-    storage_root.mkdir(parents=True, exist_ok=True)
-    destination = (storage_root / storage_key).resolve()
-    if destination.parent != storage_root:
-        raise HTTPException(status_code=400, detail='Invalid storage key')
-    destination.write_bytes(content)
+    try:
+        storage = get_evidence_storage()
+        storage.put(storage_key, content, declared_type)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Evidence storage is unavailable') from exc
 
     evidence = Evidence(
         application_id=application.id,
@@ -220,7 +227,10 @@ async def upload_evidence(
         db.refresh(evidence)
     except Exception:
         db.rollback()
-        destination.unlink(missing_ok=True)
+        try:
+            storage.delete(storage_key)
+        except Exception:
+            pass
         raise
     return evidence
 
@@ -255,26 +265,20 @@ def download_evidence(
         raise HTTPException(status_code=404, detail='Evidence not found')
 
     _application_for_actor(db, evidence.application_id, actor)
-    storage_root = Path(settings.evidence_storage_dir).resolve()
-    destination = (storage_root / evidence.storage_key).resolve()
-    if destination.parent != storage_root:
-        raise HTTPException(status_code=404, detail='Evidence file not found')
-    if not destination.is_file():
-        raise HTTPException(status_code=404, detail='Evidence file not found')
+    try:
+        content = get_evidence_storage().get(evidence.storage_key)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail='Evidence file not found') from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Evidence storage is unavailable') from exc
 
-    if evidence.sha256_digest:
-        digest = hashlib.sha256()
-        with destination.open('rb') as stored_file:
-            for chunk in iter(lambda: stored_file.read(1024 * 1024), b''):
-                digest.update(chunk)
-        if digest.hexdigest() != evidence.sha256_digest:
-            raise HTTPException(status_code=409, detail='Evidence integrity check failed')
+    if evidence.sha256_digest and hashlib.sha256(content).hexdigest() != evidence.sha256_digest:
+        raise HTTPException(status_code=409, detail='Evidence integrity check failed')
 
-    return FileResponse(
-        path=destination,
+    return Response(
+        content=content,
         media_type=evidence.content_type or 'application/octet-stream',
-        filename=evidence.original_filename,
-        content_disposition_type='attachment',
+        headers={'Content-Disposition': f'attachment; filename="{evidence.original_filename}"'},
     )
 
 
