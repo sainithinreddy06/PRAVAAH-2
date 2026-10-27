@@ -271,6 +271,28 @@ def test_evidence_download_returns_original_bytes_to_authorized_user(client: Tes
     assert 'identity.pdf' in response.headers['content-disposition']
 
 
+
+def test_expired_evidence_download_is_gone(client: TestClient) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('expired.pdf', b'%PDF-1.7\\nexpired test document', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    with _Session() as db:
+        evidence = db.get(Evidence, upload.json()['id'])
+        assert evidence is not None
+        evidence.review_status = 'expired'
+        db.commit()
+
+    response = client.get(
+        f"/api/v1/evidence/{upload.json()['id']}/download",
+        headers=_headers(1),
+    )
+    assert response.status_code == 410
+    assert response.json()['detail'] == 'Evidence has expired under the retention policy'
+
+
 def test_evidence_download_rejects_file_modified_after_upload(client: TestClient) -> None:
     content = b'%PDF-1.7\\noriginal evidence bytes'
     upload = client.post(
