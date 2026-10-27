@@ -366,3 +366,52 @@ def test_calculated_obligation_deadline_requires_policy_and_days(client: TestCli
     )
     assert with_policy_but_no_days.status_code == 422
     assert with_policy_but_no_days.json()['detail'] == 'deadline_days is required for a rule-based deadline'
+
+
+
+def test_regional_escalation_does_not_notify_other_regions(client: TestClient) -> None:
+    due_at = (datetime.now(UTC) - timedelta(days=2)).isoformat()
+    for application_id, owner_user_id, title in [
+        (1, 1, 'TS overdue obligation'),
+        (2, 4, 'AP overdue obligation'),
+    ]:
+        created = client.post(
+            '/api/v1/obligations',
+            headers=_headers(3),
+            json={
+                'application_id': application_id,
+                'owner_user_id': owner_user_id,
+                'obligation_type': 'document_submission',
+                'title': title,
+                'due_at': due_at,
+            },
+        )
+        assert created.status_code == 201, created.text
+
+    escalated = client.post('/api/v1/obligations/escalate-due', headers=_headers(2))
+    assert escalated.status_code == 200
+    assert escalated.json()['notifications_created'] == 1
+
+    ts_inbox = client.get('/api/v1/notifications', headers=_headers(1))
+    ap_inbox = client.get('/api/v1/notifications', headers=_headers(4))
+    assert ts_inbox.status_code == 200
+    assert ap_inbox.status_code == 200
+    assert len(ts_inbox.json()) == 1
+    assert 'TS overdue obligation' in ts_inbox.json()[0]['payload_json']
+    assert ap_inbox.json() == []
+
+
+def test_only_platform_admin_can_create_global_obligation(client: TestClient) -> None:
+    payload = {
+        'application_id': None,
+        'owner_user_id': None,
+        'obligation_type': 'policy_review',
+        'title': 'Global policy review',
+    }
+    denied = client.post('/api/v1/obligations', headers=_headers(2), json=payload)
+    assert denied.status_code == 403
+    assert denied.json()['detail'] == 'Only platform admins can create global obligations'
+
+    created = client.post('/api/v1/obligations', headers=_headers(3), json=payload)
+    assert created.status_code == 201
+    assert created.json()['application_id'] is None
