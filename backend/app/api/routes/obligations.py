@@ -108,7 +108,7 @@ def create_obligation(
         'rule': payload.deadline_rule,
         'calculated_at': now.isoformat(),
         'due_at': due_at.isoformat() if due_at else None,
-        'source': 'policy_version' if policy else 'user_supplied',
+        'source': 'policy_version' if payload.deadline_rule == 'fixed_days_from_creation' and policy else 'user_supplied',
         'policy_id': policy.id if policy else None,
         'policy_key': policy.policy_key if policy else None,
         'policy_version': policy.version if policy else None,
@@ -123,6 +123,7 @@ def create_obligation(
         policy_version_snapshot=policy.version if policy else None,
         deadline_calculation_json=json.dumps(calculation, sort_keys=True),
         due_at_calculated_at=now if due_at is not None else None,
+        created_at=now,
         status='open',
     )
     db.add(obligation)
