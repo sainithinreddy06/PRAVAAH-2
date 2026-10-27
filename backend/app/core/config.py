@@ -25,11 +25,16 @@ class Settings(BaseSettings):
             raise ValueError('Access token lifetime must be positive')
         if self.max_evidence_size_bytes < 1:
             raise ValueError('Maximum evidence size must be positive')
-        if self.app_env.casefold() == 'production' and (
-            self.jwt_secret_key == 'development-only-change-me-before-deployment'
-            or len(self.jwt_secret_key) < 32
-        ):
-            raise ValueError('Configure a strong JWT secret of at least 32 characters in production')
+        if self.app_env.casefold() == 'production':
+            if (
+                self.jwt_secret_key == 'development-only-change-me-before-deployment'
+                or len(self.jwt_secret_key) < 32
+            ):
+                raise ValueError('Configure a strong JWT secret of at least 32 characters in production')
+            if len(self.audit_checkpoint_secret) < 32:
+                raise ValueError('Configure an audit checkpoint secret of at least 32 characters in production')
+            if '*' in self.cors_origin_list:
+                raise ValueError('Wildcard CORS origins are not allowed in production')
         return self
 
     @property
