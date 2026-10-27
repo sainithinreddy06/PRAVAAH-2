@@ -14,7 +14,9 @@ from app.main import app
 from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
+from app.models.notification import Notification
 from app.models.user import User
+from app.services.notification_worker import run_notification_cycle
 
 _engine = create_engine(
     'sqlite://',
@@ -194,3 +196,63 @@ def test_overdue_escalation_is_idempotent_and_in_app(client: TestClient) -> None
             action='obligation.overdue_notified',
         ).all()
     assert len(audit_events) == 1
+
+
+
+def test_notification_worker_queues_and_delivers_overdue_obligation(client: TestClient) -> None:
+    due_at = (datetime.now(UTC) - timedelta(hours=2)).isoformat()
+    created = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'owner_user_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Worker overdue item',
+            'due_at': due_at,
+        },
+    )
+    assert created.status_code == 201
+
+    with _Session() as db:
+        result = run_notification_cycle(db)
+
+    assert result['overdue_notifications_queued'] == 1
+    assert result['notifications_delivered'] == 1
+    assert result['notifications_retried'] == 0
+    with _Session() as db:
+        notification = db.query(Notification).filter_by(
+            event_key=f"obligation-overdue:{created.json()['id']}:{created.json()['due_at']}"
+        ).one()
+    assert notification.status == 'delivered'
+    assert notification.attempt_count == 1
+    assert notification.processed_at is not None
+    assert notification.next_attempt_at is None
+
+
+def test_notification_worker_retries_unsupported_channel_with_backoff(client: TestClient) -> None:
+    with _Session() as db:
+        db.add(Notification(
+            recipient_user_id=1,
+            event_key='test-unsupported-channel',
+            channel='external_email',
+            status='pending',
+            attempt_count=0,
+            payload_json='{"type":"test"}',
+            next_attempt_at=datetime.now(UTC) - timedelta(seconds=1),
+        ))
+        db.commit()
+
+    with _Session() as db:
+        result = run_notification_cycle(db)
+
+    assert result['notifications_retried'] == 1
+    with _Session() as db:
+        notification = db.query(Notification).filter_by(
+            event_key='test-unsupported-channel'
+        ).one()
+    assert notification.status == 'pending'
+    assert notification.attempt_count == 1
+    assert notification.last_error == 'RuntimeError: Unsupported notification channel: external_email'
+    assert notification.next_attempt_at is not None
+    assert notification.processed_at is None
