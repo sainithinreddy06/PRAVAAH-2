@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -240,6 +241,32 @@ def list_evidence(
             .where(Evidence.application_id == application_id)
             .order_by(Evidence.created_at.desc(), Evidence.id.desc())
         ).all()
+    )
+
+
+@router.get('/evidence/{evidence_id}/download')
+def download_evidence(
+    evidence_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    evidence = db.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail='Evidence not found')
+
+    _application_for_actor(db, evidence.application_id, actor)
+    storage_root = Path(settings.evidence_storage_dir).resolve()
+    destination = (storage_root / evidence.storage_key).resolve()
+    if destination.parent != storage_root:
+        raise HTTPException(status_code=404, detail='Evidence file not found')
+    if not destination.is_file():
+        raise HTTPException(status_code=404, detail='Evidence file not found')
+
+    return FileResponse(
+        path=destination,
+        media_type=evidence.content_type or 'application/octet-stream',
+        filename=evidence.original_filename,
+        content_disposition_type='attachment',
     )
 
 
