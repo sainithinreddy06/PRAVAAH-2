@@ -6,7 +6,7 @@
 - Working branch: `nithin-pravaah`
 - All implementation commits in this workstream target `nithin-pravaah`; no merge or deployment was performed.
 - The frontend CI run on this branch passed.
-- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. CI for the notification worker changes is still running at the time of this update.
+- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. The latest backend CI for the worker code passed: 64 tests passed, Ruff passed, and the PostgreSQL migration graph/upgrade/current-head checks passed.
 
 ## Findings and implementation progress
 1. Application lifecycle uses a hard-coded allowed-transition graph; transitions require reasons and use backend authorization/conditional update guards.
@@ -16,7 +16,7 @@
 5. A regression test verifies that the evidence record and its upload audit event retain the selected policy version details. CI passed for the policy effective-window validation and its tests; CI for the later audit-snapshot change is pending.
 6. An authenticated evidence download endpoint now checks application access, constrains the resolved path to the configured evidence storage directory, and returns the original bytes as an attachment. Tests cover successful download and cross-region denial; latest CI is pending.
 7. Evidence files are still stored on the local filesystem. Production object storage, malware scanning, OCR provenance and discrepancy-review records remain separate gaps.
-8. A durable notification worker has now been added. It periodically scans overdue obligations, creates idempotent in-app outbox records, processes pending records, records attempts and processing timestamps, and applies capped exponential backoff for retryable channel errors. The existing API escalation endpoint remains available. External email/SMS delivery adapters are not implemented; the worker currently supports in-app delivery only. A migration adds retry scheduling and processing fields.
+8. A durable notification worker has now been added. It periodically scans overdue obligations, creates idempotent in-app outbox records, processes pending records, records attempts and processing timestamps, and applies capped exponential backoff for retryable channel errors. The existing API escalation endpoint remains available. External email/SMS delivery adapters are not implemented; the worker currently supports in-app delivery only. A migration adds retry scheduling and processing fields. Latest CI verified this with 64 passing tests, Ruff passing, and successful PostgreSQL migration checks.
 9. EVC is currently a readiness snapshot model. Separate visits, schedules, assignments, inspection checklists, findings and report revisions are not represented in the inspected model inventory.
 10. Audit events are queryable but do not yet have canonical hash-chain fields or a verification mechanism.
 11. Regional audit filtering has been moved into the SQL query before ordering and pagination; a regression assertion covers the case where a newer out-of-region event must not hide an in-region event on a small page.
@@ -29,9 +29,9 @@
 - [x] Policy effective-window validation and tests committed; CI passed for those commits.
 - [x] Evidence policy-version audit snapshot and regression test committed; CI passed.
 - [x] Authenticated evidence download endpoint and authorization tests committed; CI passed.
-- [x] Durable notification worker, retry scheduling migration and regression tests committed; CI pending.
+- [x] Durable notification worker, retry scheduling migration and regression tests committed; latest backend CI passed (64 tests, Ruff, PostgreSQL migrations).
 - [ ] Finish reviewing all routes, test assertions, migrations and workflow YAML.
-- [ ] Confirm latest CI for notification worker, migration and regression tests.
+- [x] Confirm latest CI for notification worker, migration and regression tests.
 - [ ] Complete remaining PostgreSQL integration, deployment configuration and environment checks.
 - [ ] Mark Phase 0 complete only after remaining verification items are addressed.
 
