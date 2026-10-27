@@ -2,9 +2,9 @@
 
 ## CI evidence
 
-- Backend CI: 115 tests passed; Ruff reported all checks passed on commit `6d3b26dae28bb1712921b4a71fdab32cbcd77c65`.
-- Frontend CI: TypeScript typecheck, lint, and production build passed on commit `99465d32fe806da4a4fd070a892a512d721d9e19`.
-- A regression test is being added for expired-evidence downloads; rerun backend CI before treating the newest branch head as verified.
+- Backend CI: 116 tests passed; Ruff reported all checks passed on commit `75fc99cb31f37965ad81c203413affbc0910c19a`. [Run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40572452659).
+- Frontend CI: TypeScript typecheck, lint, and production build passed on commit `99465d32fe806da4a4fd070a892a512d721d9e19`. [Run](https://github.com/sainithinreddy06/PRAVAAH-2/actions/runs/40571646493).
+- The expired-evidence download regression test is included in the backend run above. Backend and frontend CI are green for the latest backend changes and current frontend source.
 
 ## Netlify configuration
 
