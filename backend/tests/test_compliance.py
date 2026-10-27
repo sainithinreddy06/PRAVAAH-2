@@ -1,4 +1,5 @@
 import hashlib
+import json
 from collections.abc import Generator
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.audit_event import AuditEvent
+from app.models.evidence import Evidence
 from app.models.application import Application
 from app.models.institution import Institution
 from app.models.user import User
@@ -170,6 +172,48 @@ def test_upload_rejects_expired_policy_version(client: TestClient) -> None:
     )
     assert response.status_code == 422
     assert response.json()['detail'] == 'Policy version has expired'
+
+
+def test_evidence_audit_snapshots_attached_policy_version(client: TestClient) -> None:
+    policy = client.post(
+        '/api/v1/policies',
+        headers=_headers(3),
+        json={
+            'policy_key': 'DOC.IDENTITY',
+            'version': 7,
+            'title': 'Identity evidence',
+            'source_reference': 'official-policy-reference',
+        },
+    )
+    assert policy.status_code == 201
+    policy_data = policy.json()
+
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        data={'policy_id': str(policy_data['id'])},
+        files={'file': ('identity.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    assert upload.json()['policy_id'] == policy_data['id']
+
+    with _Session() as db:
+        evidence = db.get(Evidence, upload.json()['id'])
+        event = db.scalar(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.entity_id == str(upload.json()['id']),
+                AuditEvent.action == 'evidence.uploaded',
+            )
+        )
+    assert evidence is not None
+    assert evidence.policy_id == policy_data['id']
+    assert event is not None
+    details = json.loads(event.details_json)
+    assert details['policy_id'] == policy_data['id']
+    assert details['policy_key'] == 'DOC.IDENTITY'
+    assert details['policy_version'] == 7
+    assert details['policy_source_reference'] == 'official-policy-reference'
 
 
 def test_upload_stores_hash_and_generated_storage_key(client: TestClient) -> None:
