@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     evidence_storage_dir: str = ".data/evidence"
     max_evidence_size_bytes: int = 10485760
+    audit_checkpoint_secret: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
