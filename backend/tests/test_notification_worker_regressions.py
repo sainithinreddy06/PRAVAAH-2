@@ -1,7 +1,7 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.db.base import Base
@@ -110,9 +110,7 @@ def test_transient_delivery_error_uses_bounded_retry_schedule() -> None:
             assert notification.status == "pending"
             assert notification.attempt_count == 1
             assert notification.processed_at is None
-            assert notification.next_attempt_at == now.replace(tzinfo=None) + __import__(
-                "datetime"
-            ).timedelta(seconds=30)
+            assert notification.next_attempt_at == now + timedelta(seconds=30)
             assert notification.last_error == "RuntimeError: Unsupported notification channel: unsupported-test-channel"
     finally:
         Base.metadata.drop_all(bind=engine)
