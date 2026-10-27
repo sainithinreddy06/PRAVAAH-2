@@ -396,7 +396,8 @@ def test_evidence_upload_rejects_malware_scan_detection(
     )
     assert response.status_code == 422
     assert response.json()['detail'] == 'Evidence failed the malware scan'
-    assert list(Path(settings.evidence_storage_dir).iterdir()) == []
+    storage_dir = Path(settings.evidence_storage_dir)
+    assert not storage_dir.exists() or list(storage_dir.iterdir()) == []
     with _Session() as db:
         assert db.query(Evidence).filter_by(original_filename='suspect.pdf').count() == 0
 
