@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+import json
 from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
 
@@ -7,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.base import Base
 from app.db.session import get_db
@@ -101,6 +105,42 @@ def test_audit_hash_chain_verifier_detects_event_tampering(client: TestClient) -
 def test_non_admin_cannot_verify_global_audit_chain(client: TestClient) -> None:
     response = client.get('/api/v1/audit/verify-chain', headers=_headers(2))
     assert response.status_code == 403
+
+
+def test_platform_admin_can_export_signed_audit_checkpoint(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = 'test-audit-checkpoint-secret-' + ('x' * 16)
+    monkeypatch.setattr(settings, 'audit_checkpoint_secret', secret)
+    response = client.get('/api/v1/audit/checkpoint', headers=_headers(3))
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['event_count'] == 2
+    assert len(payload['head_hash']) == 64
+    assert payload['signature_algorithm'] == 'HMAC-SHA256'
+
+    signed_payload = json.dumps(
+        {
+            'event_count': payload['event_count'],
+            'generated_at': payload['generated_at'],
+            'head_hash': payload['head_hash'],
+        },
+        sort_keys=True,
+        separators=(',', ':'),
+    )
+    expected = hmac.new(secret.encode(), signed_payload.encode(), hashlib.sha256).hexdigest()
+    assert hmac.compare_digest(payload['signature'], expected)
+
+
+def test_audit_checkpoint_is_disabled_without_signing_secret(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(settings, 'audit_checkpoint_secret', '')
+    response = client.get('/api/v1/audit/checkpoint', headers=_headers(3))
+    assert response.status_code == 503
+    assert response.json()['detail'] == 'Audit checkpoint signing is not configured'
 
 
 def test_audit_events_rejects_reversed_date_range(client: TestClient) -> None:
