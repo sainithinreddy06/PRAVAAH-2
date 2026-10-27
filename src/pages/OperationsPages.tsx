@@ -51,42 +51,60 @@ export function CompliancePage() {
   const { user } = useAuth();
   const [items, setItems] = useState<Obligation[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [deadlineRule, setDeadlineRule] = useState<'manual' | 'fixed_days_from_creation'>('manual');
+  const [deadlinePolicyId, setDeadlinePolicyId] = useState('');
+  const [deadlineDays, setDeadlineDays] = useState('14');
   const [status, setStatus] = useState('');
   const [dueBefore, setDueBefore] = useState('');
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const load = useCallback(async () => { setLoading(true); setError(''); try { const [obligations, inbox] = await Promise.all([api.listObligations({ status: status || undefined, due_before: dueBefore ? new Date(dueBefore).toISOString() : undefined, limit: 50 }), api.listNotifications()]); setItems(obligations); setNotifications(inbox); } catch (reason) { setError(reason instanceof ApiError ? reason.detail : 'Could not load compliance records.'); } finally { setLoading(false); } }, [status, dueBefore]);
+  const load = useCallback(async () => { setLoading(true); setError(''); try { const [obligations, inbox, policyItems] = await Promise.all([api.listObligations({ status: status || undefined, due_before: dueBefore ? new Date(dueBefore).toISOString() : undefined, limit: 50 }), api.listNotifications(), api.listPolicies()]); setItems(obligations); setNotifications(inbox); setPolicies(policyItems); } catch (reason) { setError(reason instanceof ApiError ? reason.detail : 'Could not load compliance records.'); } finally { setLoading(false); } }, [status, dueBefore]);
   useEffect(() => { void load(); }, [load]);
   const create = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); setWorking(true); setError(''); setNotice('');
     try {
-      await api.createObligation({ application_id: Number(data.get('application_id')), owner_user_id: data.get('owner_user_id') ? Number(data.get('owner_user_id')) : undefined, obligation_type: String(data.get('obligation_type')).trim(), title: String(data.get('title')).trim(), description: String(data.get('description') || '').trim() || undefined, due_at: data.get('due_at') ? new Date(String(data.get('due_at'))).toISOString() : undefined, policy_reference: String(data.get('policy_reference') || '').trim() || undefined });
-      setNotice('Obligation created. No notification is implied by this action.'); form.reset(); await load();
+      const payload = {
+        application_id: Number(data.get('application_id')),
+        owner_user_id: data.get('owner_user_id') ? Number(data.get('owner_user_id')) : undefined,
+        obligation_type: String(data.get('obligation_type')).trim(),
+        title: String(data.get('title')).trim(),
+        description: String(data.get('description') || '').trim() || undefined,
+        policy_reference: String(data.get('policy_reference') || '').trim() || undefined,
+        deadline_rule: deadlineRule,
+        ...(deadlineRule === 'fixed_days_from_creation'
+          ? { policy_id: Number(deadlinePolicyId), deadline_days: Number(deadlineDays) }
+          : { due_at: data.get('due_at') ? new Date(String(data.get('due_at'))).toISOString() : undefined }),
+      };
+      await api.createObligation(payload);
+      setNotice('Obligation created with recorded deadline provenance. No notification is implied by this action.'); form.reset(); setDeadlineRule('manual'); setDeadlinePolicyId(''); setDeadlineDays('14'); await load();
     } catch (reason) { setError(reason instanceof ApiError ? reason.detail : 'Could not create obligation.'); } finally { setWorking(false); }
   };
   const updateStatus = async (item: Obligation, next: Obligation['status']) => { setWorking(true); setError(''); setNotice(''); try { await api.updateObligation(item.id, { status: next }); setNotice('Obligation #' + item.id + ' updated.'); await load(); } catch (reason) { setError(reason instanceof ApiError ? reason.detail : 'Could not update obligation.'); } finally { setWorking(false); } };
   const escalate = async () => { setWorking(true); setError(''); setNotice(''); try { const result = await api.escalateDue(); setNotice(result.notifications_created + ' in-app notification(s) queued by this API-triggered escalation.'); await load(); } catch (reason) { setError(reason instanceof ApiError ? reason.detail : 'Could not queue overdue notifications.'); } finally { setWorking(false); } };
   return <section className="workflow-page">
     <div className="applications-heading"><div><p className="eyebrow">COMPLIANCE / FOLLOW-UP</p><h2>Obligations &amp; notifications</h2><p className="muted">Deadlines and current-user in-app notification queue.</p></div><div className="overview-actions"><button className="secondary-button" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Refresh</button>{reviewer(user.role) && <button className="secondary-button" onClick={() => void escalate()} disabled={working}><Bell size={15} /> Queue overdue alerts</button>}</div></div>
-    <div className="notice-panel"><Bell size={17} /><span>Overdue escalation is manual and API-triggered. “Pending” means queued, not delivered.</span></div>
+    <div className="notice-panel"><Bell size={17} /><span>A background worker can process overdue alerts; manual API-triggered escalation remains available. “Pending” means queued, not delivered.</span></div>
     {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} />{error}<button onClick={() => void load()}>Retry</button></div>}
     {notice && <div className="feedback feedback-success" role="status">{notice}</div>}
     {['regional_officer', 'platform_admin', 'institution_admin'].includes(user.role) && <form className="panel workflow-form" onSubmit={create}>
       <div><h3>Create application obligation</h3><p>Global obligations are restricted to platform administrators; this form links the record to an application.</p></div>
       <label>Application ID<input name="application_id" type="number" min="1" required /></label><label>Owner user ID<input name="owner_user_id" type="number" min="1" /></label>
       <label>Type<input name="obligation_type" required minLength={2} maxLength={60} /></label><label>Title<input name="title" required minLength={3} maxLength={240} /></label>
-      <label>Due date<input name="due_at" type="datetime-local" /></label><label>Policy reference<input name="policy_reference" maxLength={240} /></label>
+      <label>Deadline rule<select name="deadline_rule" value={deadlineRule} onChange={event => setDeadlineRule(event.target.value as 'manual' | 'fixed_days_from_creation')}><option value="manual">Manual due date</option><option value="fixed_days_from_creation">Fixed days from creation (policy-pinned)</option></select></label>
+      {deadlineRule === 'manual' ? <label>Due date<input name="due_at" type="datetime-local" /></label> : <><label>Policy version<select name="policy_id" required value={deadlinePolicyId} onChange={event => setDeadlinePolicyId(event.target.value)}><option value="">Select active policy version</option>{policies.map(policy => <option key={policy.id} value={policy.id}>{policy.policy_key} v{policy.version} · {policy.title}</option>)}</select></label><label>Deadline days<input name="deadline_days" type="number" min="1" max="3650" required value={deadlineDays} onChange={event => setDeadlineDays(event.target.value)} /></label></>}
+      <label>Policy reference<input name="policy_reference" maxLength={240} /></label>
       <label className="full-field">Description<textarea name="description" rows={3} maxLength={5000} /></label><button className="primary-button" disabled={working}><Plus size={15} /> Create obligation</button>
     </form>}
     <div className="applications-toolbar panel"><div><strong>Obligations</strong><span>Showing up to 50 records in your account scope</span></div><div className="workflow-filters"><label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option value="">All statuses</option>{['open','in_progress','fulfilled','waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}</select></label><label>Due before<input type="datetime-local" value={dueBefore} onChange={e => setDueBefore(e.target.value)} /></label></div></div>
     <div className="panel workflow-list">{loading ? <p className="empty-copy">Loading obligations…</p> : items.length ? items.map(item => {
       const overdue = item.due_at && new Date(item.due_at).getTime() < Date.now() && ['open','in_progress'].includes(item.status);
-      return <article className="workflow-item" key={item.id}><div><strong>{item.title} {overdue && <span className="overdue-tag">Overdue</span>}</strong><p>#{item.id} · {item.obligation_type} · Application {item.application_id ? <Link to={'/applications/' + item.application_id}>#{item.application_id}</Link> : 'global'} · {item.owner_user_id ? 'Owner #' + item.owner_user_id : 'No owner'}</p><p>Due {dateTime(item.due_at)} · {formatStatus(item.status)}{item.policy_reference ? ' · ' + item.policy_reference : ''}</p>{item.description && <p>{item.description}</p>}</div>{['regional_officer','platform_admin','institution_admin'].includes(user.role) && <label className="inline-select">Update status<select value={item.status} disabled={working} onChange={e => void updateStatus(item, e.target.value as Obligation['status'])}>{['open','in_progress','fulfilled','waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}</select></label>}</article>;
+      return <article className="workflow-item" key={item.id}><div><strong>{item.title} {overdue && <span className="overdue-tag">Overdue</span>}</strong><p>#{item.id} · {item.obligation_type} · Application {item.application_id ? <Link to={'/applications/' + item.application_id}>#{item.application_id}</Link> : 'global'} · {item.owner_user_id ? 'Owner #' + item.owner_user_id : 'No owner'}</p><p>Due {dateTime(item.due_at)} · {formatStatus(item.status)}{item.policy_reference ? ' · ' + item.policy_reference : ''}</p><p>Deadline rule: {formatStatus(item.deadline_rule)}{item.deadline_days ? ' · ' + item.deadline_days + ' days' : ''}{item.policy_key_snapshot ? ' · Policy ' + item.policy_key_snapshot + ' v' + item.policy_version_snapshot : ''}</p>{item.deadline_calculation_json && <details><summary>Deadline calculation details</summary><code className="digest">{parsePayload(item.deadline_calculation_json)}</code></details>}{item.description && <p>{item.description}</p></div>{['regional_officer','platform_admin','institution_admin'].includes(user.role) && <label className="inline-select">Update status<select value={item.status} disabled={working} onChange={e => void updateStatus(item, e.target.value as Obligation['status'])}>{['open','in_progress','fulfilled','waived'].map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}</select></label>}</article>;
     }) : <p className="empty-copy">No obligations match these filters in your account scope.</p>}</div>
     <section className="panel workflow-section"><header className="panel-heading"><div><h3>My notification inbox</h3><p>Records returned for the signed-in account only.</p></div></header>
-      {notifications.length ? <div className="workflow-list">{notifications.map(item => <article className="workflow-item" key={item.id}><div><strong>{item.event_key}</strong><p>{formatStatus(item.channel)} · {formatStatus(item.status)} · {item.attempt_count} attempt(s) · {dateTime(item.created_at)}</p><p>{parsePayload(item.payload_json)}</p>{item.last_error && <p>Last error: {item.last_error}</p>}</div></article>)}</div> : <p className="empty-copy">{loading ? 'Loading inbox…' : 'No notifications are returned for this account.'}</p>}
+      {notifications.length ? <div className="workflow-list">{notifications.map(item => <article className="workflow-item" key={item.id}><div><strong>{item.event_key}</strong><p>{formatStatus(item.channel)} · {formatStatus(item.status)} · {item.attempt_count} attempt(s) · {dateTime(item.created_at)}</p><p>{parsePayload(item.payload_json)}</p>{item.next_attempt_at && <p>Next attempt: {dateTime(item.next_attempt_at)}</p>}{item.processed_at && <p>Processed: {dateTime(item.processed_at)}</p>}{item.last_error && <p>Last error: {item.last_error}</p>}</div></article>)}</div> : <p className="empty-copy">{loading ? 'Loading inbox…' : 'No notifications are returned for this account.'}</p>}
     </section>
   </section>;
 }
@@ -110,7 +128,7 @@ export function OperationsPage() {
   if (!reviewer(user.role)) return <section className="workflow-page"><h2>Access unavailable</h2><p className="muted">The API restricts operational metrics and audit events to regional officers and platform administrators.</p></section>;
   return <section className="workflow-page">
     <div className="applications-heading"><div><p className="eyebrow">OPERATIONS / AUDIT</p><h2>Audit &amp; operational metrics</h2><p className="muted">Visibility is scoped by the backend to your region or administrator policy.</p></div><button className="secondary-button" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Refresh</button></div>
-    <div className="notice-panel"><ShieldCheck size={17} /><span>Metrics are API-scoped counts. Audit records are not established as tamper-evident or immutable.</span></div>
+    <div className="notice-panel"><ShieldCheck size={17} /><span>Metrics are API-scoped counts. Audit events use a hash chain; signed checkpoints require external archival for stronger tamper evidence.</span></div>
     {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} />{error}</div>}
     {metrics && <div className="metric-grid">{[['Applications',metrics.applications_total],['Evidence',metrics.evidence_total],['Obligations',metrics.obligations_total],['Undertakings',metrics.undertakings_total],['Overdue obligations',metrics.overdue_obligations]].map(([label,value]) => <article className="panel metric-card" key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>}
     {metrics && <div className="metric-breakdowns panel"><div><h3>Applications by status</h3>{Object.entries(metrics.applications_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Evidence review</h3>{Object.entries(metrics.evidence_by_review_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Obligations</h3>{Object.entries(metrics.obligations_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Undertakings</h3>{Object.entries(metrics.undertakings_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div></div>}
