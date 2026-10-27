@@ -14,10 +14,20 @@ from app.models.institution import Institution
 from app.models.obligation import Obligation
 from app.models.undertaking import Undertaking
 from app.models.user import User
+from app.services.audit_chain import verify_audit_chain
 from app.schemas.operations import AuditEventResponse, OperationalMetricsResponse
 
 router = APIRouter(tags=['audit and operational intelligence'])
 _AUDIT_ROLES = ('regional_officer', 'platform_admin')
+
+
+@router.get('/audit/verify-chain', response_model=dict[str, int | bool | None])
+def verify_audit_event_chain(
+    actor: User = Depends(require_roles('platform_admin')),
+    db: Session = Depends(get_db),
+) -> dict[str, int | bool | None]:
+    """Verify the integrity of the complete audit chain; platform-admin only."""
+    return verify_audit_chain(db)
 
 
 @router.get('/audit/events', response_model=list[AuditEventResponse])
