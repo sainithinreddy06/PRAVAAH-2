@@ -185,13 +185,18 @@ def list_obligations(
 
 
 @router.patch('/obligations/{obligation_id}', response_model=ObligationResponse)
+def _obligation_for_update_statement(obligation_id: int):
+    """Lock an obligation row before applying a read-modify-write update."""
+    return select(Obligation).where(Obligation.id == obligation_id).with_for_update()
+
+
 def update_obligation(
     obligation_id: int,
     payload: ObligationUpdate,
     actor: User = Depends(require_roles(*_MANAGER_ROLES)),
     db: Session = Depends(get_db),
 ) -> Obligation:
-    obligation = db.get(Obligation, obligation_id)
+    obligation = db.scalar(_obligation_for_update_statement(obligation_id))
     if obligation is None:
         raise HTTPException(status_code=404, detail='Obligation not found')
     _check_obligation_access(db, obligation, actor)
