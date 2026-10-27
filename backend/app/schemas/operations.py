@@ -13,6 +13,8 @@ class AuditEventResponse(BaseModel):
     action: str
     reason: str | None
     details_json: str
+    previous_hash: str
+    event_hash: str
     created_at: datetime
 
 
