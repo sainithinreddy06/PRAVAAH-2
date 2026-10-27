@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -415,3 +415,29 @@ def test_only_platform_admin_can_create_global_obligation(client: TestClient) ->
     created = client.post('/api/v1/obligations', headers=_headers(3), json=payload)
     assert created.status_code == 201
     assert created.json()['application_id'] is None
+
+
+
+def test_obligation_and_audit_write_roll_back_together_on_audit_failure(client: TestClient) -> None:
+    def fail_audit_insert(mapper, connection, target) -> None:
+        raise RuntimeError('simulated audit persistence failure')
+
+    event.listen(AuditEvent, 'before_insert', fail_audit_insert)
+    try:
+        with pytest.raises(RuntimeError, match='simulated audit persistence failure'):
+            client.post(
+                '/api/v1/obligations',
+                headers={'Authorization': f'Bearer {create_access_token("2")}'},
+                json={
+                    'application_id': 1,
+                    'owner_user_id': 1,
+                    'obligation_type': 'document_submission',
+                    'title': 'Must roll back with audit',
+                },
+            )
+    finally:
+        event.remove(AuditEvent, 'before_insert', fail_audit_insert)
+
+    with _Session() as db:
+        assert db.query(Obligation).filter_by(title='Must roll back with audit').count() == 0
+        assert db.query(AuditEvent).filter_by(action='obligation.created').count() == 0
