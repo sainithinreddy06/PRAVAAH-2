@@ -262,6 +262,14 @@ def download_evidence(
     if not destination.is_file():
         raise HTTPException(status_code=404, detail='Evidence file not found')
 
+    if evidence.sha256_digest:
+        digest = hashlib.sha256()
+        with destination.open('rb') as stored_file:
+            for chunk in iter(lambda: stored_file.read(1024 * 1024), b''):
+                digest.update(chunk)
+        if digest.hexdigest() != evidence.sha256_digest:
+            raise HTTPException(status_code=409, detail='Evidence integrity check failed')
+
     return FileResponse(
         path=destination,
         media_type=evidence.content_type or 'application/octet-stream',
