@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { AlertCircle, Bell, Plus, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { api, ApiError, formatStatus, type AuditEvent, type Notification, type Obligation, type OperationalMetrics, type Policy } from '../lib/api';
+import { api, ApiError, formatStatus, type AuditCheckpoint, type AuditEvent, type Notification, type Obligation, type OperationalMetrics, type Policy } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
 
 const dateTime = (value: string | null) => value ? new Date(value).toLocaleString() : 'No due date';
@@ -113,6 +113,8 @@ export function OperationsPage() {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<OperationalMetrics | null>(null);
   const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [checkpoint, setCheckpoint] = useState<AuditCheckpoint | null>(null);
+  const [checkpointWorking, setCheckpointWorking] = useState(false);
   const [filters, setFilters] = useState({ entity_type: '', entity_id: '', action: '', actor_user_id: '', since: '', until: '' });
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -125,10 +127,21 @@ export function OperationsPage() {
     } catch (reason) { setMetrics(null); setEvents([]); setError(reason instanceof ApiError ? reason.detail : 'Operational data is unavailable.'); } finally { setLoading(false); }
   }, [filters, offset]);
   useEffect(() => { if (reviewer(user.role)) void load(); }, [load, user.role]);
+  const createCheckpoint = async () => {
+    setCheckpointWorking(true); setError('');
+    try {
+      setCheckpoint(await api.createAuditCheckpoint());
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.detail : 'Could not create signed audit checkpoint.');
+    } finally {
+      setCheckpointWorking(false);
+    }
+  };
   if (!reviewer(user.role)) return <section className="workflow-page"><h2>Access unavailable</h2><p className="muted">The API restricts operational metrics and audit events to regional officers and platform administrators.</p></section>;
   return <section className="workflow-page">
-    <div className="applications-heading"><div><p className="eyebrow">OPERATIONS / AUDIT</p><h2>Audit &amp; operational metrics</h2><p className="muted">Visibility is scoped by the backend to your region or administrator policy.</p></div><button className="secondary-button" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Refresh</button></div>
+    <div className="applications-heading"><div><p className="eyebrow">OPERATIONS / AUDIT</p><h2>Audit &amp; operational metrics</h2><p className="muted">Visibility is scoped by the backend to your region or administrator policy.</p></div><div className="overview-actions"><button className="secondary-button" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Refresh</button>{administrator(user.role) && <button className="secondary-button" onClick={() => void createCheckpoint()} disabled={checkpointWorking}><ShieldCheck size={15} /> {checkpointWorking ? 'Signing…' : 'Create signed checkpoint'}</button>}</div></div>
     <div className="notice-panel"><ShieldCheck size={17} /><span>Metrics are API-scoped counts. Audit events use a hash chain; signed checkpoints require external archival for stronger tamper evidence.</span></div>
+    {checkpoint && <section className="panel workflow-section"><header className="panel-heading"><div><h3>Signed audit checkpoint</h3><p>Store this checkpoint outside the application database in separately controlled immutable storage.</p></div></header><div className="checkpoint-details"><p><strong>Events covered:</strong> {checkpoint.event_count}</p><p><strong>Generated:</strong> {dateTime(checkpoint.generated_at)}</p><p><strong>Chain head:</strong> <code className="digest">{checkpoint.head_hash}</code></p><p><strong>Algorithm:</strong> {checkpoint.signature_algorithm}</p><p><strong>Signature:</strong> <code className="digest">{checkpoint.signature}</code></p><small>The signature requires the configured AUDIT_CHECKPOINT_SECRET. Creating a checkpoint does not archive it externally.</small></div></section>}
     {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} />{error}</div>}
     {metrics && <div className="metric-grid">{[['Applications',metrics.applications_total],['Evidence',metrics.evidence_total],['Obligations',metrics.obligations_total],['Undertakings',metrics.undertakings_total],['Overdue obligations',metrics.overdue_obligations]].map(([label,value]) => <article className="panel metric-card" key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>}
     {metrics && <div className="metric-breakdowns panel"><div><h3>Applications by status</h3>{Object.entries(metrics.applications_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Evidence review</h3>{Object.entries(metrics.evidence_by_review_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Obligations</h3>{Object.entries(metrics.obligations_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div><div><h3>Undertakings</h3>{Object.entries(metrics.undertakings_by_status).map(([k,v]) => <p key={k}>{formatStatus(k)} <strong>{v}</strong></p>)}</div></div>}
@@ -138,7 +151,7 @@ export function OperationsPage() {
       <label>Since<input type="date" value={filters.since} onChange={e => setFilters({ ...filters, since: e.target.value })} /></label><label>Until<input type="date" value={filters.until} onChange={e => setFilters({ ...filters, until: e.target.value })} /></label><button className="primary-button">Apply filters</button>
     </form>
     <div className="panel workflow-list"><header className="panel-heading"><div><h3>Audit events</h3><p>{loading ? 'Loading…' : events.length + ' event(s), page size 50'}</p></div></header>
-      {events.length ? events.map(item => <article className="workflow-item" key={item.id}><div><strong>{item.action}</strong><p>{item.entity_type} #{item.entity_id} · Actor {item.actor_user_id ? '#' + item.actor_user_id : 'unknown'} · {dateTime(item.created_at)}</p><p>{item.reason || 'No reason recorded'}</p><code className="digest">{item.details_json}</code></div></article>) : <p className="empty-copy">{loading ? 'Loading events…' : 'No events match these filters.'}</p>}
+      {events.length ? events.map(item => <article className="workflow-item" key={item.id}><div><strong>{item.action}</strong><p>{item.entity_type} #{item.entity_id} · Actor {item.actor_user_id ? '#' + item.actor_user_id : 'unknown'} · {dateTime(item.created_at)}</p><p>{item.reason || 'No reason recorded'}</p><code className="digest">Details: {item.details_json}</code><p><small>Previous hash</small><br /><code className="digest">{item.previous_hash}</code></p><p><small>Event hash</small><br /><code className="digest">{item.event_hash}</code></p></div></article>) : <p className="empty-copy">{loading ? 'Loading events…' : 'No events match these filters.'}</p>}
       <div className="pagination-actions"><button className="secondary-button" disabled={offset === 0 || loading} onClick={() => setOffset(Math.max(0, offset - 50))}>Previous</button><span>Offset {offset}</span><button className="secondary-button" disabled={events.length < 50 || loading} onClick={() => setOffset(offset + 50)}>Next</button></div>
     </div>
   </section>;
