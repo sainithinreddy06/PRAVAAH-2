@@ -87,13 +87,9 @@ def _deliver_in_app(db: Session, notification: Notification) -> None:
     return None
 
 
-def run_notification_cycle(db: Session, *, now: datetime | None = None) -> dict[str, int]:
-    """Queue overdue obligations and process a bounded batch of durable notifications."""
-    current = _utc(now or datetime.now(UTC))
-    queued = _queue_overdue_obligations(db, current)
-    db.flush()
-
-    notifications = db.scalars(
+def _pending_notifications_statement(current: datetime):
+    """Build the bounded, lock-aware query used by competing notification workers."""
+    return (
         select(Notification)
         .where(
             Notification.status == "pending",
@@ -103,7 +99,16 @@ def run_notification_cycle(db: Session, *, now: datetime | None = None) -> dict[
         .order_by(Notification.created_at.asc(), Notification.id.asc())
         .limit(BATCH_SIZE)
         .with_for_update(skip_locked=True)
-    ).all()
+    )
+
+
+def run_notification_cycle(db: Session, *, now: datetime | None = None) -> dict[str, int]:
+    """Queue overdue obligations and process a bounded batch of durable notifications."""
+    current = _utc(now or datetime.now(UTC))
+    queued = _queue_overdue_obligations(db, current)
+    db.flush()
+
+    notifications = db.scalars(_pending_notifications_statement(current)).all()
 
     delivered = 0
     retried = 0
