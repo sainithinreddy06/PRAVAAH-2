@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import String, and_, cast, exists, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import ensure_region_access, require_roles
+from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.application import Application
 from app.models.audit_event import AuditEvent
