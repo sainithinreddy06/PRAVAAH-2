@@ -6,7 +6,7 @@
 - Working branch: `nithin-pravaah`
 - All implementation commits in this workstream target `nithin-pravaah`; no merge or deployment was performed.
 - The frontend CI run on this branch passed.
-- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. The latest backend CI for the notification worker passed: 64 tests passed, Ruff passed, and PostgreSQL migration graph/upgrade/current-head checks passed. The subsequent audit hash-chain CI passed with 67 tests, Ruff, and PostgreSQL migration checks. The EVC visit lifecycle CI passed with 70 tests, Ruff, and PostgreSQL migration checks.
+- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. The latest backend CI for the notification worker passed: 64 tests passed, Ruff passed, and PostgreSQL migration graph/upgrade/current-head checks passed. The subsequent audit hash-chain CI passed with 67 tests, Ruff, and PostgreSQL migration checks. The EVC visit lifecycle CI passed with 70 tests, Ruff, and PostgreSQL migration checks. The obligation deadline provenance phase passed with 72 tests, Ruff, and PostgreSQL migration checks.
 
 ## Findings and implementation progress
 1. Application lifecycle uses a hard-coded allowed-transition graph; transitions require reasons and use backend authorization/conditional update guards.
@@ -32,8 +32,10 @@
 - [x] Durable notification worker, retry scheduling migration and regression tests committed; backend CI passed (64 tests, Ruff, PostgreSQL migrations).
 - [x] Tamper-evident audit hash chain, backfill migration, verification endpoint and regression tests committed; backend CI passed (67 tests, Ruff, PostgreSQL migrations).
 - [x] EVC visit scheduling, assigned inspection, checklist validation, completion workflow, migration and regression tests committed; backend CI passed (70 tests, Ruff, PostgreSQL migrations).
+- [x] Policy-pinned obligation deadline calculation and override provenance committed; backend CI passed (72 tests, Ruff, PostgreSQL migrations).
 - [ ] Finish reviewing all routes, test assertions, migrations and workflow YAML.
 - [ ] Add immutable multi-revision EVC report history before production use.
+- [ ] Review and approve the actual legal/policy basis for each configured obligation deadline; the code intentionally does not infer statutory rules.
 - [ ] Add external signed checkpoints/immutable audit export before production use.
 - [x] Confirm latest CI for notification worker, migration and regression tests.
 - [ ] Complete remaining PostgreSQL integration, deployment configuration and environment checks.
