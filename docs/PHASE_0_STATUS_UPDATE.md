@@ -6,7 +6,7 @@
 - Working branch: `nithin-pravaah`
 - All implementation commits in this workstream target `nithin-pravaah`; no merge or deployment was performed.
 - The frontend CI run on this branch passed.
-- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. The latest backend CI for the notification worker passed: 64 tests passed, Ruff passed, and PostgreSQL migration graph/upgrade/current-head checks passed. The subsequent audit hash-chain CI passed with 67 tests, Ruff, and PostgreSQL migration checks. The EVC visit lifecycle CI passed with 70 tests, Ruff, and PostgreSQL migration checks. The subsequent immutable EVC report revision update passed with 72 tests, Ruff, and PostgreSQL migration checks. The obligation deadline provenance phase passed with 72 tests, Ruff, and PostgreSQL migration checks. The EVC immutable-report and evidence-download integrity changes passed with 73 tests, Ruff, and PostgreSQL migration checks. Signed audit checkpoint support then passed with 75 tests, Ruff, and PostgreSQL migration checks.
+- Backend CI passed for the regional audit pagination fix, policy effective-window enforcement, policy audit traceability and evidence download endpoint. The latest backend CI for the notification worker passed: 64 tests passed, Ruff passed, and PostgreSQL migration graph/upgrade/current-head checks passed. The subsequent audit hash-chain CI passed with 67 tests, Ruff, and PostgreSQL migration checks. The EVC visit lifecycle CI passed with 70 tests, Ruff, and PostgreSQL migration checks. The subsequent immutable EVC report revision update passed with 72 tests, Ruff, and PostgreSQL migration checks. The obligation deadline provenance phase passed with 72 tests, Ruff, and PostgreSQL migration checks. The EVC immutable-report and evidence-download integrity changes passed with 73 tests, Ruff, and PostgreSQL migration checks. Signed audit checkpoint support then passed with 75 tests, Ruff, and PostgreSQL migration checks. The frontend integration for EVC visits, report history and evidence download passed typecheck, lint and production build.
 
 ## Findings and implementation progress
 1. Application lifecycle uses a hard-coded allowed-transition graph; transitions require reasons and use backend authorization/conditional update guards.
@@ -20,6 +20,7 @@
 9. EVC now has a scheduled visit lifecycle with region-validated inspector assignment, snapshotted checklists, conditional state transitions, required-result validation, findings, completion timestamps, a report revision counter and audit events. The first completion creates immutable report revision 1. Amendments require a reason and create a new immutable revision while preserving earlier report content; conditional revision updates protect against concurrent amendments.
 10. Audit events now have SHA-256 hash-chain fields, a singleton chain-head record, a migration that backfills existing rows, a platform-admin-only verification endpoint, and a signed checkpoint endpoint. The checkpoint uses HMAC-SHA256 with `AUDIT_CHECKPOINT_SECRET` and is intended for archival outside the application database. Tests cover valid verification, tampering detection, checkpoint signatures, disabled configuration and access control. The application does not itself provide external immutable retention.
 11. Regional audit filtering has been moved into the SQL query before ordering and pagination; a regression assertion covers the case where a newer out-of-region event must not hide an in-region event on a small page.
+12. The frontend application detail page now supports authenticated evidence downloads, EVC visit scheduling, visit start/completion, checklist results and immutable report-history viewing. The frontend CI typecheck, lint and production build passed after these changes.
 
 ## Phase 0 checklist
 - [x] Repository metadata, branch and baseline SHA recorded.
@@ -35,7 +36,8 @@
 - [x] Immutable EVC report revisions and reasoned amendment endpoint committed; backend CI passed (72 tests, Ruff, PostgreSQL migrations).
 - [x] Policy-pinned obligation deadline calculation and override provenance committed; backend CI passed (72 tests, Ruff, PostgreSQL migrations).
 - [x] Immutable EVC report revisions and evidence SHA-256 verification on download committed; backend CI passed (73 tests, Ruff, PostgreSQL migrations).
-- [x] Optional signed audit checkpoint export committed; latest backend CI passed (75 tests, Ruff, PostgreSQL migrations).
+- [x] Optional signed audit checkpoint export committed; backend CI passed (75 tests, Ruff, PostgreSQL migrations).
+- [x] Frontend EVC visit/report integration and evidence download UI committed; frontend CI passed (typecheck, lint, production build).
 - [ ] Finish reviewing all routes, test assertions, migrations and workflow YAML.
 
 - [ ] Review and approve the actual legal/policy basis for each configured obligation deadline; the code intentionally does not infer statutory rules.
