@@ -19,6 +19,7 @@ from app.models.notification import Notification
 from app.models.policy import Policy
 from app.models.user import User
 from app.services.notification_worker import run_notification_cycle
+from app.api.routes.obligations import _obligation_for_update_statement
 
 _engine = create_engine(
     'sqlite://',
@@ -441,3 +442,15 @@ def test_obligation_and_audit_write_roll_back_together_on_audit_failure(client: 
     with _Session() as db:
         assert db.query(Obligation).filter_by(title='Must roll back with audit').count() == 0
         assert db.query(AuditEvent).filter_by(action='obligation.created').count() == 0
+
+
+
+def test_obligation_update_query_locks_target_row_in_postgres() -> None:
+    from sqlalchemy.dialects import postgresql
+
+    statement = _obligation_for_update_statement(123)
+    sql = str(statement.compile(dialect=postgresql.dialect()))
+
+    assert "FROM obligations" in sql
+    assert "obligations.id =" in sql
+    assert "FOR UPDATE" in sql
