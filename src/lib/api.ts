@@ -51,7 +51,8 @@ export type EvcVisit = { id: number; application_id: number; scheduled_by_user_i
 export type EvcVisitReport = { id: number; visit_id: number; revision: number; findings: string; results_json: string; change_reason: string; created_by_user_id: number | null; created_at: string };
 export type Recommendation = { code: string; severity: 'high' | 'medium' | 'low'; title: string; explanation: string; suggested_action: string; evidence_count: number };
 export type ApplicationRecommendations = { application_id: number; risk_score: number; risk_level: string; assessed_at: string; factors: string[]; recommendations: Recommendation[]; disclaimer: string };
-export type AuditEvent = { id: number; actor_user_id: number | null; entity_type: string; entity_id: string; action: string; reason: string | null; details_json: string; created_at: string };
+export type AuditEvent = { id: number; actor_user_id: number | null; entity_type: string; entity_id: string; action: string; reason: string | null; details_json: string; previous_hash: string; event_hash: string; created_at: string };
+export type AuditCheckpoint = { event_count: number; head_hash: string; generated_at: string; signature_algorithm: string; signature: string };
 export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
 
 export class ApiError extends Error {
@@ -190,6 +191,7 @@ export const api = {
   createAssessment: (application_id: number, notes?: string) => request<EvcAssessment>('/api/v1/evc/assessments', { method: 'POST', body: JSON.stringify({ application_id, notes }) }),
   recommendations: (id: number) => request<ApplicationRecommendations>('/api/v1/applications/' + id + '/recommendations'),
   listAuditEvents: (filters: { entity_type?: string; entity_id?: string; action?: string; actor_user_id?: number; since?: string; until?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<AuditEvent[]>('/api/v1/audit/events?' + query.toString()); },
+  createAuditCheckpoint: () => request<AuditCheckpoint>('/api/v1/audit/checkpoint'),
   metrics: () => request<OperationalMetrics>('/api/v1/operations/metrics'),
 };
 
