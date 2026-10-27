@@ -2,6 +2,7 @@ from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.evidence import Evidence
 from app.models.evc_assessment import EvcAssessment
+from app.models.evc_visit import EvcVisit
 from app.models.institution import Institution
 from app.models.notification import Notification
 from app.models.obligation import Obligation
@@ -14,6 +15,7 @@ __all__ = [
     "AuditEvent",
     "Evidence",
     "EvcAssessment",
+    "EvcVisit",
     "Institution",
     "Notification",
     "Obligation",
