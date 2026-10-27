@@ -115,9 +115,10 @@ def create_obligation(
         'anchor': 'obligation_created_at' if payload.deadline_rule == 'fixed_days_from_creation' else None,
         'offset_days': payload.deadline_days if payload.deadline_rule == 'fixed_days_from_creation' else None,
     }
+    obligation_data = payload.model_dump()
+    obligation_data['due_at'] = due_at
     obligation = Obligation(
-        **payload.model_dump(),
-        due_at=due_at,
+        **obligation_data,
         policy_key_snapshot=policy.policy_key if policy else None,
         policy_version_snapshot=policy.version if policy else None,
         deadline_calculation_json=json.dumps(calculation, sort_keys=True),
