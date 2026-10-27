@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+import json
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -5,9 +8,10 @@ from sqlalchemy import String, and_, cast, exists, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_roles
+from app.core.config import settings
 from app.db.session import get_db
 from app.models.application import Application
-from app.models.audit_event import AuditEvent
+from app.models.audit_event import AuditChainState, AuditEvent
 from app.models.evidence import Evidence
 from app.models.evc_assessment import EvcAssessment
 from app.models.institution import Institution
@@ -28,6 +32,37 @@ def verify_audit_event_chain(
 ) -> dict[str, int | bool | None]:
     """Verify the integrity of the complete audit chain; platform-admin only."""
     return verify_audit_chain(db)
+
+
+@router.get('/audit/checkpoint', response_model=dict[str, int | str])
+def create_audit_checkpoint(
+    actor: User = Depends(require_roles('platform_admin')),
+    db: Session = Depends(get_db),
+) -> dict[str, int | str]:
+    """Return a signed audit-chain checkpoint for storage outside this database."""
+    secret = settings.audit_checkpoint_secret
+    if len(secret) < 32:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail='Audit checkpoint signing is not configured',
+        )
+    state = db.get(AuditChainState, 1)
+    event_count = int(db.scalar(select(func.count(AuditEvent.id))) or 0)
+    head_hash = state.head_hash if state is not None else '0' * 64
+    generated_at = datetime.now(UTC).isoformat()
+    payload = json.dumps(
+        {'event_count': event_count, 'generated_at': generated_at, 'head_hash': head_hash},
+        sort_keys=True,
+        separators=(',', ':'),
+    )
+    signature = hmac.new(secret.encode('utf-8'), payload.encode('utf-8'), hashlib.sha256).hexdigest()
+    return {
+        'event_count': event_count,
+        'head_hash': head_hash,
+        'generated_at': generated_at,
+        'signature_algorithm': 'HMAC-SHA256',
+        'signature': signature,
+    }
 
 
 @router.get('/audit/events', response_model=list[AuditEventResponse])
