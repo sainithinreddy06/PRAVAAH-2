@@ -251,6 +251,40 @@ def test_upload_rejects_cross_region_application(client: TestClient) -> None:
     assert response.status_code == 403
 
 
+def test_evidence_download_returns_original_bytes_to_authorized_user(client: TestClient) -> None:
+    content = b'%PDF-1.7\\nsecure test document'
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', content, 'application/pdf')},
+    )
+    assert upload.status_code == 201
+
+    response = client.get(
+        f"/api/v1/evidence/{upload.json()['id']}/download",
+        headers=_headers(1),
+    )
+    assert response.status_code == 200
+    assert response.content == content
+    assert 'attachment' in response.headers['content-disposition']
+    assert 'identity.pdf' in response.headers['content-disposition']
+
+
+def test_evidence_download_rejects_cross_region_user(client: TestClient) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\ncontent', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+
+    response = client.get(
+        f"/api/v1/evidence/{upload.json()['id']}/download",
+        headers=_headers(4),
+    )
+    assert response.status_code == 403
+
+
 def test_officer_can_review_evidence_and_audit_is_written(client: TestClient) -> None:
     upload = client.post(
         '/api/v1/applications/1/evidence',
