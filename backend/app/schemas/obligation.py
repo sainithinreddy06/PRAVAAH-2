@@ -52,4 +52,6 @@ class NotificationResponse(BaseModel):
     attempt_count: int
     payload_json: str
     last_error: str | None
+    next_attempt_at: datetime | None
+    processed_at: datetime | None
     created_at: datetime
