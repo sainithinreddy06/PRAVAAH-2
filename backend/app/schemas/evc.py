@@ -55,3 +55,47 @@ class EvcAssessmentResponse(BaseModel):
     outcome: str
     notes: str | None
     created_at: datetime
+
+
+
+class EvcChecklistItem(BaseModel):
+    item_id: str = Field(min_length=1, max_length=60)
+    label: str = Field(min_length=3, max_length=300)
+    required: bool = True
+
+
+class EvcChecklistResult(BaseModel):
+    item_id: str = Field(min_length=1, max_length=60)
+    outcome: Literal['pass', 'fail', 'not_applicable']
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class EvcVisitCreate(BaseModel):
+    application_id: int = Field(gt=0)
+    assigned_to_user_id: int = Field(gt=0)
+    scheduled_at: datetime
+    checklist_items: list[EvcChecklistItem] = Field(min_length=1, max_length=50)
+
+
+class EvcVisitComplete(BaseModel):
+    findings: str = Field(min_length=20, max_length=10000)
+    results: list[EvcChecklistResult] = Field(min_length=1, max_length=50)
+
+
+class EvcVisitResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    application_id: int
+    scheduled_by_user_id: int | None
+    assigned_to_user_id: int | None
+    scheduled_at: datetime
+    status: str
+    checklist_json: str
+    results_json: str
+    findings: str | None
+    report_revision: int
+    started_at: datetime | None
+    completed_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
