@@ -99,3 +99,23 @@ class EvcVisitResponse(BaseModel):
     completed_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+
+class EvcReportAmendment(BaseModel):
+    findings: str = Field(min_length=20, max_length=10000)
+    results: list[EvcChecklistResult] = Field(min_length=1, max_length=50)
+    change_reason: str = Field(min_length=10, max_length=3000)
+
+
+class EvcVisitReportResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    visit_id: int
+    revision: int
+    findings: str
+    results_json: str
+    change_reason: str
+    created_by_user_id: int | None
+    created_at: datetime
