@@ -10,6 +10,10 @@ def _production_settings(**overrides: object) -> dict[str, object]:
         'jwt_secret_key': 'j' * 40,
         'audit_checkpoint_secret': 'a' * 40,
         'cors_origins': 'https://portal.example.gov,https://admin.example.gov',
+        'evidence_storage_backend': 's3',
+        'evidence_s3_bucket': 'private-evidence-test',
+        'evidence_malware_scanning_enabled': True,
+        'evidence_clamav_host': 'clamav.internal',
     }
     values.update(overrides)
     return values
