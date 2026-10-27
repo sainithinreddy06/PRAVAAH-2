@@ -3,10 +3,12 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.base import Base
 from app.db.session import get_db
@@ -262,3 +264,86 @@ def test_applicant_cannot_schedule_evc_visit(client: TestClient) -> None:
         'checklist_items': [{'item_id': 'site-safety', 'label': 'Site safety controls', 'required': True}],
     })
     assert response.status_code == 403
+
+
+
+def test_compliance_journey_reaches_ready_for_officer_review(
+    client: TestClient,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(settings, 'evidence_storage_dir', str(tmp_path / 'evidence'))
+
+    uploaded = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\nvalid evidence payload', 'application/pdf')},
+    )
+    assert uploaded.status_code == 201, uploaded.text
+
+    reviewed = client.patch(
+        f"/api/v1/evidence/{uploaded.json()['id']}/review",
+        headers=_headers(2),
+        json={'review_status': 'accepted', 'reviewer_notes': 'Evidence verified for integration journey'},
+    )
+    assert reviewed.status_code == 200, reviewed.text
+    assert reviewed.json()['review_status'] == 'accepted'
+
+    obligation = client.post(
+        '/api/v1/obligations',
+        headers=_headers(2),
+        json={
+            'application_id': 1,
+            'owner_user_id': 1,
+            'obligation_type': 'document_submission',
+            'title': 'Integration journey obligation',
+        },
+    )
+    assert obligation.status_code == 201, obligation.text
+
+    fulfilled = client.patch(
+        f"/api/v1/obligations/{obligation.json()['id']}",
+        headers=_headers(2),
+        json={'status': 'fulfilled'},
+    )
+    assert fulfilled.status_code == 200, fulfilled.text
+    assert fulfilled.json()['status'] == 'fulfilled'
+
+    undertaking = client.post(
+        '/api/v1/undertakings',
+        headers=_headers(1),
+        json={
+            'application_id': 1,
+            'undertaking_type': 'accuracy_declaration',
+            'statement': 'I confirm the submitted information is accurate for this test journey.',
+        },
+    )
+    assert undertaking.status_code == 201, undertaking.text
+    undertaking_id = undertaking.json()['id']
+
+    submitted = client.post(
+        f'/api/v1/undertakings/{undertaking_id}/submit',
+        headers=_headers(1),
+    )
+    assert submitted.status_code == 200, submitted.text
+    accepted = client.post(
+        f'/api/v1/undertakings/{undertaking_id}/review',
+        headers=_headers(2),
+        json={'decision': 'accepted', 'reviewer_notes': 'Accepted in integration journey'},
+    )
+    assert accepted.status_code == 200, accepted.text
+
+    assessment = client.post(
+        '/api/v1/evc/assessments',
+        headers=_headers(2),
+        json={'application_id': 1, 'notes': 'Cross-module compliance regression journey'},
+    )
+    assert assessment.status_code == 201, assessment.text
+    result = assessment.json()
+    assert result['outcome'] == 'ready_for_officer_review'
+    assert result['evidence_total'] == 1
+    assert result['evidence_accepted'] == 1
+    assert result['evidence_pending'] == 0
+    assert result['evidence_rejected'] == 0
+    assert result['open_obligations'] == 0
+    assert result['undertaking_count'] == 0
