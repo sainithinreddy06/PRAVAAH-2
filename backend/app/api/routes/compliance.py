@@ -1,4 +1,5 @@
 import hashlib
+from datetime import UTC, datetime
 import json
 import re
 from pathlib import Path
@@ -155,6 +156,20 @@ async def upload_evidence(
         policy = db.get(Policy, policy_id)
         if policy is None or not policy.is_active:
             raise HTTPException(status_code=422, detail='Policy does not exist or is inactive')
+
+        now = datetime.now(UTC)
+        effective_from = policy.effective_from
+        effective_until = policy.effective_until
+        # SQLite test fixtures may return naive datetimes even when the column
+        # is timezone-aware; treat those values as UTC for consistent checks.
+        if effective_from is not None and effective_from.tzinfo is None:
+            effective_from = effective_from.replace(tzinfo=UTC)
+        if effective_until is not None and effective_until.tzinfo is None:
+            effective_until = effective_until.replace(tzinfo=UTC)
+        if effective_from is not None and effective_from > now:
+            raise HTTPException(status_code=422, detail='Policy version is not yet effective')
+        if effective_until is not None and effective_until <= now:
+            raise HTTPException(status_code=422, detail='Policy version has expired')
 
     safe_name = Path(file.filename or 'evidence').name
     safe_name = re.sub(r'[^A-Za-z0-9._-]+', '_', safe_name)[:255] or 'evidence'
