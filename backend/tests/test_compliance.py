@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -16,6 +16,7 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.audit_event import AuditEvent
+from app.models.evidence import Evidence
 from app.models.evidence import Evidence
 from app.models.application import Application
 from app.models.institution import Institution
@@ -414,3 +415,27 @@ def test_audit_checkpoint_fails_closed_without_signing_secret(
     response = client.get('/api/v1/audit/checkpoint', headers=_headers(3))
     assert response.status_code == 503
     assert response.json()['detail'] == 'Audit checkpoint signing is not configured'
+
+
+
+def test_evidence_file_is_removed_if_audit_persistence_fails(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_audit_insert(mapper, connection, target) -> None:
+        raise RuntimeError('simulated evidence audit failure')
+
+    event.listen(AuditEvent, 'before_insert', fail_audit_insert)
+    try:
+        with pytest.raises(RuntimeError, match='simulated evidence audit failure'):
+            client.post(
+                '/api/v1/applications/1/evidence',
+                headers=_headers(1),
+                files={'file': ('rollback.pdf', b'%PDF-1.7\\nrollback test payload', 'application/pdf')},
+            )
+    finally:
+        event.remove(AuditEvent, 'before_insert', fail_audit_insert)
+
+    assert list(Path(settings.evidence_storage_dir).iterdir()) == []
+    with _Session() as db:
+        assert db.query(Evidence).filter_by(original_filename='rollback.pdf').count() == 0
