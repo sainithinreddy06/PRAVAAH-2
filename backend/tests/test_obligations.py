@@ -304,9 +304,12 @@ def test_policy_pinned_deadline_rule_records_calculation_provenance(client: Test
     assert calculation['source'] == 'policy_version'
 
     due_at = datetime.fromisoformat(data['due_at'])
+    created_at = datetime.fromisoformat(data['created_at'])
     if due_at.tzinfo is None:
         due_at = due_at.replace(tzinfo=UTC)
-    assert timedelta(days=13, hours=23) < due_at - datetime.now(UTC) < timedelta(days=14, hours=1)
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=UTC)
+    assert due_at - created_at == timedelta(days=14)
 
     updated_due_at = (datetime.now(UTC) + timedelta(days=30)).isoformat()
     updated = client.patch(
