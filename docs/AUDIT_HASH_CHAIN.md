@@ -21,3 +21,9 @@ The hash chain detects accidental or unauthorized changes that do not also rebui
 ## Tests
 
 Backend tests cover a valid chain, detection of altered event details, and role-based access control. PostgreSQL migration checks verify the new migration is the current head. CI is the available validation path in this environment; local pre-push execution could not be performed because GitHub could not be resolved from the local shell.
+
+## Signed external checkpoints
+
+Set the environment variable `AUDIT_CHECKPOINT_SECRET` to a high-entropy secret of at least 32 characters. The platform-admin-only endpoint `GET /api/v1/audit/checkpoint` then returns the event count, current head hash, generation timestamp and HMAC-SHA256 signature. The signature covers canonical JSON containing the count, timestamp and head hash.
+
+Archive each checkpoint outside the application database in separately controlled immutable storage. Compare later chain heads against those archived signed checkpoints to detect a full database rewrite. The API generates the signed checkpoint but does not itself connect to or guarantee retention in an external immutable store. Without the secret configured, the endpoint returns HTTP 503.
