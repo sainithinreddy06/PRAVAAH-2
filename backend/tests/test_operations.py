@@ -66,6 +66,12 @@ def test_regional_officer_only_sees_audit_events_for_own_region(client: TestClie
     assert response.status_code == 200
     assert [event['entity_id'] for event in response.json()] == ['1']
 
+    # The out-of-region event has the larger ID and would consume the first
+    # page if region filtering happened after SQL pagination.
+    first_page = client.get('/api/v1/audit/events', headers=_headers(2), params={'limit': 1})
+    assert first_page.status_code == 200
+    assert [event['entity_id'] for event in first_page.json()] == ['1']
+
 
 def test_audit_events_rejects_reversed_date_range(client: TestClient) -> None:
     response = client.get(
