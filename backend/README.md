@@ -84,3 +84,8 @@ Migration `20261024_0001` creates the initial domain schema; `20261025_0002` add
 ## Evidence retention (Phase 14)
 
 The cleanup command is report-only by default. From the `backend` directory, run `python -m scripts.cleanup_expired_evidence --limit 100` to count eligible records. Only after policy-owner approval and operational review, run `python -m scripts.cleanup_expired_evidence --execute --limit 100` to delete eligible objects. Set `EVIDENCE_RETENTION_DAYS` to the approved interval. This setting is not itself a statement of legal requirements. Successful deletions preserve evidence metadata as an expired tombstone and write an audit event.
+
+
+## Independent audit checkpoint archive (Phase 15)
+
+Run `python -m scripts.archive_audit_checkpoint` with the signing secret and separate archive-bucket settings configured. The target bucket must have versioning and S3 Object Lock enabled. The script requests COMPLIANCE retention on each checkpoint. Configure a scheduler and failure alerts externally; the script is not automatically scheduled. Use an independently controlled account or role and have the responsible policy owner approve retention settings.

@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     max_evidence_size_bytes: int = 10485760
     evidence_retention_days: int = 365
     audit_checkpoint_secret: str = ""
+    audit_archive_s3_bucket: str = ""
+    audit_archive_s3_region: str = ""
+    audit_archive_s3_endpoint_url: str = ""
+    audit_archive_s3_prefix: str = "checkpoints"
+    audit_archive_retention_days: int = 3650
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -37,6 +42,8 @@ class Settings(BaseSettings):
             raise ValueError('Maximum evidence size must be positive')
         if self.evidence_retention_days < 1:
             raise ValueError('Evidence retention period must be positive')
+        if self.audit_archive_retention_days < 1:
+            raise ValueError('Audit archive retention period must be positive')
         if self.evidence_storage_backend not in {'local', 's3'}:
             raise ValueError('Evidence storage backend must be local or s3')
         if self.evidence_clamav_port < 1 or self.evidence_clamav_port > 65535:
@@ -57,6 +64,8 @@ class Settings(BaseSettings):
                 raise ValueError('Production requires S3-compatible private evidence storage and a bucket')
             if not self.evidence_malware_scanning_enabled or not self.evidence_clamav_host:
                 raise ValueError('Production requires enabled malware scanning and a ClamAV host')
+            if not self.audit_archive_s3_bucket or self.audit_archive_s3_bucket == self.evidence_s3_bucket:
+                raise ValueError('Production requires a separate audit archive bucket')
         return self
 
     @property

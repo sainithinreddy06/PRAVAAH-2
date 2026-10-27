@@ -9,6 +9,7 @@ def _production_settings(**overrides: object) -> dict[str, object]:
         'app_env': 'production',
         'jwt_secret_key': 'j' * 40,
         'audit_checkpoint_secret': 'a' * 40,
+        'audit_archive_s3_bucket': 'independent-audit-archive-test',
         'cors_origins': 'https://portal.example.gov,https://admin.example.gov',
         'evidence_storage_backend': 's3',
         'evidence_s3_bucket': 'private-evidence-test',
@@ -41,3 +42,9 @@ def test_production_settings_accept_explicit_origins_and_strong_secrets() -> Non
 def test_development_settings_remain_usable_without_production_secrets() -> None:
     settings = Settings(app_env='development')
     assert settings.audit_checkpoint_secret == ''
+
+
+
+def test_production_settings_require_separate_audit_archive_bucket() -> None:
+    with pytest.raises(ValidationError, match='separate audit archive bucket'):
+        Settings(**_production_settings(audit_archive_s3_bucket='private-evidence-test'))
