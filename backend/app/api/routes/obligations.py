@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_, select
@@ -12,6 +12,7 @@ from app.models.application import Application
 from app.models.audit_event import AuditEvent
 from app.models.institution import Institution
 from app.models.notification import Notification
+from app.models.policy import Policy
 from app.models.obligation import Obligation
 from app.models.user import User
 from app.schemas.obligation import (
@@ -64,7 +65,65 @@ def create_obligation(
         if payload.application_id is not None and owner.region_code not in {None, institution.region_code}:
             raise HTTPException(status_code=422, detail='Obligation owner must belong to the application region')
 
-    obligation = Obligation(**payload.model_dump(), status='open')
+    now = datetime.now(UTC)
+    if payload.deadline_rule == 'fixed_days_from_creation':
+        if payload.policy_id is None:
+            raise HTTPException(status_code=422, detail='A policy version is required for a rule-based deadline')
+        if payload.deadline_days is None:
+            raise HTTPException(status_code=422, detail='deadline_days is required for a rule-based deadline')
+        if payload.due_at is not None:
+            raise HTTPException(status_code=422, detail='Do not supply due_at when using a calculated deadline rule')
+    elif payload.deadline_days is not None:
+        raise HTTPException(status_code=422, detail='deadline_days is only valid for a calculated deadline rule')
+
+    policy = None
+    if payload.policy_id is not None:
+        policy = db.get(Policy, payload.policy_id)
+        if policy is None:
+            raise HTTPException(status_code=404, detail='Policy version not found')
+        if not policy.is_active:
+            raise HTTPException(status_code=422, detail='Policy version is inactive')
+        effective_from = policy.effective_from
+        effective_until = policy.effective_until
+        if effective_from is not None:
+            if effective_from.tzinfo is None:
+                effective_from = effective_from.replace(tzinfo=UTC)
+            if effective_from > now:
+                raise HTTPException(status_code=422, detail='Policy version is not yet effective')
+        if effective_until is not None:
+            if effective_until.tzinfo is None:
+                effective_until = effective_until.replace(tzinfo=UTC)
+            if effective_until <= now:
+                raise HTTPException(status_code=422, detail='Policy version has expired')
+
+    due_at = payload.due_at
+    if due_at is not None and payload.deadline_rule == 'manual':
+        if due_at.tzinfo is None or due_at.utcoffset() is None:
+            raise HTTPException(status_code=422, detail='due_at must include a timezone')
+        due_at = due_at.astimezone(UTC)
+    if payload.deadline_rule == 'fixed_days_from_creation':
+        due_at = now + timedelta(days=payload.deadline_days or 0)
+
+    calculation = {
+        'rule': payload.deadline_rule,
+        'calculated_at': now.isoformat(),
+        'due_at': due_at.isoformat() if due_at else None,
+        'source': 'policy_version' if policy else 'user_supplied',
+        'policy_id': policy.id if policy else None,
+        'policy_key': policy.policy_key if policy else None,
+        'policy_version': policy.version if policy else None,
+        'anchor': 'obligation_created_at' if payload.deadline_rule == 'fixed_days_from_creation' else None,
+        'offset_days': payload.deadline_days if payload.deadline_rule == 'fixed_days_from_creation' else None,
+    }
+    obligation = Obligation(
+        **payload.model_dump(),
+        due_at=due_at,
+        policy_key_snapshot=policy.policy_key if policy else None,
+        policy_version_snapshot=policy.version if policy else None,
+        deadline_calculation_json=json.dumps(calculation, sort_keys=True),
+        due_at_calculated_at=now if due_at is not None else None,
+        status='open',
+    )
     db.add(obligation)
     db.flush()
     db.add(AuditEvent(
@@ -73,7 +132,16 @@ def create_obligation(
         entity_id=str(obligation.id),
         action='obligation.created',
         reason='Obligation created',
-        details_json=json.dumps({'application_id': obligation.application_id, 'due_at': obligation.due_at.isoformat() if obligation.due_at else None}, sort_keys=True),
+        details_json=json.dumps({
+            'application_id': obligation.application_id,
+            'due_at': obligation.due_at.isoformat() if obligation.due_at else None,
+            'deadline_rule': obligation.deadline_rule,
+            'deadline_days': obligation.deadline_days,
+            'policy_id': obligation.policy_id,
+            'policy_key_snapshot': obligation.policy_key_snapshot,
+            'policy_version_snapshot': obligation.policy_version_snapshot,
+            'deadline_calculation': calculation,
+        }, sort_keys=True),
     ))
     db.commit()
     db.refresh(obligation)
@@ -145,6 +213,31 @@ def update_obligation(
                     detail='Obligation owner must belong to the application region',
                 )
     previous_status = obligation.status
+    previous_due_at = obligation.due_at
+    previous_deadline_rule = obligation.deadline_rule
+    if 'due_at' in changes:
+        new_due_at = changes['due_at']
+        if new_due_at is not None:
+            if new_due_at.tzinfo is None or new_due_at.utcoffset() is None:
+                raise HTTPException(status_code=422, detail='due_at must include a timezone')
+            new_due_at = new_due_at.astimezone(UTC)
+            changes['due_at'] = new_due_at
+        changed_at = datetime.now(UTC)
+        obligation.deadline_rule = 'manual'
+        obligation.deadline_days = None
+        obligation.due_at_calculated_at = changed_at if new_due_at is not None else None
+        obligation.deadline_calculation_json = json.dumps({
+            'rule': 'manual',
+            'source': 'manager_override',
+            'changed_at': changed_at.isoformat(),
+            'changed_by_user_id': actor.id,
+            'previous_rule': previous_deadline_rule,
+            'previous_due_at': previous_due_at.isoformat() if previous_due_at else None,
+            'due_at': new_due_at.isoformat() if new_due_at else None,
+            'policy_id': obligation.policy_id,
+            'policy_key': obligation.policy_key_snapshot,
+            'policy_version': obligation.policy_version_snapshot,
+        }, sort_keys=True)
     for field, value in changes.items():
         setattr(obligation, field, value)
     db.add(AuditEvent(
@@ -153,7 +246,16 @@ def update_obligation(
         entity_id=str(obligation.id),
         action='obligation.updated',
         reason='Obligation updated',
-        details_json=json.dumps({'changed_fields': sorted(changes), 'previous_status': previous_status, 'status': obligation.status}, sort_keys=True),
+        details_json=json.dumps({
+            'changed_fields': sorted(changes),
+            'previous_status': previous_status,
+            'status': obligation.status,
+            'deadline_rule': obligation.deadline_rule,
+            'due_at': obligation.due_at.isoformat() if obligation.due_at else None,
+            'policy_id': obligation.policy_id,
+            'policy_key_snapshot': obligation.policy_key_snapshot,
+            'policy_version_snapshot': obligation.policy_version_snapshot,
+        }, sort_keys=True),
     ))
     db.commit()
     db.refresh(obligation)
