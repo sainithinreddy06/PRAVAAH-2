@@ -2,17 +2,26 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
 import { Link, useParams } from 'react-router-dom';
 
-import { AlertCircle, ArrowLeft, ClipboardCheck, FileUp, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CalendarClock, ClipboardCheck, Download, FileUp, Play, RefreshCw, ShieldCheck } from 'lucide-react';
 
 import { useAuth } from '../components/AuthGate';
 
-import { api, ApiError, formatStatus, type Application, type EvcAssessment, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations } from '../lib/api';
+import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations } from '../lib/api';
 
 const reviewRole = (role: string) => role === 'regional_officer' || role === 'platform_admin';
 
 const uploadRole = (role: string) => ['applicant', 'institution_admin', 'regional_officer', 'platform_admin'].includes(role);
 
 const prettyDate = (value: string | null) => value ? new Date(value).toLocaleString() : 'Not recorded';
+
+const parseChecklist = (value: string): EvcChecklistItem[] => {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed as EvcChecklistItem[] : [];
+  } catch {
+    return [];
+  }
+};
 
 export default function ApplicationDetailPage() {
 
@@ -31,6 +40,18 @@ export default function ApplicationDetailPage() {
   const [undertakings, setUndertakings] = useState<Undertaking[]>([]);
 
   const [assessments, setAssessments] = useState<EvcAssessment[]>([]);
+
+  const [evcVisits, setEvcVisits] = useState<EvcVisit[]>([]);
+
+  const [visitReports, setVisitReports] = useState<Record<number, EvcVisitReport[]>>({});
+
+  const [visitScheduledAt, setVisitScheduledAt] = useState('');
+
+  const [assignedInspectorId, setAssignedInspectorId] = useState(String(user.id));
+
+  const [visitFindings, setVisitFindings] = useState<Record<number, string>>({});
+
+  const [visitResults, setVisitResults] = useState<Record<number, Record<string, string>>>({});
 
   const [recommendations, setRecommendations] = useState<ApplicationRecommendations | null>(null);
 
@@ -58,15 +79,18 @@ export default function ApplicationDetailPage() {
 
     try {
 
-      const [applicationResult, evidenceResult, policyResult, undertakingResult, assessmentResult] = await Promise.all([
+      const [applicationResult, evidenceResult, policyResult, undertakingResult, assessmentResult, visitResult] = await Promise.all([
 
-        api.getApplication(id), api.listEvidence(id), api.listPolicies(), api.listUndertakings(id), api.listAssessments(id),
+        api.getApplication(id), api.listEvidence(id), api.listPolicies(), api.listUndertakings(id), api.listAssessments(id), api.listEvcVisits(id),
 
       ]);
 
       setApplication(applicationResult); setEvidence(evidenceResult); setPolicies(policyResult);
 
-      setUndertakings(undertakingResult); setAssessments(assessmentResult);
+      setUndertakings(undertakingResult); setAssessments(assessmentResult); setEvcVisits(visitResult);
+
+      const reportPairs = await Promise.all(visitResult.filter(visit => visit.status === 'completed').map(async visit => [visit.id, await api.listEvcVisitReports(visit.id).catch(() => [])] as const));
+      setVisitReports(Object.fromEntries(reportPairs));
 
       if (reviewRole(user.role)) {
 
@@ -112,6 +136,63 @@ export default function ApplicationDetailPage() {
 
     setFile(null); form.reset();
 
+  };
+
+  const scheduleVisit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!visitScheduledAt) { setError('Choose a visit date and time.'); return; }
+    const scheduledDate = new Date(visitScheduledAt);
+    if (Number.isNaN(scheduledDate.getTime())) { setError('The visit date and time is invalid.'); return; }
+    const checklist_items: EvcChecklistItem[] = [
+      { item_id: 'site-safety', label: 'Site safety controls', required: true },
+      { item_id: 'records', label: 'Review supporting records', required: true },
+      { item_id: 'infrastructure', label: 'Infrastructure and facilities', required: false },
+    ];
+    await runAction(
+      () => api.scheduleEvcVisit({
+        application_id: id,
+        assigned_to_user_id: Number(assignedInspectorId),
+        scheduled_at: scheduledDate.toISOString(),
+        checklist_items,
+      }),
+      'EVC visit scheduled with a versioned checklist.',
+    );
+  };
+
+  const startVisit = (visit: EvcVisit) => runAction(
+    () => api.startEvcVisit(visit.id),
+    'EVC visit started.',
+  );
+
+  const completeVisit = (event: FormEvent<HTMLFormElement>, visit: EvcVisit) => {
+    event.preventDefault();
+    const findings = (visitFindings[visit.id] || '').trim();
+    if (findings.length < 20) { setError('Inspection findings must contain at least 20 characters.'); return; }
+    const checklist = parseChecklist(visit.checklist_json);
+    const results: EvcChecklistResult[] = checklist
+      .filter(item => Boolean(visitResults[visit.id]?.[item.item_id]))
+      .map(item => ({ item_id: item.item_id, outcome: visitResults[visit.id][item.item_id] as 'pass' | 'fail' | 'not_applicable' }));
+    void runAction(
+      () => api.completeEvcVisit(visit.id, { findings, results }),
+      'Inspection completed and report revision 1 saved.',
+    );
+  };
+
+  const downloadEvidence = async (item: Evidence) => {
+    setError('');
+    try {
+      const blob = await api.downloadEvidence(item.id);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = item.original_filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.detail : 'Evidence download failed.');
+    }
   };
 
   const createUndertaking = async (event: FormEvent<HTMLFormElement>) => {
@@ -185,7 +266,7 @@ export default function ApplicationDetailPage() {
 
     <section className="panel workflow-section">
 
-      <header className="panel-heading"><div><h3>Evidence</h3><p>Application-linked files and review outcomes. Private files are not downloadable from this interface.</p></div></header>
+      <header className="panel-heading"><div><h3>Evidence</h3><p>Application-linked files and review outcomes. Downloads are authorized and checked against the stored SHA-256 digest.</p></div></header>
 
       {uploadRole(user.role) && ['draft', 'changes_requested'].includes(application.status) && <form className="workflow-form" onSubmit={upload}>
 
@@ -203,7 +284,7 @@ export default function ApplicationDetailPage() {
 
         <div><strong>{item.original_filename}</strong><p>Evidence #{item.id} · {item.content_type || 'Type unavailable'} · added {prettyDate(item.created_at)}</p><p>Review: <b>{formatStatus(item.review_status)}</b>{item.policy_id ? ' · Policy #' + item.policy_id : ''}</p>{item.reviewer_notes && <p>Reviewer note: {item.reviewer_notes}</p>}{item.sha256_digest && <code className="digest">SHA-256 {item.sha256_digest}</code>}</div>
 
-        {reviewRole(user.role) && item.review_status === 'pending' && <div className="workflow-actions"><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'accepted')}>Accept</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'needs_changes')}>Request changes</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'rejected')}>Reject</button></div>}
+        <div className="workflow-actions"><button type="button" disabled={working} onClick={() => void downloadEvidence(item)}><Download size={14} /> Download</button>{reviewRole(user.role) && item.review_status === 'pending' && <><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'accepted')}>Accept</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'needs_changes')}>Request changes</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'rejected')}>Reject</button></>}</div>
 
       </article>)}</div> : <p className="empty-copy">No evidence records are attached to this application.</p>}
 
@@ -233,6 +314,44 @@ export default function ApplicationDetailPage() {
 
     </section>
 
+    <section className="panel workflow-section">
+      <header className="panel-heading"><div><h3>EVC visits and inspection reports</h3><p>Scheduled inspections, required checklist results, findings and immutable report history.</p></div></header>
+
+      {reviewRole(user.role) && <form className="workflow-form" onSubmit={scheduleVisit}>
+        <label>Visit date and time<input type="datetime-local" required value={visitScheduledAt} onChange={event => setVisitScheduledAt(event.target.value)} /></label>
+        <label>Assigned inspector user ID<input type="number" min="1" required value={assignedInspectorId} onChange={event => setAssignedInspectorId(event.target.value)} /></label>
+        <p className="muted">The inspector must be active and belong to this application’s region. A standard checklist is attached when the visit is scheduled.</p>
+        <button className="primary-button" type="submit" disabled={working || !assignedInspectorId}><CalendarClock size={15} /> Schedule EVC visit</button>
+      </form>}
+
+      {evcVisits.length ? <div className="workflow-list">{evcVisits.map(visit => {
+        const checklist = parseChecklist(visit.checklist_json);
+        const canOperate = user.role === 'platform_admin' || visit.assigned_to_user_id === user.id;
+        const reportHistory = visitReports[visit.id] || [];
+        return <article className="workflow-item" key={visit.id}>
+          <div className="workflow-item-main">
+            <strong>Visit #{visit.id} · {formatStatus(visit.status)}</strong>
+            <p>Scheduled {prettyDate(visit.scheduled_at)} · inspector {visit.assigned_to_user_id ? 'User #' + visit.assigned_to_user_id : 'Unassigned'}</p>
+            {visit.started_at && <p>Started {prettyDate(visit.started_at)}{visit.completed_at ? ' · completed ' + prettyDate(visit.completed_at) : ''}</p>}
+            <p>{checklist.length} checklist items · current report revision {visit.report_revision}</p>
+            {visit.status === 'scheduled' && reviewRole(user.role) && canOperate && <div className="workflow-actions"><button type="button" disabled={working} onClick={() => void startVisit(visit)}><Play size={14} /> Start visit</button></div>}
+            {visit.status === 'in_progress' && reviewRole(user.role) && canOperate && <form className="workflow-form" onSubmit={event => completeVisit(event, visit)}>
+              <h4>Inspection checklist</h4>
+              {checklist.map(item => <label key={item.item_id}>{item.label}{item.required ? ' · Required' : ' · Optional'}
+                <select required={item.required} value={visitResults[visit.id]?.[item.item_id] || ''} onChange={event => setVisitResults(current => ({ ...current, [visit.id]: { ...(current[visit.id] || {}), [item.item_id]: event.target.value } }))}>
+                  <option value="">Select result</option><option value="pass">Pass</option><option value="fail">Fail</option>{!item.required && <option value="not_applicable">Not applicable</option>}
+                </select>
+              </label>)}
+              <label>Inspection findings<textarea minLength={20} maxLength={10000} required rows={3} value={visitFindings[visit.id] || ''} onChange={event => setVisitFindings(current => ({ ...current, [visit.id]: event.target.value }))} /></label>
+              <button className="primary-button" type="submit" disabled={working}><ClipboardCheck size={15} /> Complete inspection</button>
+            </form>}
+            {visit.findings && <p><strong>Latest findings:</strong> {visit.findings}</p>}
+            {reportHistory.length > 0 && <div className="report-history"><strong>Immutable report history</strong>{reportHistory.map(report => <div key={report.id} className="report-history-item"><b>Revision {report.revision}</b><p>{report.findings}</p><small>{report.change_reason} · {prettyDate(report.created_at)}</small></div>)}</div>}
+          </div>
+        </article>;
+      })}</div> : <p className="empty-copy">No EVC visits have been scheduled for this application.</p>}
+    </section>
+
     {reviewRole(user.role) && <section className="panel workflow-section">
 
       <header className="panel-heading"><div><h3>EVC readiness snapshots</h3><p>Workflow aid only; not an official AICTE score or compliance verdict. Each assessment is a timestamped snapshot.</p></div><button className="secondary-button" type="button" disabled={working} onClick={() => void runAction(() => api.createAssessment(id), 'Readiness snapshot created.') }><ClipboardCheck size={15} /> Create snapshot</button></header>
@@ -249,7 +368,7 @@ export default function ApplicationDetailPage() {
 
     </section>}
 
-    <p className="applications-disclaimer"><ShieldCheck size={14} /> Access checks are enforced by the API. Audit events are not established as immutable records.</p>
+    <p className="applications-disclaimer"><ShieldCheck size={14} /> Access checks are enforced by the API. Audit events use a hash chain; signed checkpoints require external archival for stronger tamper evidence.</p>
 
   </section>;
 
