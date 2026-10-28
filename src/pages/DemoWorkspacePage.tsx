@@ -21,13 +21,13 @@ const routeMeta: Record<string, { title: string; eyebrow: string; description: s
 };
 const policyRows = [
   ['POL-APH-2024', 'Approval Process Handbook', 'v2024–27', '01 Apr 2024', 'Active'],
-  ['POL-FDR-008', 'Fixed Deposit Receipt verification', 'v3.2', '15 Jun 2026', 'Active'],
+  ['POL-DEP-008', 'Fixed Deposit Receipt verification', 'v3.2', '15 Jun 2026', 'Active'],
   ['POL-LSE-014', 'Land / lease evidence validity', 'v2.1', '01 Jul 2026', 'Review due'],
   ['POL-EVC-006', 'Expert Visit Committee checklist', 'v1.8', '10 Aug 2026', 'Active'],
   ['POL-UND-002', 'Institution undertaking obligations', 'v2.0', '01 Sep 2026', 'Active'],
 ];
 const obligationRows = [
-  ['Renewed FDR evidence', 'AICTE-2026-0138', 'Institution coordinator', '30 Oct 2026', 'Due soon'],
+  ['Renewed deposit evidence', 'AICTE-2026-0138', 'Institution coordinator', '30 Oct 2026', 'Due soon'],
   ['Submit EVC visit report', 'AICTE-2026-0129', 'EVC coordinator', '29 Oct 2026', 'Due today'],
   ['Lease validity confirmation', 'AICTE-2026-0106', 'Institution coordinator', '26 Oct 2026', 'Overdue'],
   ['Annual compliance undertaking', 'AICTE-2026-0117', 'Regional officer', '05 Nov 2026', 'In progress'],
@@ -37,7 +37,7 @@ const eventRows = [
   ['28 Oct · 10:42', 'Scrutiny Officer', 'Evidence marked for clarification', 'AICTE-2026-0138', 'Recorded'],
   ['28 Oct · 09:18', 'EVC Coordinator', 'Visit report revision submitted', 'AICTE-2026-0129', 'Recorded'],
   ['27 Oct · 16:36', 'Regional Officer', 'Deadline escalation created', 'OBL-2026-0091', 'Recorded'],
-  ['27 Oct · 14:05', 'Policy Administrator', 'Policy version pinned', 'POL-FDR-008', 'Recorded'],
+  ['27 Oct · 14:05', 'Policy Administrator', 'Policy version pinned', 'POL-DEP-008', 'Recorded'],
   ['27 Oct · 11:21', 'Platform Service', 'Notification delivery retried', 'NTF-2026-0184', 'Retried'],
 ];
 const institutionRows = [
@@ -82,7 +82,7 @@ export default function DemoWorkspacePage() {
     {notice && <div className="notice-panel"><CheckCircle2 size={17}/>{notice}</div>}
     <div className="metric-grid">{[['Current stage',record.stage],['Evidence pack','8 of 10 checked'],['Open obligations','3'],['Policy version','APH 2024–27']].map(([k,v])=><article className="panel metric-card" key={k}><small>{k}</small><strong>{v}</strong></article>)}</div>
     <section className="panel"><div className="panel-heading"><div><h3>Workflow actions</h3><p>All actions below are simulated and do not change backend records.</p></div><Workflow size={18}/></div><div className="button-row">{actionButton('Mark under review',()=>setStatus(record.ref,'Under review','Scrutiny review','amber'))}{actionButton('Request clarification',()=>setStatus(record.ref,'Action required','Institution response','rose'))}{actionButton('Route to EVC',()=>setStatus(record.ref,'EVC readiness','EVC coordination','blue'))}{actionButton('Recommend approval',()=>setStatus(record.ref,'Recommended','Headquarters review','green'))}</div></section>
-    <div className="panel workflow-list"><div className="panel-heading"><div><h3>Evidence checklist</h3><p>Illustrative evidence checks for this record</p></div></div>{[['FDR / bank guarantee','Verified'],['Land and building documents','Needs clarification'],['Faculty and infrastructure data','Pending review'],['Institution undertaking','Submitted']].map(([a,b])=><article className="workflow-item" key={a}><div><strong>{a}</strong><p>{b}</p></div><span className="status status-blue"><i/>{b}</span></article>)}</div>
+    <div className="panel workflow-list"><div className="panel-heading"><div><h3>Evidence checklist</h3><p>Illustrative evidence checks for this record</p></div></div>{[['Deposit instrument / bank guarantee','Verified'],['Land and building documents','Needs clarification'],['Faculty and infrastructure data','Pending review'],['Institution undertaking','Submitted']].map(([a,b])=><article className="workflow-item" key={a}><div><strong>{a}</strong><p>{b}</p></div><span className="status status-blue"><i/>{b}</span></article>)}</div>
     <div className="panel workflow-list"><div className="panel-heading"><div><h3>Audit trail</h3><p>Demo-only chronological activity</p></div><ShieldCheck size={18}/></div>{eventRows.slice(0,3).map(r=><article className="workflow-item" key={r[0]}><div><strong>{r[2]}</strong><p>{r[0]} · {r[1]} · {r[3]}</p></div></article>)}</div>
   </section>;
 
