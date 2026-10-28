@@ -1131,3 +1131,94 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .v3-shell .v3-metric-grid, .access-portal .access-portal-grid { grid-template-columns:minmax(0,1fr) !important; }
   .pr-public .pr-legal { margin:12px !important; padding:18px !important; }
 }
+
+
+/* Fix dashboard hero CTA visibility: reserve real space above the sample-data footer
+   and enforce strong button contrast. */
+.v3-shell .v3-hero {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  min-height:0 !important;
+  height:auto !important;
+  overflow:visible !important;
+  padding:24px 26px 0 !important;
+  box-sizing:border-box !important;
+}
+.v3-shell .v3-hero-copy { position:relative !important; z-index:2 !important; }
+.v3-shell .v3-hero-actions {
+  position:relative !important;
+  z-index:5 !important;
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:10px !important;
+  margin:20px 0 24px !important;
+  padding:0 0 2px !important;
+  overflow:visible !important;
+}
+.v3-shell .v3-hero-actions button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  min-height:42px !important;
+  height:auto !important;
+  padding:10px 16px !important;
+  line-height:1.35 !important;
+  white-space:normal !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative !important;
+  z-index:6 !important;
+  box-sizing:border-box !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+}
+.v3-shell .v3-hero-actions button.v3-btn-light,
+.v3-shell .v3-hero-actions button.v3-btn-primary {
+  background:#17365D !important;
+  color:#FFFFFF !important;
+  border:1px solid #17365D !important;
+  font-weight:700 !important;
+}
+.v3-shell .v3-hero-actions button.v3-btn-light:hover,
+.v3-shell .v3-hero-actions button.v3-btn-primary:hover {
+  background:#2457A7 !important;
+  color:#FFFFFF !important;
+  border-color:#2457A7 !important;
+}
+.v3-shell .v3-hero-actions button.v3-btn-ghost,
+.v3-shell .v3-hero-actions button.v3-btn-outline {
+  background:#FFFFFF !important;
+  color:#17365D !important;
+  border:1px solid #BFCBD9 !important;
+  font-weight:650 !important;
+}
+.v3-shell .v3-hero-actions button.v3-btn-ghost:hover,
+.v3-shell .v3-hero-actions button.v3-btn-outline:hover {
+  background:#EAF0F7 !important;
+  border-color:#2457A7 !important;
+}
+.v3-shell .v3-hero-bottom {
+  position:relative !important;
+  z-index:1 !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-height:38px !important;
+  height:auto !important;
+  margin:0 -26px 0 !important;
+  padding:10px 26px !important;
+  box-sizing:border-box !important;
+  clear:both !important;
+  overflow:visible !important;
+  border-top:1px solid #D7DFE9 !important;
+  background:#F8FAFC !important;
+  color:#526176 !important;
+}
+@media(max-width:760px) {
+  .v3-shell .v3-hero { padding:18px 16px 0 !important; }
+  .v3-shell .v3-hero-actions { margin:16px 0 18px !important; }
+  .v3-shell .v3-hero-actions button { width:auto !important; max-width:100% !important; }
+  .v3-shell .v3-hero-bottom { margin-left:-16px !important; margin-right:-16px !important; padding:10px 16px !important; }
+}
