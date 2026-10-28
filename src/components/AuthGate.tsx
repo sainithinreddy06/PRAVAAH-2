@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, ShieldCheck, Workflow, Building2, ClipboardCheck, MapPinned, Landmark, FileSearch, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Workflow, Building2, ClipboardCheck, MapPinned, Landmark, FileSearch, Mail, Fingerprint, FileCheck2 } from 'lucide-react';
 import { api, ApiError, hasAccessToken, setAccessToken, type User } from '../lib/api';
 
 type AuthContextValue = {
