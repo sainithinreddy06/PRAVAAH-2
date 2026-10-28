@@ -9,6 +9,7 @@ import AuthGate, { useAuth } from './components/AuthGate';
 import ApplicationsPage from './pages/ApplicationsPage';
 import PublicSite from './pages/PublicSite';
 import AccessPortal from './pages/AccessPortal';
+import DemoOverview from './pages/DemoOverview';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import { AdminScopePage, CompliancePage, OperationsPage, PoliciesPage } from './pages/OperationsPages';
 import { api, ApiError, formatStatus, type Application } from './lib/api';
@@ -23,7 +24,7 @@ const navigation = [
   { label: 'Officers & users', to: '/officers', icon: Users },
   { label: 'Settings', to: '/settings', icon: Settings },
 ];
-function Overview() {
+function LiveOverview() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -133,6 +134,14 @@ function Overview() {
       <p className="workspace-disclaimer"><ShieldCheck size={14} /> PRAVAAH-2 is an independent demonstration platform, not an official AICTE service.</p>
     </section>
   );
+}
+
+
+function Overview() {
+  const { user } = useAuth();
+  const demoSession = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
+  if (demoSession) return <DemoOverview user={user} />;
+  return <LiveOverview />;
 }
 
 function WorkspaceApp() {
