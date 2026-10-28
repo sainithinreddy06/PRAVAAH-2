@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow, Search, ChevronRight, Phone } from 'lucide-react';
+import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, Workflow, Search, ChevronRight, Phone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +9,6 @@ const portals = [
   { number: '04', title: 'Regional Officer Dashboard', subtitle: 'AICTE Regional Directorates', category: 'REGIONAL OFFICE', description: 'Monitor regional institutional compliance, upcoming maturities, overdue cases, track pending verifications, and supervise regional escalations.', meta: 'Regional monitoring', documents: '3 document groups', tags: ['Regional Monitoring', 'Expiring Instruments', 'Overdue Tracking'], icon: MapPin, tone: 'amber' },
   { number: '05', title: 'Regulation Bureau Dashboard', subtitle: 'AICTE HQ / Member Secretary', category: 'REGULATION BUREAU', description: 'Nationwide FDR inventory surveillance, centralized repository, compliance tracking, regional performance benchmarking, and executive analytics.', meta: 'National oversight', documents: '3 document groups', tags: ['Central Repository', 'Nationwide KPIs', 'Velocity Analytics'], icon: Layers, tone: 'blue' },
   { number: '06', title: 'Release / Refund Dashboard', subtitle: 'Deposit Discharge Cell', category: 'RELEASE & REFUND', description: 'Vet statutory lock-in compliance, inspect board resolutions and no-dues clearance, process approvals, and issue bank discharge orders.', meta: 'Eligibility review', documents: '3 document groups', tags: ['Statutory Lock-in Audit', 'Eligibility Review', 'Discharge Approval'], icon: ShieldCheck, tone: 'green' },
-  { number: '07', title: 'System Administrator Dashboard', subtitle: 'IT & Infrastructure Cell', category: 'SYSTEM ADMIN', description: 'Manage user accounts, role permissions, scheduled expiry jobs, token configurations, notification schedules, and system security logs.', meta: 'System governance', documents: '3 document groups', tags: ['User Management', 'RBAC Configuration', 'Scheduler Health'], icon: UserRoundCog, tone: 'violet' },
 ];
 
 export default function AccessPortal() {
