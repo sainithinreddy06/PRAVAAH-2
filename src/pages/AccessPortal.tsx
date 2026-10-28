@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow, Clock3, FileText, Search, ChevronRight, Scale, Award, Headphones, Lock, Phone } from 'lucide-react';
+import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow, Clock3, FileText, Search, ChevronRight, Scale, Award, Headphones, Phone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,11 +29,8 @@ export default function AccessPortal() {
         <span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span>
         <span><strong>PRAVAAH <em>(प्रवाह)</em> <i>SIH26262</i></strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
       </button>
-      <div className="pr-header-tools access-portal-pr-tools">
-        <form onSubmit={(event) => { event.preventDefault(); document.querySelector<HTMLInputElement>('.access-portal-search input')?.focus(); document.querySelector('.access-portal-search')?.scrollIntoView({behavior:'smooth',block:'center'}); }}>
-          <Search size={15}/><input aria-label="Search workspaces" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dashboard, role or responsibility…"/>
-        </form>
-        <button className="pr-officer-access" onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={13}/> Officer Portal Access</button>
+      <div className="access-portal-return">
+        <button onClick={() => navigate('/')}><ArrowRight size={15}/> Return to Public Portal</button>
       </div>
     </header>
     <main className="access-portal-main">
