@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowRight, ShieldCheck, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Workflow } from 'lucide-react';
 import { api, ApiError, hasAccessToken, setAccessToken, type User } from '../lib/api';
 
 type AuthContextValue = {
@@ -106,7 +106,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           <div className="auth-intro">
             <span className="auth-kicker"><ShieldCheck size={14} /> SECURE WORKSPACE</span>
             <h1>Welcome back</h1>
-            <p>{selectedPortal ? <>Sign in to continue to <strong>{selectedPortal}</strong>. Your account must be authorized for this workspace.</> : 'Sign in with your assigned PRAVAAH account to continue.'}</p>
+            <p>{selectedPortal ? <>Continue to <strong>{selectedPortal}</strong>. Sign in using the account assigned to your organisation.</> : 'Use your assigned account to access the PRAVAAH workspace.'}</p>
           </div>
           {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
@@ -116,7 +116,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             <input id="signin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required maxLength={1024} placeholder="Enter your password" />
             {error && <p className="auth-error" role="alert">{error}</p>}
             <button className="auth-submit" type="submit" disabled={busy}>
-              {busy ? 'Signing in…' : 'Sign in to workspace'} {!busy && <ArrowRight size={16} />}
+              {busy ? 'Verifying account…' : 'Continue securely'} {!busy && <ArrowRight size={16} />}
             </button>
           </form>
           <p className="auth-footnote">{demoMode ? <>Demo email: <strong>{demoEmail}</strong><br />Demo password: <strong>{demoPassword}</strong><br />UI preview only — live API data requires a configured backend.</> : 'Use an account provisioned in your connected backend.'}</p>
