@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Activity, ArrowRight, ArrowUpRight, Bell, Blocks, BookOpenCheck, Building2, CalendarClock, Check, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, Clock3, Command, Download, FileCheck2, FileText, Filter, Fingerprint, Landmark, CalendarDays, LayoutDashboard, LogOut, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, Users, Workflow, X } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, Bell, Blocks, BookOpenCheck, Building2, CalendarClock, Check, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, Clock3, Command, Download, FileCheck2, FileText, Filter, Fingerprint, LayoutDashboard, LogOut, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, Users, Workflow, X } from 'lucide-react';
 import { useAuth } from './components/AuthGate';
 import SecurityDepositRepository from './SecurityDepositRepository';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
@@ -117,7 +117,6 @@ function RecordTable({rows}:{rows:RecordRow[]}) {return <div className="v3-table
 function DataPage({path}:{path:string}) {
  const meta=titleMap[path]||titleMap['/applications']; const [query,setQuery]=useState('');const [status,setStatus]=useState('All statuses');const [notice,setNotice]=useState('');const [showForm,setShowForm]=useState(false);const [newRef,setNewRef]=useState('');const [localRows,setLocalRows]=useState(records);const {id}=useParams();
  const filtered=useMemo(()=>localRows.filter(r=>(r.ref+' '+r.institution+' '+r.stage+' '+r.owner).toLowerCase().includes(query.toLowerCase())&&(status==='All statuses'||r.status===status)),[localRows,query,status]);
- const update=(ref:string,next:string)=>{setLocalRows(old=>old.map(r=>r.ref===ref?{...r,status:next,stage:next==='Needs clarification'?'Institution response':next==='Recommended'?'Headquarters review':'Scrutiny review'}:r));setNotice(ref+' updated in the local demonstration only.');};
  const navigate=useNavigate();
  if(path==='/applications/detail') {
  const row=localRows.find(r=>r.ref===id||r.ref.endsWith(id||''))||localRows[0];
