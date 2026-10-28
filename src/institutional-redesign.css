@@ -574,3 +574,49 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
  .workflow-form { grid-template-columns:1fr !important; }
  .workflow-section { padding:12px !important; }
 }
+
+
+/* Dedicated teal-and-forest theme for Obligations & Compliance.
+   Scoped to this workspace route so other role areas retain their own visual identity. */
+.v3-shell.compliance-theme {
+  --compliance-ink:#173b36;
+  --compliance-green:#176b58;
+  --compliance-green-dark:#105344;
+  --compliance-mint:#e8f5ef;
+  --compliance-line:#cfe3d9;
+  --compliance-muted:#5f7f75;
+}
+.v3-shell.compliance-theme .v3-main { background:#f3f8f5 !important; }
+.v3-shell.compliance-theme .v3-topbar { border-bottom-color:var(--compliance-line) !important; background:#fff !important; }
+.v3-shell.compliance-theme .v3-crumb strong,
+.v3-shell.compliance-theme .v3-top-user strong { color:var(--compliance-ink) !important; }
+.v3-shell.compliance-theme .v3-context-bar { background:#e8f5ef !important; border-color:#cfe3d9 !important; color:#315f52 !important; }
+.v3-shell.compliance-theme .v3-context-status { background:var(--compliance-green) !important; }
+.v3-shell.compliance-theme .v3-section-kicker { color:var(--compliance-green) !important; }
+.v3-shell.compliance-theme .v3-section-heading h1 { color:var(--compliance-ink) !important; }
+.v3-shell.compliance-theme .v3-btn-primary { background:var(--compliance-green) !important; border-color:var(--compliance-green) !important; color:#fff !important; }
+.v3-shell.compliance-theme .v3-btn-primary:hover { background:var(--compliance-green-dark) !important; border-color:var(--compliance-green-dark) !important; }
+.v3-shell.compliance-theme .v3-page-stats>div { border-color:var(--compliance-line) !important; background:#fff !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:first-child { border-top:3px solid #176b58 !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:nth-child(2) { border-top:3px solid #c78328 !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:nth-child(3) { border-top:3px solid #4e8b9c !important; }
+.v3-shell.compliance-theme .v3-page-stats strong { color:var(--compliance-ink) !important; }
+.v3-shell.compliance-theme .v3-register { border-color:var(--compliance-line) !important; background:#fff !important; }
+.v3-shell.compliance-theme .v3-register .panel-heading { background:#f1f8f4 !important; border-bottom-color:var(--compliance-line) !important; }
+.v3-shell.compliance-theme .v3-register .panel-heading h3 { color:var(--compliance-ink) !important; }
+.v3-shell.compliance-theme .v3-table-toolbar { background:#f8fbf9 !important; border-bottom-color:var(--compliance-line) !important; }
+.v3-shell.compliance-theme .v3-table thead th { background:#e5f2eb !important; color:#285c4d !important; border-bottom-color:#bdd8ca !important; }
+.v3-shell.compliance-theme .v3-table tbody tr:hover { background:#f0f8f3 !important; }
+.v3-shell.compliance-theme .v3-table tbody td { border-bottom-color:#dcebe3 !important; }
+.v3-shell.compliance-theme .v3-table tbody td strong { color:var(--compliance-ink) !important; }
+.v3-shell.compliance-theme .v3-table-action { border-color:#b9d8c9 !important; color:#176b58 !important; background:#fff !important; }
+.v3-shell.compliance-theme .v3-table-action:hover { background:#e8f5ef !important; border-color:#176b58 !important; }
+.v3-shell.compliance-theme .v3-search:focus-within,
+.v3-shell.compliance-theme .v3-filter:focus-within { border-color:#176b58 !important; box-shadow:0 0 0 2px #d7eee3 !important; }
+.v3-shell.compliance-theme .v3-table-foot { color:var(--compliance-muted) !important; }
+.v3-shell.compliance-theme .v3-table-foot>span:first-child svg { color:var(--compliance-green) !important; }
+.v3-shell.compliance-theme .v3-deadline { border-bottom-color:var(--compliance-line) !important; }
+.v3-shell.compliance-theme .v3-deadline-icon { background:#fff4df !important; color:#9a641b !important; }
+@media(max-width:760px) {
+  .v3-shell.compliance-theme .v3-page-stats { gap:8px !important; }
+}
