@@ -36,16 +36,6 @@ export default function AccessPortal() {
         <button className="pr-officer-access" onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={13}/> Officer Portal Access</button>
       </div>
     </header>
-    <nav className="pr-nav access-portal-pr-nav"><div>
-      <a href="/"><Layers size={14}/> Public Overview</a>
-      <a href="/#policies"><Scale size={14}/> Policy &amp; Norms (APH)</a>
-      <a href="/#services"><Award size={14}/> Public &amp; Institutional Services</a>
-      <a href="/#verification"><Search size={14}/> Track &amp; Verify Status</a>
-      <a href="/#process"><Workflow size={14}/> Approval Process (How It Works)</a>
-      <a href="/#compliance-charter"><ShieldCheck size={14}/> Citizen Charter</a>
-      <a href="/#support"><Headphones size={14}/> Help &amp; Support Desk</a>
-    </div><button onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={12}/> Officer Login</button></nav>
-    <div className="pr-substrip access-portal-substrip"><span><b>PRAVAAH CITIZEN &amp; INSTITUTIONAL GATEWAY</b> · All India Council for Technical Education (AICTE) Workflow Prototype</span><span><Phone size={12}/> Independent demonstration · <a href="/#policies">APH Guidelines →</a></span></div>
     <main className="access-portal-main">
       <div className="access-portal-breadcrumb"><button onClick={() => navigate('/')}>Home</button><ChevronRight size={13}/><strong>Access Portal</strong></div>
       <div className="access-portal-title-row"><div><span className="access-portal-eyebrow">WORKSPACE DIRECTORY</span><h1>Choose your PRAVAAH workspace</h1><p>Select the stakeholder workspace relevant to your responsibilities. Sign-in is handled by the connected authentication service; selecting a workspace does not grant permissions.</p></div><span className="access-portal-rbac"><ShieldCheck size={16}/> Role-aware access</span></div>
