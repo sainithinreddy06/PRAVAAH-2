@@ -97,8 +97,9 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   if (!user) {
     return (
-      <main className="auth-screen">
-        <section className="auth-card">
+      <main className="auth-screen auth-screen-pravaah">
+        <a className="auth-back-link" href="/access-portal"><ArrowLeft size={15}/> Back to workspace directory</a>
+        <section className="auth-card auth-card-pravaah">
           <div className="auth-brand">
             <span className="auth-brand-mark"><Workflow size={23} /></span>
             <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>\n            <span className="auth-brand-status"><i/> SECURE ACCESS</span>
