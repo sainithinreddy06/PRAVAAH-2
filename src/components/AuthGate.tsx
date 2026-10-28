@@ -19,6 +19,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
   const demoEmail = 'demo@pravaah.local';
   const demoPassword = 'Demo@123';
+  const selectedPortal = sessionStorage.getItem('pravaah-selected-portal');
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(hasAccessToken());
   const [email, setEmail] = useState(demoMode ? demoEmail : '');
@@ -105,7 +106,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           <div className="auth-intro">
             <span className="auth-kicker"><ShieldCheck size={14} /> SECURE WORKSPACE</span>
             <h1>Welcome back</h1>
-            <p>Sign in with your assigned PRAVAAH account to continue.</p>
+            <p>{selectedPortal ? <>Sign in to continue to <strong>{selectedPortal}</strong>. Your account must be authorized for this workspace.</> : 'Sign in with your assigned PRAVAAH account to continue.'}</p>
           </div>
           {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
