@@ -28,9 +28,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'Compliance Monitoring & Audit Dashboard': { name: 'Compliance Auditor (Demo)', email: 'audit.demo@pravaah.local', role: 'compliance_auditor' },
   };
   const activeDemoProfile = selectedPortal ? demoProfiles[selectedPortal] : undefined;
-  const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> = activeDemoProfile
-    ? [{ portal: selectedPortal || 'Selected workspace', profile: activeDemoProfile }]
-    : Object.entries(demoProfiles).map(([portal, profile]) => ({ portal, profile }));
+  const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> =
+    Object.entries(demoProfiles).map(([portal, profile]) => ({ portal, profile }));
   const demoEmail = activeDemoProfile?.email || 'demo@pravaah.local';
   const workspaceConfig: Record<string, { eyebrow: string; emailLabel: string; emailPlaceholder: string; guidance: string; icon: typeof Building2 }> = {
     'Institution Coordinator Dashboard': { eyebrow: 'INSTITUTION WORKSPACE', emailLabel: 'Institutional work email', emailPlaceholder: 'name@institution.edu.in', guidance: 'Use the email registered to your institution account.', icon: Building2 },
@@ -147,7 +146,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
             {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
-          {demoMode && <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>Workspace demo profiles</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><p>Choose the sample profile matching this workspace. These are local UI-demo accounts, not real organisation credentials.</p><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>}
+          {demoMode && <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO CREDENTIALS · SELECT A ROLE TO PREFILL</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><p>Role-specific demo email addresses are listed below. Use the profile for the selected workspace; these are local UI-demo accounts, not real organisation credentials.</p><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
             <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
