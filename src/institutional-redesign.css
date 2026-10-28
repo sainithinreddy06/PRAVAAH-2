@@ -837,3 +837,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v3-shell .v3-hero .v3-btn-light { background:#17365D !important; color:#FFFFFF !important; }
 .v3-shell .v3-page-stats strong, .v3-shell .v3-metric strong { color:#17365D !important; }
 .v3-shell .v3-table thead th { background:#EAF0F7 !important; color:#17365D !important; }
+
+
+/* Branding cleanup: remove decorative logo/emblem marks across all public and authenticated routes.
+   Keep the readable product/workspace name and navigation intact. */
+.pr-public .pr-emblem,
+.v3-shell .v3-brand-icon,
+.access-portal-emblem,
+.pv-brand-mark,
+.pv-logo-mark,
+.auth-brand-mark,
+.auth-logo-mark,
+.auth-screen-pravaah .auth-emblem,
+.auth-screen-pravaah .auth-logo,
+.auth-public-header .auth-emblem,
+.auth-public-header .auth-logo {
+  display:none !important;
+  visibility:hidden !important;
+  width:0 !important;
+  min-width:0 !important;
+  height:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.pr-public .pr-brand,
+.pr-public .pr-footer-brand {
+  gap:0 !important;
+}
+.v3-shell .v3-brand { gap:0 !important; }
+.access-portal-brand { gap:0 !important; }
