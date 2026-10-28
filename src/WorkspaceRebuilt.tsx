@@ -93,7 +93,7 @@ function ScrutinyQueue(){
   <p className="v3-disclaimer"><ShieldCheck size={14}/> Demonstration interface. Confirm authoritative requirements and production records in the connected service before making a regulatory decision.</p>
  </div>;
 }
-function ApplicationRecordRoute(){const {id}=useParams();return id&&/^\\d+$/.test(id)?<ApplicationDetailPage/>:<DataPage path="/applications/detail"/>;}
+function ApplicationRecordRoute(){const {id}=useParams();return id&&/^\d+$/.test(id)?<ApplicationDetailPage/>:<DataPage path="/applications/detail"/>;}
 
 function Metric({item}:{item:[string,string,string,string]}){const [label,value,note,tone]=item;return <article className="v3-metric"><div className="v3-metric-top"><span>{label}</span><span className={'v3-metric-icon tone-'+tone}><Activity size={16}/></span></div><strong>{value}</strong><small><span className={'v3-note-dot tone-'+tone}/>{note}</small></article>}
 function PanelTitle({title,sub,action}:{title:string,sub?:string,action?:React.ReactNode}){return <div className="v3-panel-title"><div><h3>{title}</h3>{sub&&<p>{sub}</p>}</div>{action}</div>}
