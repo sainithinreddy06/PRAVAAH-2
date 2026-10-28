@@ -693,3 +693,71 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v3-shell.compliance-theme .v3-page-stats>div:nth-child(3) { border-top-color:#526176 !important; }
 .v3-shell.compliance-theme .v3-table thead th { background:#eaf0f7 !important; color:#17365D !important; border-bottom-color:#d7dfe9 !important; }
 .v3-shell.compliance-theme .v3-table-action { border-color:#bfcbd9 !important; color:#17365D !important; }
+
+
+/* PUBLIC LANDING PAGE — force the supplied navy/blue palette onto the actual pr-* components.
+   These explicit component rules override older hard-coded charcoal/green styling. */
+.pr-public { background:#F4F6F8 !important; color:#17365D !important; }
+.pr-public main { background:#F4F6F8 !important; }
+.pr-public .pr-topstrip, .pr-public .pr-public-topstrip { background:#17365D !important; color:#fff !important; }
+.pr-public .pr-header, .pr-public .pr-site-header, .pr-public header { background:#fff !important; color:#17365D !important; border-color:#D7DFE9 !important; }
+.pr-public header a, .pr-public header button, .pr-public .pr-nav a, .pr-public .pr-nav button { color:#17365D !important; }
+.pr-public .pr-hero { background:#F4F6F8 !important; color:#17365D !important; border-color:#D7DFE9 !important; }
+.pr-public .pr-hero h1, .pr-public .pr-hero h2, .pr-public .pr-hero h3,
+.pr-public .pr-section-title h2, .pr-public .pr-section h3 { color:#17365D !important; }
+.pr-public .pr-hero h1 em { color:#526176 !important; }
+.pr-public .pr-hero-kicker { background:#EAF0F7 !important; color:#17365D !important; border:1px solid #D7DFE9 !important; }
+.pr-public .pr-hero-kicker i { background:#2457A7 !important; }
+.pr-public .pr-hero-copy>p, .pr-public .pr-section-title p, .pr-public .pr-hero-card-content p,
+.pr-public .pr-hero-feature-grid p { color:#526176 !important; }
+.pr-public .pr-hero-feature-grid article, .pr-public .pr-governance-card,
+.pr-public .pr-service-card, .pr-public .pr-institution-card,
+.pr-public .pr-role-workspace-card, .pr-public .pr-charter-grid article,
+.pr-public .pr-directory-grid article, .pr-public .pr-faq article {
+  background:#fff !important; color:#17365D !important; border-color:#D7DFE9 !important;
+  box-shadow:0 2px 8px rgba(23,54,93,.045) !important;
+}
+.pr-public .pr-hero-feature-grid article>span, .pr-public .pr-hero-card-icon,
+.pr-public .pr-charter-icon, .pr-public .pr-directory-grid article>span {
+  background:#EAF0F7 !important; color:#2457A7 !important;
+}
+.pr-public .pr-hero-card { background:#fff !important; border:1px solid #D7DFE9 !important; color:#17365D !important; box-shadow:0 4px 18px rgba(23,54,93,.07) !important; }
+.pr-public .pr-hero-tabs { background:#17365D !important; color:#fff !important; border-color:#17365D !important; }
+.pr-public .pr-hero-tabs button { background:transparent !important; color:#fff !important; border-color:#526176 !important; }
+.pr-public .pr-hero-tabs button.active { background:#fff !important; color:#17365D !important; border-color:#fff !important; }
+.pr-public .pr-hero-tabs>span { color:#dce7f5 !important; }
+.pr-public .pr-hero-tabs>span i { background:#75c4a0 !important; }
+.pr-public .pr-dark-action, .pr-public .pr-support-banner, .pr-public .pr-announcement b {
+  background:#17365D !important; border-color:#17365D !important; color:#fff !important;
+}
+.pr-public .pr-dark-action:hover { background:#2457A7 !important; border-color:#2457A7 !important; }
+.pr-public .pr-hero-shortcuts button, .pr-public .pr-role-switch button,
+.pr-public .pr-hero-card-content button:not(.pr-dark-action) {
+  border-color:#D7DFE9 !important; color:#17365D !important; background:#fff !important;
+}
+.pr-public .pr-role-switch button.active { background:#2457A7 !important; border-color:#2457A7 !important; color:#fff !important; }
+.pr-public .pr-hero-foot, .pr-public .pr-announcement, .pr-public .pr-data-note,
+.pr-public .pr-demo-warning, .pr-public .pr-note { background:#EAF0F7 !important; color:#526176 !important; border-color:#D7DFE9 !important; }
+.pr-public .pr-section { background:#F4F6F8 !important; color:#17365D !important; }
+.pr-public .pr-section-title>span, .pr-public .pr-section-title>small,
+.pr-public .pr-hero-card-content small { color:#526176 !important; }
+.pr-public .pr-primary-btn, .pr-public .pr-service-start {
+  background:#17365D !important; color:#fff !important; border:1px solid #17365D !important;
+}
+.pr-public .pr-primary-btn:hover, .pr-public .pr-service-start:hover { background:#2457A7 !important; border-color:#2457A7 !important; }
+.pr-public .pr-outline-btn { background:#fff !important; color:#17365D !important; border:1px solid #BFCBD9 !important; }
+.pr-public .pr-outline-btn:hover { background:#EAF0F7 !important; }
+.pr-public .pr-service-card h3, .pr-public .pr-governance-card h3,
+.pr-public .pr-role-workspace-card h3, .pr-public .pr-charter-grid h3,
+.pr-public .pr-directory-grid b, .pr-public .pr-faq button { color:#17365D !important; }
+.pr-public .pr-service-card p, .pr-public .pr-governance-card p,
+.pr-public .pr-role-workspace-card p, .pr-public .pr-charter-grid p,
+.pr-public .pr-directory-grid p, .pr-public .pr-faq p { color:#526176 !important; }
+.pr-public .pr-floating-help { background:#17365D !important; border-color:#17365D !important; color:#fff !important; }
+.pr-public .pr-floating-help b, .pr-public .pr-floating-help small { color:#fff !important; }
+.pr-public .pr-footer, .pr-public footer { background:#17365D !important; color:#fff !important; border-color:#17365D !important; }
+.pr-public footer a, .pr-public footer p, .pr-public footer span { color:#e6edf7 !important; }
+.pr-public .pr-modal { background:#fff !important; color:#17365D !important; border-color:#D7DFE9 !important; }
+.pr-public .pr-modal h2, .pr-public .pr-modal label { color:#17365D !important; }
+.pr-public .pr-modal input, .pr-public .pr-modal select, .pr-public .pr-modal textarea { background:#fff !important; color:#17365D !important; border-color:#BFCBD9 !important; }
+.pr-public .pr-modal .pr-primary-btn { background:#17365D !important; color:#fff !important; }
