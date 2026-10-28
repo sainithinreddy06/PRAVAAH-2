@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, ShieldCheck, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Workflow, Building2, ClipboardCheck, MapPinned, Landmark, FileSearch, Mail } from 'lucide-react';
 import { api, ApiError, hasAccessToken, setAccessToken, type User } from '../lib/api';
 
 type AuthContextValue = {
@@ -19,7 +19,17 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
   const demoEmail = 'demo@pravaah.local';
   const demoPassword = 'Demo@123';
-  const selectedPortal = sessionStorage.getItem('pravaah-selected-portal');
+  const selectedPortal = sessionStorage.getItem('pravaah-selected-portal') || new URLSearchParams(window.location.search).get('portal');
+  const workspaceConfig: Record<string, { eyebrow: string; emailLabel: string; emailPlaceholder: string; guidance: string; icon: typeof Building2 }> = {
+    'Institution Coordinator Dashboard': { eyebrow: 'INSTITUTION WORKSPACE', emailLabel: 'Institutional work email', emailPlaceholder: 'name@institution.edu.in', guidance: 'Use the email registered to your institution account.', icon: Building2 },
+    'Scrutiny Officer Dashboard': { eyebrow: 'SCRUTINY WORKSPACE', emailLabel: 'Authorised officer email', emailPlaceholder: 'officer@organisation.gov.in', guidance: 'Use the officer account provisioned for application scrutiny.', icon: ClipboardCheck },
+    'EVC Coordination Dashboard': { eyebrow: 'EVC COORDINATION WORKSPACE', emailLabel: 'Committee / coordinator email', emailPlaceholder: 'coordinator@organisation.gov.in', guidance: 'Use the account assigned for Expert Visit Committee coordination.', icon: MapPinned },
+    'Regional Officer Dashboard': { eyebrow: 'REGIONAL REVIEW WORKSPACE', emailLabel: 'Regional officer email', emailPlaceholder: 'officer@organisation.gov.in', guidance: 'Use the officer account assigned to your regional jurisdiction.', icon: Landmark },
+    'AICTE Headquarters Review Dashboard': { eyebrow: 'HEADQUARTERS WORKSPACE', emailLabel: 'Headquarters work email', emailPlaceholder: 'reviewer@organisation.gov.in', guidance: 'Use the authorised headquarters review account.', icon: FileSearch },
+    'Compliance Monitoring & Audit Dashboard': { eyebrow: 'COMPLIANCE & AUDIT WORKSPACE', emailLabel: 'Compliance / audit email', emailPlaceholder: 'auditor@organisation.gov.in', guidance: 'Use the account provisioned for compliance monitoring and audit.', icon: ShieldCheck },
+  };
+  const activeWorkspace = selectedPortal ? workspaceConfig[selectedPortal] : undefined;
+  const WorkspaceIcon = activeWorkspace?.icon || Building2;
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(hasAccessToken());
   const [email, setEmail] = useState(demoMode ? demoEmail : '');
@@ -105,14 +115,15 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>\n            <span className="auth-brand-status"><i/> SECURE ACCESS</span>
           </div>
           <div className="auth-intro">
-            <span className="auth-kicker"><ShieldCheck size={14} /> WORKSPACE AUTHENTICATION</span>
-            <h1>Sign in to PRAVAAH</h1>
-            <p>{selectedPortal ? <>Continue to <strong>{selectedPortal}</strong>. Sign in using the account assigned to your organisation.</> : 'Use your assigned account to access the PRAVAAH workspace.'}</p>
+            <span className="auth-kicker"><ShieldCheck size={14} /> {activeWorkspace?.eyebrow || 'SECURE WORKSPACE AUTHENTICATION'}</span>
+            <h1>{activeWorkspace ? 'Sign in to your workspace' : 'Sign in to PRAVAAH'}</h1>
+            {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
+            {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
           {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
-            <label htmlFor="signin-email">Work email</label>
-            <input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder="you@organisation.in" />
+            <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
+            <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
             <label htmlFor="signin-password">Password</label>
             <input id="signin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required maxLength={1024} placeholder="Enter your password" />
             {error && <p className="auth-error" role="alert">{error}</p>}
@@ -120,7 +131,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
               {busy ? 'Verifying account…' : 'Continue securely'} {!busy && <ArrowRight size={16} />}
             </button>
           </form>
-          <p className="auth-footnote">{demoMode ? <>Demo email: <strong>{demoEmail}</strong><br />Demo password: <strong>{demoPassword}</strong><br />UI preview only — live API data requires a configured backend.</> : 'Use an account provisioned in your connected backend.'}</p>
+          <p className="auth-footnote">{demoMode ? <>Demo email: <strong>{demoEmail}</strong><br />Demo password: <strong>{demoPassword}</strong><br />UI preview only — live API data requires a configured backend.</> : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
         </section>
         <p className="auth-disclaimer">PRAVAAH-2 demonstration platform · Not an official AICTE service</p>
       </main>
