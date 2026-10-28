@@ -853,3 +853,45 @@ body { background: var(--workspace-canvas); }
  .auth-card-pravaah{padding:20px 15px}
  .auth-card-pravaah .auth-demo-heading{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Role-specific demo overview dashboards */
+.demo-data-banner{margin-bottom:18px;border-color:#c7d9f3;background:#f0f6ff;color:#244e7d;align-items:center}
+.demo-data-banner strong{letter-spacing:.06em;font-size:11px}
+.demo-overview .welcome-row{align-items:flex-start}
+.demo-user-chip{display:flex;align-items:center;gap:9px;padding:7px 12px;border:1px solid #dbe5ef;background:#fff;border-radius:10px}
+.demo-user-chip>span:last-child{display:flex;flex-direction:column;gap:2px}
+.demo-user-chip strong{font-size:11px;color:#263e58}
+.demo-user-chip small{font-size:10px;color:#75869a;text-transform:capitalize}
+.demo-user-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#e8f1fc;color:#285f96;font-size:11px;font-weight:800}
+.demo-metric-grid{margin:18px 0;grid-template-columns:repeat(4,minmax(0,1fr))}
+.demo-metric-card{min-width:0;padding:18px;gap:10px;border:1px solid #e0e7ef;box-shadow:0 2px 8px rgba(27,55,88,.035)}
+.demo-metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#60738a;font-size:12px;font-weight:650}
+.demo-metric-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:#edf4fc;color:#2c659b}
+.demo-metric-card>strong{font-size:30px;line-height:1.1;letter-spacing:-.04em;color:#172f4a}
+.demo-metric-card>small{font-size:11px;color:#75869a;line-height:1.45}
+.demo-metric-foot{display:flex;align-items:center;gap:4px;font-size:10px;color:#7b8ca0;margin-top:2px}
+.demo-metric-card.tone-amber .demo-metric-icon{background:#fff4df;color:#a86b12}
+.demo-metric-card.tone-green .demo-metric-icon{background:#e5f7ef;color:#16815d}
+.demo-metric-card.tone-rose .demo-metric-icon{background:#fff0ed;color:#b84e43}
+.demo-metric-card.tone-purple .demo-metric-icon{background:#f0eaff;color:#7452b4}
+.demo-queue{margin-top:18px}
+.demo-record-count{white-space:nowrap;padding:6px 9px;border-radius:7px;background:#f0f5fb;color:#5c7189;font-size:10px;font-weight:700}
+.demo-ref{font-size:11px;color:#2c659b;white-space:nowrap}
+.demo-queue table{min-width:760px}
+.demo-queue .panel-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.demo-bottom-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:16px;margin-top:16px}
+.demo-activity,.demo-next-actions{min-width:0;padding:18px}
+.demo-activity-heading-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#edf4fc;color:#356a9c}
+.demo-activity-list{display:flex;flex-direction:column}
+.demo-activity-item{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1px solid #edf1f5}
+.demo-activity-item:last-child{border-bottom:0}
+.demo-activity-dot{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border-radius:50%;background:#edf4fc;color:#356a9c;font-size:10px;font-weight:800}
+.demo-activity-item p{margin:0;color:#344c65;font-size:12px;line-height:1.5}
+.demo-activity-item small{display:block;margin-top:4px;color:#8492a3;font-size:10px}
+.demo-next-actions>a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0;border-bottom:1px solid #edf1f5;color:#35516e;text-decoration:none;font-size:12px;font-weight:650}
+.demo-next-actions>a:last-child{border-bottom:0}
+.demo-next-actions>a span{display:flex;align-items:center;gap:9px}
+.demo-next-actions>a:hover{color:#1f639f}
+@media(max-width:1000px){.demo-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-bottom-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.demo-overview .welcome-row{align-items:stretch;flex-direction:column}.demo-overview .overview-actions{align-items:stretch;flex-direction:column}.demo-metric-grid{grid-template-columns:minmax(0,1fr)}.demo-queue .panel-heading{align-items:flex-start;flex-direction:column}.demo-queue .panel-footer{align-items:flex-start;flex-direction:column}.demo-user-chip{align-self:flex-start}}
