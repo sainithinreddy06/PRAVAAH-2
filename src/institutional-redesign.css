@@ -620,3 +620,76 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media(max-width:760px) {
   .v3-shell.compliance-theme .v3-page-stats { gap:8px !important; }
 }
+
+
+/* Site-wide design system based on the supplied PRAVAAH color reference.
+   Primary: #17365D · Secondary: #2457A7 · Tertiary: #526176 · Neutral: #F4F6F8 */
+:root {
+  --pr-canvas:#F4F6F8;
+  --pr-surface:#FFFFFF;
+  --pr-soft:#F4F6F8;
+  --pr-ink:#17365D;
+  --pr-secondary:#2457A7;
+  --pr-muted:#526176;
+  --pr-navy:#17365D;
+  --pr-blue:#2457A7;
+  --pr-blue-hover:#1d4687;
+  --pr-blue-soft:#e7eef8;
+  --pr-line:#d7dfe9;
+  --pr-line-strong:#bfcbd9;
+  --pr-green:#237a57;
+  --pr-green-soft:#eaf6ef;
+  --pr-amber:#a56612;
+  --pr-amber-soft:#fff5e5;
+  --pr-red:#b42332;
+  --pr-red-soft:#fff0f1;
+  --pr-shadow:0 2px 8px rgba(23,54,93,.06);
+  --pr-radius:8px;
+}
+html, body, #root { background:#F4F6F8 !important; color:#17365D !important; }
+body, button, input, select, textarea { font-family:Inter,Arial,sans-serif !important; }
+a { color:#2457A7; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:2px solid #2457A7 !important; outline-offset:2px !important; }
+::selection { background:#d8e5f7 !important; color:#17365D !important; }
+
+/* Shared components across public pages, role portals, forms and authenticated screens. */
+.v3-shell, .pr-public, .auth-screen-pravaah, .access-portal, .workflow-page { color:#17365D !important; }
+.v3-sidebar, .v3-topbar, .pr-public header, .auth-public-header { background:#fff !important; }
+.v3-nav-item.active, .pr-public .pr-role-workspace-card[aria-current="page"] { background:#e7eef8 !important; color:#17365D !important; border-color:#cbd9eb !important; }
+.v3-nav-item.active:before { background:#2457A7 !important; }
+.v3-nav-item.active svg, .v3-brand strong span { color:#2457A7 !important; }
+.v3-btn-primary, .v3-btn-light, .pr-public .pr-primary-btn, .pr-public .pr-service-start, .auth-public-access, .auth-card-pravaah button[type="submit"], .primary-button {
+  background:#17365D !important; border-color:#17365D !important; color:#fff !important;
+}
+.v3-btn-primary:hover, .v3-btn-light:hover, .pr-public .pr-primary-btn:hover, .pr-public .pr-service-start:hover, .auth-public-access:hover, .auth-card-pravaah button[type="submit"]:hover, .primary-button:hover {
+  background:#2457A7 !important; border-color:#2457A7 !important;
+}
+.v3-btn-ghost, .v3-btn-outline, .secondary-button, .v3-table-action, .v3-icon-button, .v3-top-icon {
+  border-color:#bfcbd9 !important; color:#17365D !important; background:#fff !important;
+}
+.v3-section-kicker, .v3-kicker, .applications-heading .eyebrow { color:#526176 !important; }
+.v3-section-heading h1, .v3-section-heading h2, .v3-hero h1, .v3-hero-copy h1, .pr-public h1, .pr-public h2, .auth-login-context h1 { color:#17365D !important; }
+.v3-page-stats>div, .v3-metric, .v3-panel, .workflow-section, .auth-card-pravaah, .pr-public .pr-service-card, .pr-public .pr-governance-card, .pr-public .pr-institution-card, .pr-public .pr-role-workspace-card {
+  border-color:#d7dfe9 !important; box-shadow:0 2px 8px rgba(23,54,93,.04) !important;
+}
+.v3-table thead th, .v3-register .panel-heading, .v3-table-toolbar { background:#eaf0f7 !important; color:#17365D !important; border-color:#d7dfe9 !important; }
+.v3-table tbody td { border-bottom-color:#e2e8f0 !important; }
+.v3-table tbody tr:hover { background:#f4f7fb !important; }
+.v3-search, .v3-filter, .v3-global-search, .workflow-form input, .workflow-form select, .workflow-form textarea, .pr-public input, .pr-public select, .pr-public textarea {
+  border-color:#c7d1de !important; background:#fff !important; color:#17365D !important;
+}
+.v3-context-bar { background:#eef2f7 !important; border-color:#d7dfe9 !important; color:#526176 !important; }
+.v3-context-status { background:#237a57 !important; }
+.v3-footer { color:#526176 !important; border-color:#d7dfe9 !important; }
+.auth-page-kicker { background:#e7eef8 !important; border-color:#cbd9eb !important; color:#17365D !important; }
+.auth-context-checks>div { border-color:#d7dfe9 !important; }
+.pr-public .pr-outline-btn { background:#fff !important; color:#17365D !important; border-color:#bfcbd9 !important; }
+.pr-public .pr-outline-btn:hover, .v3-btn-ghost:hover, .v3-btn-outline:hover, .secondary-button:hover, .v3-table-action:hover { background:#eaf0f7 !important; }
+.v3-shell.compliance-theme { --compliance-ink:#17365D; --compliance-green:#2457A7; --compliance-green-dark:#17365D; --compliance-mint:#e7eef8; --compliance-line:#d7dfe9; --compliance-muted:#526176; }
+.v3-shell.compliance-theme .v3-main { background:#F4F6F8 !important; }
+.v3-shell.compliance-theme .v3-context-bar, .v3-shell.compliance-theme .v3-register .panel-heading, .v3-shell.compliance-theme .v3-table-toolbar { background:#eaf0f7 !important; color:#526176 !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:first-child { border-top-color:#17365D !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:nth-child(2) { border-top-color:#2457A7 !important; }
+.v3-shell.compliance-theme .v3-page-stats>div:nth-child(3) { border-top-color:#526176 !important; }
+.v3-shell.compliance-theme .v3-table thead th { background:#eaf0f7 !important; color:#17365D !important; border-bottom-color:#d7dfe9 !important; }
+.v3-shell.compliance-theme .v3-table-action { border-color:#bfcbd9 !important; color:#17365D !important; }
