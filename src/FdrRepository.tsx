@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Activity, AlertTriangle, ArrowDownToLine, ArrowRight, Bell, CalendarDays, Check, CheckCircle2, ChevronDown, Clock3, Download, FileCheck2, FilePlus2, Filter, Landmark, Mail, Plus, Search, ShieldCheck, SlidersHorizontal, X } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowRight, Bell, CalendarDays, Check, CheckCircle2, ChevronDown, Clock3, Download, FileCheck2, FilePlus2, Filter, Landmark, Mail, Plus, Search, ShieldCheck, SlidersHorizontal, X } from 'lucide-react';
 
 type Deposit = { id:string; institution:string; bank:string; branch:string; instrument:string; amount:number; issueDate:string; maturityDate:string; status:'Active'|'Maturing Soon'|'Expired'|'Under Review'; submittedBy:string; updated:string };
 const seed:Deposit[]=[
