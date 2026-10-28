@@ -40,8 +40,6 @@ export default function AccessPortal() {
       <section className="access-portal-grid" id="workspace-directory" aria-label="Available PRAVAAH dashboard roles">{filteredPortals.map((portal) => { const Icon = portal.icon; return <article className="access-portal-card" key={portal.number}>
         <div className="access-portal-card-top"><span className={'access-portal-icon tone-' + portal.tone}><Icon size={21}/></span><span className="access-portal-category">{portal.category}</span></div>
         <h2>{portal.title}</h2><h3>{portal.subtitle}</h3><p className="access-portal-description">{portal.description}</p>
-        <div className="access-portal-meta"><span><Clock3 size={14}/>{portal.meta}</span><span><FileText size={14}/>{portal.documents}</span></div>
-        <div className="access-portal-tags">{portal.tags.map(tag=><span key={tag}>{tag}</span>)}</div>
         <button className="access-portal-select" onClick={() => choosePortal(portal)}>Continue to workspace <ArrowRight size={15}/></button>
       </article>; })}</section>
       {filteredPortals.length === 0 && <div className="access-portal-empty">No workspaces match “{query}”. Try a different role or service.</div>}
