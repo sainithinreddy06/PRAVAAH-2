@@ -23,11 +23,11 @@ export default function AccessPortal() {
     navigate('/sign-in?portal=' + encodeURIComponent(portal.title));
   };
   return <div className="access-portal-page">
-    <div className="pr-top-strip access-portal-top-strip"><div><b>GOVERNMENT WORKFLOW PROTOTYPE</b><span> | </span><span>Smart India Hackathon 2026 · Problem Statement SIH26262</span></div><div><a href="/">Public Overview</a><span> | </span><button onClick={() => document.getElementById('portal-help')?.scrollIntoView({behavior:'smooth'})}><Phone size={12}/> Help &amp; Support</button></div></div>
+    <div className="pr-top-strip access-portal-top-strip"><div><b>APPROVAL WORKFLOW PLATFORM</b><span> | </span><span>Institutional approvals, policy norms and compliance services</span></div><div><a href="/">Public Overview</a><span> | </span><button onClick={() => document.getElementById('portal-help')?.scrollIntoView({behavior:'smooth'})}><Phone size={12}/> Help &amp; Support</button></div></div>
     <header className="pr-header access-portal-pr-header">
       <button className="pr-brand access-portal-pr-brand" onClick={() => navigate('/')} aria-label="PRAVAAH home">
         <span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span>
-        <span><strong>PRAVAAH <em>(प्रवाह)</em> <i>SIH26262</i></strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
+        <span><strong>PRAVAAH <em>(प्रवाह)</em> </strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
       </button>
       <div className="access-portal-return">
         <button onClick={() => navigate('/')}><ArrowRight size={15}/> Return to Public Portal</button>
