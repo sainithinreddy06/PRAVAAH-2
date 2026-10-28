@@ -10,6 +10,7 @@ import ApplicationsPage from './pages/ApplicationsPage';
 import PublicSite from './pages/PublicSite';
 import AccessPortal from './pages/AccessPortal';
 import DemoOverview from './pages/DemoOverview';
+import DemoWorkspacePage from './pages/DemoWorkspacePage';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import { AdminScopePage, CompliancePage, OperationsPage, PoliciesPage } from './pages/OperationsPages';
 import { api, ApiError, formatStatus, type Application } from './lib/api';
@@ -145,6 +146,7 @@ function Overview() {
 }
 
 function WorkspaceApp() {
+  const demoSession = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
@@ -199,18 +201,18 @@ function WorkspaceApp() {
         <div className="page-content">
           <Routes>
             <Route path="/overview" element={<Overview />} />
-            <Route path="/applications" element={<ApplicationsPage />} />
-            <Route path="/applications/:id" element={<ApplicationDetailPage />} />
-            <Route path="/scrutiny" element={<ApplicationsPage />} />
-            <Route path="/compliance" element={<CompliancePage />} />
+            <Route path="/applications" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
+            <Route path="/applications/:id" element={demoSession ? <DemoWorkspacePage /> : <ApplicationDetailPage />} />
+            <Route path="/scrutiny" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
+            <Route path="/compliance" element={demoSession ? <DemoWorkspacePage /> : <CompliancePage />} />
             <Route path="/evidence" element={<Navigate to="/applications" replace />} />
             <Route path="/workflows" element={<Navigate to="/applications" replace />} />
-            <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/operations" element={demoSession ? <DemoWorkspacePage /> : <OperationsPage />} />
             <Route path="/audit" element={<Navigate to="/operations" replace />} />
-            <Route path="/institutions" element={<AdminScopePage kind="institutions" />} />
-            <Route path="/officers" element={<AdminScopePage kind="officers" />} />
-            <Route path="/policies" element={<PoliciesPage />} />
-            <Route path="/settings" element={<AdminScopePage kind="settings" />} />
+            <Route path="/institutions" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="institutions" />} />
+            <Route path="/officers" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="officers" />} />
+            <Route path="/policies" element={demoSession ? <DemoWorkspacePage /> : <PoliciesPage />} />
+            <Route path="/settings" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="settings" />} />
             <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
