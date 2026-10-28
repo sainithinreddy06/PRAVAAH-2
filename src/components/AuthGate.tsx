@@ -101,11 +101,11 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         <section className="auth-card">
           <div className="auth-brand">
             <span className="auth-brand-mark"><Workflow size={23} /></span>
-            <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Workspace</small></span>
+            <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>\n            <span className="auth-brand-status"><i/> SECURE ACCESS</span>
           </div>
           <div className="auth-intro">
-            <span className="auth-kicker"><ShieldCheck size={14} /> SECURE WORKSPACE</span>
-            <h1>Welcome back</h1>
+            <span className="auth-kicker"><ShieldCheck size={14} /> WORKSPACE AUTHENTICATION</span>
+            <h1>Sign in to PRAVAAH</h1>
             <p>{selectedPortal ? <>Continue to <strong>{selectedPortal}</strong>. Sign in using the account assigned to your organisation.</> : 'Use your assigned account to access the PRAVAAH workspace.'}</p>
           </div>
           {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
