@@ -389,6 +389,9 @@ export default function DemoOverview({ user }: { user: User }) {
   );
 }
 
-function CalendarDaysIcon() {\n  return <Clock3 size={15} />;\n}\n\nfunction ActivityIcon() {
+function CalendarDaysIcon() {
+  return <Clock3 size={15} />;
+}
+\nfunction ActivityIcon() {
   return <span className="demo-activity-heading-icon"><Clock3 size={17} /></span>;
 }
