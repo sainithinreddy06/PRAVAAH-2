@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const portals = [
-  { number: '01', title: 'Institution Coordinator Dashboard', subtitle: 'Applicant Institution Workspace', category: 'APPLICATION FILING', description: 'Prepare and submit approval applications, upload required evidence, track stage-wise progress, respond to scrutiny observations, and manage assigned undertakings.', meta: 'Stage-based review', documents: '3 document groups', tags: ['FDR Lodgement', 'OCR Status', 'Renewal Chain'], icon: Building2, tone: 'blue' },
+  { number: '01', title: 'Institution Coordinator Dashboard', subtitle: 'Applicant Institution Workspace', category: 'APPLICATION FILING', description: 'Prepare and submit approval applications, upload required evidence, track stage-wise progress, respond to scrutiny observations, and manage assigned undertakings.', meta: 'Stage-based review', documents: '3 document groups', tags: ['Deposit instrument lodgement', 'OCR Status', 'Renewal Chain'], icon: Building2, tone: 'blue' },
   { number: '02', title: 'Scrutiny Officer Dashboard', subtitle: 'Application Review & Evidence Validation', category: 'STAGE-WISE SCRUTINY', description: 'Review application completeness, validate submitted evidence against pinned policy requirements, record reasoned observations, and manage deficiency and resubmission cycles.', meta: 'Verification workflow', documents: '3 document groups', tags: ['CBS Verification', 'QR & Token Gateway', 'Lien Endorsement'], icon: Landmark, tone: 'green' },
   { number: '03', title: 'EVC Coordination Dashboard', subtitle: 'Expert Visit Committee Workflow', category: 'EVC COORDINATION', description: 'Coordinate Expert Visit Committee scheduling when required, monitor readiness and assigned actions, record visit outcomes, and route findings to the responsible review stage.', meta: 'Stage-based review', documents: '3 document groups', tags: ['Side-by-Side Review', 'Discrepancy Audit', 'Correction Requests'], icon: FileCheck2, tone: 'violet' },
   { number: '04', title: 'Regional Officer Dashboard', subtitle: 'Regional Pendency & Escalation Review', category: 'REGIONAL REVIEW', description: 'Monitor stage-wise pendency across assigned cases, review overdue obligations, supervise regional workload, and escalate blocked applications with recorded reasons.', meta: 'Regional monitoring', documents: '3 document groups', tags: ['Regional Monitoring', 'Expiring Instruments', 'Overdue Tracking'], icon: MapPin, tone: 'amber' },
@@ -27,7 +27,7 @@ export default function AccessPortal() {
     <header className="pr-header access-portal-pr-header">
       <button className="pr-brand access-portal-pr-brand" onClick={() => navigate('/')} aria-label="PRAVAAH home">
         <span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span>
-        <span><strong>PRAVAAH <em>(प्रवाह)</em> </strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
+        <span><strong>PRAVAAH <em>(प्रवाह)</em> </strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>Approval workflow and compliance platform</small></span>
       </button>
       <div className="access-portal-return">
         <button onClick={() => navigate('/')}><ArrowRight size={15}/> Return to Public Portal</button>
