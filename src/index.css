@@ -708,3 +708,51 @@ body { background: var(--workspace-canvas); }
 @media(max-width:1120px){.access-portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.access-portal-title-row{align-items:flex-start;flex-direction:column}.access-portal-rbac{margin-top:0}}
 @media(max-width:780px){.access-portal-header{padding:12px 16px;align-items:flex-start;flex-direction:column;gap:12px}.access-portal-header-actions{width:100%;justify-content:space-between}.access-portal-main{padding:28px 16px}.access-portal-title-row h1{font-size:28px}.access-portal-title-row p{font-size:13px}.access-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.access-portal-card{padding:17px;min-height:350px;border-radius:16px}.access-portal-card h2{font-size:15px}.access-portal-description{font-size:12px}}
 @media(max-width:520px){.access-portal-brand{gap:8px}.access-portal-brand small{font-size:9px}.access-portal-current,.access-portal-brand>b{display:none}.access-portal-grid{grid-template-columns:1fr}.access-portal-card{min-height:0}.access-portal-description{flex:none}.access-portal-tags{margin-top:0}.access-portal-header-actions button{font-size:11px;padding:8px 10px}}
+
+
+/* Access portal header now mirrors the PRAVAAH public gateway */
+.access-portal-top-strip{padding:6px clamp(18px,2.1vw,40px)}
+.access-portal-pr-header{padding:15px clamp(18px,2.1vw,40px);gap:20px}
+.access-portal-pr-brand{width:auto;max-width:none;display:flex;align-items:center;gap:12px;min-width:0;text-align:left;border:0;background:transparent;padding:0;color:inherit;box-shadow:none}
+.access-portal-pr-brand:hover{background:transparent}
+.access-portal-pr-brand>span:last-child{min-width:0}
+.access-portal-pr-brand strong{font:800 23px/1.25 Georgia,serif;letter-spacing:0;color:#101b2e}
+.access-portal-pr-brand em{font:500 18px Georgia,serif;color:#bb7a15}
+.access-portal-pr-brand i{font:700 9px 'DM Sans',sans-serif;font-style:normal;background:#eff5ff;color:#2754a6;border:1px solid #cbdcf8;padding:4px 7px;border-radius:20px;vertical-align:middle;letter-spacing:.2px}
+.access-portal-pr-brand small{font-size:10px;color:#42526a;line-height:1.4;margin-top:3px}
+.access-portal-pr-brand small+small{font-size:9px;color:#738096}
+.access-portal-pr-tools{flex-shrink:0}
+.access-portal-pr-tools form{width:min(330px,27vw)}
+.access-portal-pr-tools form button{display:none}
+.access-portal-pr-nav{padding:0 clamp(18px,2.1vw,40px)}
+.access-portal-pr-nav>div{flex:1}
+.access-portal-pr-nav a{font-size:10px}
+.access-portal-pr-nav a:first-child{color:#205be0;border-bottom-color:#245fe5;background:#f5f8ff}
+.access-portal-substrip{padding:9px clamp(18px,2.1vw,40px)}
+@media(max-width:1100px){
+ .access-portal-pr-header{align-items:flex-start;flex-direction:column;padding:14px 20px}
+ .access-portal-pr-tools{width:100%;display:flex}
+ .access-portal-pr-tools form{width:auto;flex:1}
+ .access-portal-pr-nav{align-items:stretch;padding:0 14px}
+ .access-portal-pr-nav>div{overflow-x:auto}
+ .access-portal-pr-nav>button{align-self:center}
+}
+@media(max-width:700px){
+ .access-portal-top-strip{padding:7px 14px}
+ .access-portal-top-strip>div:first-child span:last-child{display:none}
+ .access-portal-pr-header{padding:13px 14px}
+ .access-portal-pr-brand .pr-emblem{width:38px;height:39px}
+ .access-portal-pr-brand strong{font-size:19px}
+ .access-portal-pr-brand em{font-size:15px}
+ .access-portal-pr-brand small{font-size:9px}
+ .access-portal-pr-brand small+small{display:none}
+ .access-portal-pr-tools{align-items:stretch;flex-wrap:wrap}
+ .access-portal-pr-tools form{width:100%;flex-basis:100%;height:38px}
+ .access-portal-pr-tools .pr-officer-access{justify-content:center;width:100%}
+ .access-portal-pr-nav{position:relative;padding:0 10px;flex-direction:column}
+ .access-portal-pr-nav>div{width:100%;gap:0}
+ .access-portal-pr-nav a{padding:12px 10px}
+ .access-portal-pr-nav>button{align-self:stretch;margin:7px 0;justify-content:center}
+ .access-portal-substrip{font-size:9px;padding:8px 14px}
+ .access-portal-substrip>span:last-child{display:none}
+}
