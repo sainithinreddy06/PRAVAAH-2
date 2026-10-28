@@ -151,8 +151,22 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   if (!user) {
     return (
       <main className="auth-screen auth-screen-pravaah">
-        <a className="auth-back-link" href="/access-portal"><ArrowLeft size={15}/> Back to workspace directory</a>
-        <section className="auth-card auth-card-pravaah">
+        <div className="pr-top-strip auth-public-topstrip"><div><b>APPROVAL WORKFLOW PLATFORM</b><span> · </span><span>Institutional approvals, evidence review and compliance services</span></div><div><a href="/">Public Overview</a><span> · </span><a href="/access-portal">Access Portal</a></div></div>
+        <header className="pr-header auth-public-header">
+          <a className="pr-brand auth-public-brand" href="/" aria-label="PRAVAAH public portal"><span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span><span><strong>PRAVAAH <em>(प्रवाह)</em></strong><small>Integrated Approval Workflow &amp; Compliance</small></span></a>
+          <nav className="auth-public-nav" aria-label="Public portal navigation"><a href="/">Public Overview</a><a href="/#policy">Statutory Norms</a><a href="/#services">Services</a><a href="/#verification">Track &amp; Verify</a><a href="/#process">7-Stage Process</a></nav>
+          <a className="auth-public-access" href="/access-portal">Access Portal <ArrowRight size={14}/></a>
+        </header>
+        <div className="auth-login-layout">
+          <div className="auth-login-context">
+            <a className="auth-back-link" href="/access-portal"><ArrowLeft size={15}/> Back to workspace directory</a>
+            <span className="auth-page-kicker">SECURE SIGN-IN GATEWAY · ROLE-BASED ACCESS</span>
+            <h1>{selectedPortal || 'Choose your regulatory workspace'}</h1>
+            <p>{activeWorkspace?.guidance || 'Use the account assigned to your institution or regulatory role. Your workspace access is determined by the connected authentication service.'}</p>
+            <div className="auth-context-checks"><div><ShieldCheck size={17}/><span><strong>Authorised access only</strong><small>Permissions are checked by the connected service.</small></span></div><div><Fingerprint size={17}/><span><strong>Traceable workflow actions</strong><small>Case actions and review transitions follow role permissions.</small></span></div><div><FileCheck2 size={17}/><span><strong>Evidence-led review</strong><small>Institution submissions and statutory records stay linked to the case.</small></span></div></div>
+            <div className="auth-context-footer"><span className="auth-context-status-dot"/><span>PRAVAAH workspace services · {demoMode ? 'Demonstration mode' : 'Authentication required'}</span></div>
+          </div>
+          <section className="auth-card auth-card-pravaah">
           <div className="auth-brand">
             <span className="auth-brand-mark"><Workflow size={23} /></span>
             <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>
@@ -176,7 +190,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             </button>
           </form>
           <p className="auth-footnote">{demoMode ? <>Demo profile for this workspace: <strong>{demoEmail}</strong><br />Shared demo password: <strong>{demoPassword}</strong><br />UI preview only — demo profiles do not authenticate against the backend.</> : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
-        </section>
+          </section>
+        </div>
         <p className="auth-disclaimer">PRAVAAH-2 demonstration platform · Not an official AICTE service</p>
       </main>
     );
