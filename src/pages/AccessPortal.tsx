@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Users, Workflow } from 'lucide-react';
+import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const portals = [
