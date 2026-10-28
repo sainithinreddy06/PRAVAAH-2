@@ -11,6 +11,7 @@ import PublicSite from './pages/PublicSite';
 import AccessPortal from './pages/AccessPortal';
 import DemoOverview from './pages/DemoOverview';
 import DemoWorkspacePage from './pages/DemoWorkspacePage';
+import WorkspaceRebuilt from './WorkspaceRebuilt';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import { AdminScopePage, CompliancePage, OperationsPage, PoliciesPage } from './pages/OperationsPages';
 import { api, ApiError, formatStatus, type Application } from './lib/api';
@@ -146,6 +147,7 @@ function Overview() {
 }
 
 function WorkspaceApp() {
+  return <WorkspaceRebuilt />;
   const demoSession = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
