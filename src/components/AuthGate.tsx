@@ -18,7 +18,7 @@ export function useAuth(): AuthContextValue {
 export default function AuthGate({ children }: { children: ReactNode }) {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
   const demoPassword = 'Demo@123';
-  const selectedPortal = sessionStorage.getItem('pravaah-selected-portal') || new URLSearchParams(window.location.search).get('portal');
+  const [selectedPortal, setSelectedPortal] = useState(() => sessionStorage.getItem('pravaah-selected-portal') || new URLSearchParams(window.location.search).get('portal'));
   const demoProfiles: Record<string, { name: string; email: string; role: string }> = {
     'Institution Coordinator Dashboard': { name: 'Institution Coordinator (Demo)', email: 'institution.demo@pravaah.local', role: 'institution_coordinator' },
     'Scrutiny Officer Dashboard': { name: 'Scrutiny Officer (Demo)', email: 'scrutiny.demo@pravaah.local', role: 'scrutiny_officer' },
@@ -26,6 +26,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'Regional Officer Dashboard': { name: 'Regional Officer (Demo)', email: 'regional.demo@pravaah.local', role: 'regional_officer' },
     'AICTE Headquarters Review Dashboard': { name: 'Headquarters Reviewer (Demo)', email: 'headquarters.demo@pravaah.local', role: 'headquarters_reviewer' },
     'Compliance Monitoring & Audit Dashboard': { name: 'Compliance Auditor (Demo)', email: 'audit.demo@pravaah.local', role: 'compliance_auditor' },
+    'Platform Administrator Dashboard': { name: 'Platform Administrator (Demo)', email: 'platform-admin.demo@pravaah.local', role: 'platform_admin' },
   };
   const activeDemoProfile = selectedPortal ? demoProfiles[selectedPortal] : undefined;
   const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> =
@@ -38,6 +39,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'Regional Officer Dashboard': { eyebrow: 'REGIONAL REVIEW WORKSPACE', emailLabel: 'Regional officer email', emailPlaceholder: 'officer@organisation.gov.in', guidance: 'Use the officer account assigned to your regional jurisdiction.', icon: Landmark },
     'AICTE Headquarters Review Dashboard': { eyebrow: 'HEADQUARTERS WORKSPACE', emailLabel: 'Headquarters work email', emailPlaceholder: 'reviewer@organisation.gov.in', guidance: 'Use the authorised headquarters review account.', icon: FileSearch },
     'Compliance Monitoring & Audit Dashboard': { eyebrow: 'COMPLIANCE & AUDIT WORKSPACE', emailLabel: 'Compliance / audit email', emailPlaceholder: 'auditor@organisation.gov.in', guidance: 'Use the account provisioned for compliance monitoring and audit.', icon: ShieldCheck },
+    'Platform Administrator Dashboard': { eyebrow: 'PLATFORM OPERATIONS', emailLabel: 'Administrator work email', emailPlaceholder: 'admin@organisation.gov.in', guidance: 'Use the designated platform administration demo profile.', icon: ShieldCheck },
   };
   const activeWorkspace = selectedPortal ? workspaceConfig[selectedPortal] : undefined;
   const WorkspaceIcon = activeWorkspace?.icon || Building2;
@@ -147,7 +149,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
             {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
-          <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO ACCOUNTS</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>
+          <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO ACCOUNTS</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setSelectedPortal(portal); sessionStorage.setItem('pravaah-selected-portal', portal); setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
             <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
