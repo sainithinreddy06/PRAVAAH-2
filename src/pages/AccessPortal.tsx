@@ -30,7 +30,7 @@ export default function AccessPortal() {
         <span><strong>PRAVAAH <em>(प्रवाह)</em> <i>SIH26262</i></strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
       </button>
       <div className="pr-header-tools access-portal-pr-tools">
-        <form onSubmit={(event) => { event.preventDefault(); document.querySelector('.access-portal-search input')?.focus(); document.querySelector('.access-portal-search')?.scrollIntoView({behavior:'smooth',block:'center'}); }}>
+        <form onSubmit={(event) => { event.preventDefault(); document.querySelector<HTMLInputElement>('.access-portal-search input')?.focus(); document.querySelector('.access-portal-search')?.scrollIntoView({behavior:'smooth',block:'center'}); }}>
           <Search size={15}/><input aria-label="Search workspaces" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dashboard, role or responsibility…"/>
         </form>
         <button className="pr-officer-access" onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={13}/> Officer Portal Access</button>
