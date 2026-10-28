@@ -68,16 +68,22 @@ export default function AuthGate({ children }: { children: ReactNode }) {
       setChecking(false);
       setError('Your session has expired. Please sign in again.');
     };
-    window.addEventListener('pravaah:unauthorized', onUnauthorized);
-    if (hasAccessToken()) {
-      api.me()
-        .then(setUser)
-        .catch((reason: unknown) => {
-          setAccessToken(null);
-          setUser(null);
-          if (reason instanceof ApiError && reason.status !== 401) setError(reason.detail);
-        })
-        .finally(() => setChecking(false));
+    // Demo profiles are local, synthetic sessions. Do not let an unrelated API 401
+    // invalidate the demo session or send the user back to sign-in.
+    if (!demoMode) {
+      window.addEventListener('pravaah:unauthorized', onUnauthorized);
+      if (hasAccessToken()) {
+        api.me()
+          .then(setUser)
+          .catch((reason: unknown) => {
+            setAccessToken(null);
+            setUser(null);
+            if (reason instanceof ApiError && reason.status !== 401) setError(reason.detail);
+          })
+          .finally(() => setChecking(false));
+      }
+    } else {
+      setChecking(false);
     }
     return () => window.removeEventListener('pravaah:unauthorized', onUnauthorized);
   }, []);
