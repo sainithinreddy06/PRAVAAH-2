@@ -16,14 +16,21 @@ export function useAuth(): AuthContextValue {
 }
 
 export default function AuthGate({ children }: { children: ReactNode }) {
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+  const demoEmail = 'demo@pravaah.local';
+  const demoPassword = 'Demo@123';
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(hasAccessToken());
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(demoMode ? demoEmail : '');
+  const [password, setPassword] = useState(demoMode ? demoPassword : '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (demoMode && sessionStorage.getItem('pravaah-demo-session') === 'active') {
+      setUser({ id: 0, email: demoEmail, full_name: 'PRAVAAH Demo User', role: 'system_admin', region_code: null, is_active: true, created_at: new Date().toISOString() });
+      setChecking(false);
+    }
     const onUnauthorized = () => {
       setUser(null);
       setChecking(false);
@@ -45,6 +52,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   const signOut = () => {
     setAccessToken(null);
+    if (demoMode) sessionStorage.removeItem('pravaah-demo-session');
     setUser(null);
     setPassword('');
     setError('');
@@ -54,6 +62,18 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     event.preventDefault();
     setBusy(true);
     setError('');
+    if (demoMode) {
+      if (email.trim().toLowerCase() === demoEmail && password === demoPassword) {
+        sessionStorage.setItem('pravaah-demo-session', 'active');
+        setUser({ id: 0, email: demoEmail, full_name: 'PRAVAAH Demo User', role: 'system_admin', region_code: null, is_active: true, created_at: new Date().toISOString() });
+        setPassword('');
+      } else {
+        setError('Those demo credentials do not match. Use the credentials shown below.');
+      }
+      setBusy(false);
+      setChecking(false);
+      return;
+    }
     try {
       const token = await api.login(email.trim(), password);
       setAccessToken(token.access_token);
@@ -87,6 +107,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             <h1>Welcome back</h1>
             <p>Sign in with your assigned PRAVAAH account to continue.</p>
           </div>
+          {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">Work email</label>
             <input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder="you@organisation.in" />
@@ -97,7 +118,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
               {busy ? 'Signing in…' : 'Sign in to workspace'} {!busy && <ArrowRight size={16} />}
             </button>
           </form>
-          <p className="auth-footnote">No demo credentials are built in. Use an account provisioned in your connected backend.</p>
+          <p className="auth-footnote">{demoMode ? <>Demo email: <strong>{demoEmail}</strong><br />Demo password: <strong>{demoPassword}</strong><br />UI preview only — live API data requires a configured backend.</> : 'Use an account provisioned in your connected backend.'}</p>
         </section>
         <p className="auth-disclaimer">PRAVAAH-2 demonstration platform · Not an official AICTE service</p>
       </main>
