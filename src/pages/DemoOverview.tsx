@@ -131,6 +131,198 @@ const overviewByRole: Record<string, RoleOverview> = {
   },
 };
 
+
+type WorkbenchItem = { label: string; count: number; tone: 'blue' | 'amber' | 'green' | 'rose' | 'purple' };
+type ActionItem = { title: string; detail: string; tag: string; tone: 'blue' | 'amber' | 'green' | 'rose' | 'purple' };
+type WorkbenchConfig = {
+  heading: string;
+  description: string;
+  stages: WorkbenchItem[];
+  actionsHeading: string;
+  actions: ActionItem[];
+  deadlinesHeading: string;
+  deadlines: ActionItem[];
+};
+
+const workbenchByRole: Record<string, WorkbenchConfig> = {
+  institution_coordinator: {
+    heading: 'Application journey',
+    description: 'Where your institution’s sample applications sit in the approval workflow.',
+    stages: [
+      { label: 'Draft / submission', count: 2, tone: 'blue' },
+      { label: 'Under scrutiny', count: 3, tone: 'purple' },
+      { label: 'Action required', count: 2, tone: 'amber' },
+      { label: 'Approved', count: 3, tone: 'green' },
+    ],
+    actionsHeading: 'Your next actions',
+    actions: [
+      { title: 'Respond to scrutiny observations', detail: 'PRV-2026-1042 · Faculty evidence clarification', tag: 'Action required', tone: 'amber' },
+      { title: 'Upload renewed supporting document', detail: 'PRV-2026-1029 · Sample document checklist', tag: 'Due soon', tone: 'rose' },
+      { title: 'Review undertaking conditions', detail: 'PRV-2026-1038 · Confirm assigned compliance dates', tag: 'Pending', tone: 'blue' },
+    ],
+    deadlinesHeading: 'Upcoming compliance dates',
+    deadlines: [
+      { title: 'Faculty qualification evidence', detail: 'PRV-2026-1042 · Sample due date: 30 Oct 2026', tag: '2 days', tone: 'rose' },
+      { title: 'Lease document review', detail: 'PRV-2026-1029 · Sample due date: 04 Nov 2026', tag: '7 days', tone: 'amber' },
+      { title: 'Undertaking acknowledgement', detail: 'PRV-2026-1038 · Sample due date: 09 Nov 2026', tag: '12 days', tone: 'blue' },
+    ],
+  },
+  scrutiny_officer: {
+    heading: 'Scrutiny pipeline',
+    description: 'Illustrative review stages for the cases assigned to this officer workspace.',
+    stages: [
+      { label: 'Awaiting first review', count: 5, tone: 'amber' },
+      { label: 'Evidence validation', count: 4, tone: 'blue' },
+      { label: 'Clarification cycle', count: 3, tone: 'rose' },
+      { label: 'Ready to route', count: 2, tone: 'green' },
+    ],
+    actionsHeading: 'Priority scrutiny queue',
+    actions: [
+      { title: 'Verify faculty roster and qualifications', detail: 'PRV-2026-1042 · Compare submitted evidence with checklist', tag: 'High priority', tone: 'rose' },
+      { title: 'Review infrastructure evidence bundle', detail: 'PRV-2026-1029 · Two sample evidence items awaiting review', tag: 'In queue', tone: 'amber' },
+      { title: 'Record reasoned scrutiny observations', detail: 'PRV-2026-1038 · Complete the review notes before routing', tag: 'Next step', tone: 'blue' },
+    ],
+    deadlinesHeading: 'Review timeline watch',
+    deadlines: [
+      { title: 'First scrutiny target', detail: 'PRV-2026-1042 · Sample target: 29 Oct 2026', tag: '1 day', tone: 'rose' },
+      { title: 'Clarification response check', detail: 'PRV-2026-1029 · Sample target: 02 Nov 2026', tag: '5 days', tone: 'amber' },
+      { title: 'Regional routing readiness', detail: 'PRV-2026-1038 · Sample target: 05 Nov 2026', tag: '8 days', tone: 'blue' },
+    ],
+  },
+  evc_coordinator: {
+    heading: 'Expert Visit Committee pipeline',
+    description: 'Scheduling readiness, planned visits and report submission progress.',
+    stages: [
+      { label: 'Ready to schedule', count: 5, tone: 'blue' },
+      { label: 'Visit scheduled', count: 4, tone: 'purple' },
+      { label: 'Report pending', count: 2, tone: 'amber' },
+      { label: 'Visit completed', count: 7, tone: 'green' },
+    ],
+    actionsHeading: 'Committee coordination',
+    actions: [
+      { title: 'Confirm committee availability', detail: 'EVC-2026-021 · Sample visit in Hyderabad', tag: 'Priority', tone: 'amber' },
+      { title: 'Prepare infrastructure verification checklist', detail: 'EVC-2026-019 · Facilities and supporting records', tag: 'In progress', tone: 'blue' },
+      { title: 'Follow up on visit report', detail: 'EVC-2026-016 · Findings not yet submitted in demo data', tag: 'Report due', tone: 'rose' },
+    ],
+    deadlinesHeading: 'Upcoming visits & reports',
+    deadlines: [
+      { title: 'R. V. College of Engineering', detail: 'Sample visit: 02 Nov 2026 · Hyderabad', tag: '5 days', tone: 'amber' },
+      { title: 'Deccan Institute of Technology', detail: 'Sample visit: 04 Nov 2026 · Warangal', tag: '7 days', tone: 'blue' },
+      { title: 'Aurora College of Engineering report', detail: 'Sample report target: 06 Nov 2026', tag: '9 days', tone: 'rose' },
+    ],
+  },
+  regional_officer: {
+    heading: 'Regional pendency overview',
+    description: 'Illustrative workload and stage ageing for the Telangana demo region.',
+    stages: [
+      { label: 'Scrutiny pending', count: 9, tone: 'amber' },
+      { label: 'EVC coordination', count: 4, tone: 'purple' },
+      { label: 'SLA at risk', count: 4, tone: 'rose' },
+      { label: 'Ready to forward', count: 6, tone: 'green' },
+    ],
+    actionsHeading: 'Regional attention queue',
+    actions: [
+      { title: 'Escalate ageing scrutiny case', detail: 'PRV-2026-1038 · Sample case nearing target timeline', tag: 'SLA risk', tone: 'rose' },
+      { title: 'Review EVC scheduling gaps', detail: '4 sample applications await confirmed visit dates', tag: 'Needs review', tone: 'amber' },
+      { title: 'Check regional recommendation pack', detail: 'PRV-2026-1017 · Supporting notes ready for review', tag: 'Ready', tone: 'green' },
+    ],
+    deadlinesHeading: 'Regional deadline watch',
+    deadlines: [
+      { title: 'Scrutiny stage target', detail: 'PRV-2026-1038 · Sample target: 29 Oct 2026', tag: '1 day', tone: 'rose' },
+      { title: 'EVC scheduling checkpoint', detail: '4 sample cases · Checkpoint: 01 Nov 2026', tag: '4 days', tone: 'amber' },
+      { title: 'Monthly pendency review', detail: 'Regional summary · Sample target: 05 Nov 2026', tag: '8 days', tone: 'blue' },
+    ],
+  },
+  headquarters_reviewer: {
+    heading: 'Headquarters decision pipeline',
+    description: 'Central oversight of escalations, recommendations and documented policy exceptions.',
+    stages: [
+      { label: 'Escalated for review', count: 7, tone: 'purple' },
+      { label: 'Decision pending', count: 4, tone: 'amber' },
+      { label: 'Policy exception', count: 2, tone: 'rose' },
+      { label: 'Decision recorded', count: 12, tone: 'green' },
+    ],
+    actionsHeading: 'Central review priorities',
+    actions: [
+      { title: 'Review regional recommendation', detail: 'PRV-2026-1017 · Sample case awaiting central review', tag: 'Decision queue', tone: 'amber' },
+      { title: 'Check policy exception rationale', detail: 'PRV-2026-1038 · Confirm reasons are recorded for audit', tag: 'Attention', tone: 'rose' },
+      { title: 'Inspect stage ageing summary', detail: 'Cross-region snapshot · Identify bottlenecks for follow-up', tag: 'Monitoring', tone: 'blue' },
+    ],
+    deadlinesHeading: 'Central review milestones',
+    deadlines: [
+      { title: 'Escalated case review', detail: 'PRV-2026-1017 · Sample target: 30 Oct 2026', tag: '2 days', tone: 'amber' },
+      { title: 'Exception rationale check', detail: 'PRV-2026-1038 · Sample target: 02 Nov 2026', tag: '5 days', tone: 'rose' },
+      { title: 'Region-wise pendency review', detail: 'Central oversight · Sample target: 06 Nov 2026', tag: '9 days', tone: 'blue' },
+    ],
+  },
+  compliance_auditor: {
+    heading: 'Compliance lifecycle',
+    description: 'Track obligations, document validity, alerts and audit follow-up in the sample workspace.',
+    stages: [
+      { label: 'Open obligations', count: 6, tone: 'blue' },
+      { label: 'Due within 7 days', count: 8, tone: 'amber' },
+      { label: 'Overdue', count: 3, tone: 'rose' },
+      { label: 'Evidence verified', count: 18, tone: 'green' },
+    ],
+    actionsHeading: 'Compliance watchlist',
+    actions: [
+      { title: 'Follow up on overdue undertaking', detail: 'OBL-2026-031 · Deccan Institute of Technology', tag: 'Overdue', tone: 'rose' },
+      { title: 'Validate document expiry alert', detail: 'AUD-2026-006 · Sample lease document evidence', tag: 'Verify', tone: 'amber' },
+      { title: 'Inspect audit event chain', detail: 'AUD-2026-004 · Review recorded workflow changes', tag: 'Audit check', tone: 'blue' },
+    ],
+    deadlinesHeading: 'Upcoming compliance deadlines',
+    deadlines: [
+      { title: 'Lease document validity check', detail: 'Sample institution record · 30 Oct 2026', tag: '2 days', tone: 'rose' },
+      { title: 'Undertaking evidence submission', detail: 'OBL-2026-031 · Sample target: 01 Nov 2026', tag: '4 days', tone: 'amber' },
+      { title: 'Audit follow-up closure', detail: 'AUD-2026-004 · Sample target: 05 Nov 2026', tag: '8 days', tone: 'blue' },
+    ],
+  },
+  platform_admin: {
+    heading: 'End-to-end workflow health',
+    description: 'A synthetic cross-workspace snapshot of application flow and operational pressure points.',
+    stages: [
+      { label: 'Institution submission', count: 18, tone: 'blue' },
+      { label: 'Scrutiny / re-scrutiny', count: 36, tone: 'purple' },
+      { label: 'EVC / regional review', count: 22, tone: 'amber' },
+      { label: 'Final decision', count: 12, tone: 'green' },
+    ],
+    actionsHeading: 'Platform-wide attention queue',
+    actions: [
+      { title: 'Review ageing application queue', detail: '9 sample cases exceed the configured warning threshold', tag: 'SLA watch', tone: 'rose' },
+      { title: 'Check notification delivery status', detail: '3 sample reminders need delivery review', tag: 'Operations', tone: 'amber' },
+      { title: 'Review role access assignments', detail: 'Sample account and workspace mapping check', tag: 'Access review', tone: 'blue' },
+    ],
+    deadlinesHeading: 'System alert calendar',
+    deadlines: [
+      { title: 'Document expiry reminders', detail: '5 sample records · Next checkpoint: 30 Oct 2026', tag: '2 days', tone: 'amber' },
+      { title: 'Overdue obligation escalation', detail: '3 sample records · Next checkpoint: 31 Oct 2026', tag: '3 days', tone: 'rose' },
+      { title: 'Weekly regional pendency digest', detail: 'Sample scheduled report · 02 Nov 2026', tag: '5 days', tone: 'blue' },
+    ],
+  },
+  system_admin: {
+    heading: 'End-to-end workflow health',
+    description: 'A synthetic cross-workspace snapshot of application flow and operational pressure points.',
+    stages: [
+      { label: 'Institution submission', count: 18, tone: 'blue' },
+      { label: 'Scrutiny / re-scrutiny', count: 36, tone: 'purple' },
+      { label: 'EVC / regional review', count: 22, tone: 'amber' },
+      { label: 'Final decision', count: 12, tone: 'green' },
+    ],
+    actionsHeading: 'Platform-wide attention queue',
+    actions: [
+      { title: 'Review ageing application queue', detail: '9 sample cases exceed the configured warning threshold', tag: 'SLA watch', tone: 'rose' },
+      { title: 'Check notification delivery status', detail: '3 sample reminders need delivery review', tag: 'Operations', tone: 'amber' },
+      { title: 'Review role access assignments', detail: 'Sample account and workspace mapping check', tag: 'Access review', tone: 'blue' },
+    ],
+    deadlinesHeading: 'System alert calendar',
+    deadlines: [
+      { title: 'Document expiry reminders', detail: '5 sample records · Next checkpoint: 30 Oct 2026', tag: '2 days', tone: 'amber' },
+      { title: 'Overdue obligation escalation', detail: '3 sample records · Next checkpoint: 31 Oct 2026', tag: '3 days', tone: 'rose' },
+      { title: 'Weekly regional pendency digest', detail: 'Sample scheduled report · 02 Nov 2026', tag: '5 days', tone: 'blue' },
+    ],
+  },
+};
+
 const defaultOverview = overviewByRole.platform_admin;
 
 export default function DemoOverview({ user }: { user: User }) {
@@ -146,6 +338,43 @@ export default function DemoOverview({ user }: { user: User }) {
       <div className="metric-grid demo-metric-grid">
         {data.metrics.map((metric) => { const Icon = metric.icon; return <article className={'panel metric-card demo-metric-card tone-' + metric.tone} key={metric.label}><div className="demo-metric-top"><span>{metric.label}</span><span className="demo-metric-icon"><Icon size={18} /></span></div><strong>{metric.value}</strong><small>{metric.note}</small><span className="demo-metric-foot"><ArrowDownRight size={13} /> Demo snapshot</span></article>; })}
       </div>
+
+      <section className="demo-workbench-grid" aria-label="Role-specific operational dashboard">
+        <section className="panel demo-workflow-panel">
+          <div className="panel-heading"><div><h3>{(workbenchByRole[user.role] || workbenchByRole.platform_admin).heading}</h3><p>{(workbenchByRole[user.role] || workbenchByRole.platform_admin).description}</p></div><span className="demo-record-count">SAMPLE SNAPSHOT</span></div>
+          <div className="demo-stage-list">
+            {(workbenchByRole[user.role] || workbenchByRole.platform_admin).stages.map((stage) => {
+              const stages = (workbenchByRole[user.role] || workbenchByRole.platform_admin).stages;
+              const max = Math.max(...stages.map((item) => item.count), 1);
+              return <div className="demo-stage-row" key={stage.label}>
+                <div className="demo-stage-label"><span><i className={'demo-stage-dot tone-' + stage.tone} />{stage.label}</span><strong>{stage.count}</strong></div>
+                <div className="demo-stage-track"><span className={'demo-stage-fill tone-' + stage.tone} style={{ width: Math.max(8, Math.round((stage.count / max) * 100)) + '%' }} /></div>
+              </div>;
+            })}
+          </div>
+          <div className="demo-panel-footnote"><ShieldCheck size={13}/> Illustrative counts only; not connected to live records.</div>
+        </section>
+        <section className="panel demo-priority-panel">
+          <div className="panel-heading"><div><h3>{(workbenchByRole[user.role] || workbenchByRole.platform_admin).actionsHeading}</h3><p>Suggested work items for this role</p></div><ClipboardCheck size={18} /></div>
+          <div className="demo-action-list">
+            {(workbenchByRole[user.role] || workbenchByRole.platform_admin).actions.map((item) => <article className="demo-action-item" key={item.title}>
+              <span className={'demo-action-icon tone-' + item.tone}>{item.tone === 'green' ? <CheckCircle2 size={16}/> : item.tone === 'rose' ? <ShieldAlert size={16}/> : item.tone === 'amber' ? <Clock3 size={16}/> : <FileText size={16}/>}</span>
+              <div className="demo-action-copy"><strong>{item.title}</strong><p>{item.detail}</p></div>
+              <span className={'demo-action-tag tone-' + item.tone}>{item.tag}</span>
+            </article>)}
+          </div>
+        </section>
+        <section className="panel demo-deadline-panel">
+          <div className="panel-heading"><div><h3>{(workbenchByRole[user.role] || workbenchByRole.platform_admin).deadlinesHeading}</h3><p>Sample dates for demonstration only</p></div><Clock3 size={18} /></div>
+          <div className="demo-deadline-list">
+            {(workbenchByRole[user.role] || workbenchByRole.platform_admin).deadlines.map((item) => <article className="demo-deadline-item" key={item.title}>
+              <span className={'demo-deadline-marker tone-' + item.tone}><CalendarDaysIcon /></span>
+              <div><strong>{item.title}</strong><p>{item.detail}</p></div>
+              <span className={'demo-action-tag tone-' + item.tone}>{item.tag}</span>
+            </article>)}
+          </div>
+        </section>
+      </section>
       <section className="panel overview-records demo-queue">
         <div className="panel-heading"><div><h3>{data.queueTitle}</h3><p>{data.queueDescription}</p></div><span className="demo-record-count">{data.rows.length} sample records</span></div>
         <div className="table-wrap"><table><thead><tr><th>Reference</th><th>Institution / item</th><th>Current stage</th><th>Status</th><th>Last activity</th></tr></thead><tbody>{data.rows.map((row) => <tr key={row.ref}><td><strong className="demo-ref">{row.ref}</strong></td><td>{row.institution}</td><td>{row.stage}</td><td><span className={'status status-' + (row.tone === 'green' ? 'green' : row.tone === 'amber' ? 'amber' : row.tone === 'rose' ? 'rose' : row.tone === 'purple' ? 'purple' : 'blue')}><i />{row.status}</span></td><td>{row.updated}</td></tr>)}</tbody></table></div>
@@ -160,6 +389,6 @@ export default function DemoOverview({ user }: { user: User }) {
   );
 }
 
-function ActivityIcon() {
+function CalendarDaysIcon() {\n  return <Clock3 size={15} />;\n}\n\nfunction ActivityIcon() {
   return <span className="demo-activity-heading-icon"><Clock3 size={17} /></span>;
 }
