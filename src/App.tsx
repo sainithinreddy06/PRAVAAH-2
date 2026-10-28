@@ -151,71 +151,88 @@ function WorkspaceApp() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const closeMobile = () => setMobileOpen(false);
-  const pageLabel = [...navigation]
-    .find((item) => item.to === location.pathname)?.label || (location.pathname.startsWith('/applications/') ? 'Application details' : 'Overview');
-  const initials = user.full_name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+  const page = navigation.find((item) => item.to === location.pathname);
+  const pageLabel = page?.label || (location.pathname.startsWith('/applications/') ? 'Application record' : location.pathname === '/scrutiny' ? 'Scrutiny queue' : 'Workspace overview');
+  const initials = user.full_name.split(/\\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+  const roleLabel = user.role.replace(/_/g, ' ');
+  const navGroups = [
+    { label: 'WORKSPACE', items: navigation.slice(0, 2) },
+    { label: 'GOVERNANCE', items: navigation.slice(2, 5) },
+    { label: 'DIRECTORIES', items: navigation.slice(5, 7) },
+    { label: 'PREFERENCES', items: navigation.slice(7) },
+  ];
 
   return (
-    <div className="app-shell">
-      {mobileOpen && <button className="mobile-scrim" aria-label="Close navigation" onClick={closeMobile} />}
-      <aside className={'sidebar ' + (mobileOpen ? 'sidebar-open' : '')}>
-        <div className="brand">
-          <span className="brand-mark"><Workflow size={21} /></span>
-          <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance</small></span>
+    <div className="app-shell workspace-redesign">
+      {mobileOpen && <button className="mobile-scrim workspace-scrim" aria-label="Close navigation" onClick={closeMobile} />}
+      <aside className={'sidebar workspace-sidebar ' + (mobileOpen ? 'sidebar-open' : '')}>
+        <div className="workspace-brand">
+          <span className="workspace-brand-mark"><Workflow size={21} strokeWidth={2.2} /></span>
+          <span className="workspace-brand-copy"><strong>PRAVAAH<span>·</span></strong><small>REGULATORY WORKSPACE</small></span>
           <button className="mobile-close" aria-label="Close menu" onClick={closeMobile}><X size={18} /></button>
         </div>
-        <div className="workspace-switch">
-          <span className="workspace-symbol"><Building2 size={18} /></span>
-          <span><strong>Assigned workspace</strong><small>{user.region_code || 'Region not specified'}</small></span>
+        <div className="workspace-context-card">
+          <span className="workspace-context-icon"><Building2 size={17} /></span>
+          <span className="workspace-context-copy"><small>ACTIVE WORKSPACE</small><strong>{user.region_code || (demoSession ? 'Demo jurisdiction' : 'Assigned jurisdiction')}</strong></span>
+          <span className="workspace-context-status" title="Workspace selected"><i /></span>
         </div>
-        <nav className="side-nav" aria-label="Workspace navigation">
-          <p className="nav-label">WORKSPACE</p>
-          {navigation.map(({ label, to, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/overview'} onClick={closeMobile} className={({ isActive }) => 'nav-item ' + (isActive ? 'nav-active' : '')}>
-              <Icon size={18} /><span>{label}</span>
-            </NavLink>
+        <nav className="side-nav workspace-nav" aria-label="Workspace navigation">
+          {navGroups.map((group) => (
+            <div className="workspace-nav-group" key={group.label}>
+              <p className="nav-label">{group.label}</p>
+              {group.items.map(({ label, to, icon: Icon }) => (
+                <NavLink key={to} to={to} end={to === '/overview'} onClick={closeMobile} className={({ isActive }) => 'nav-item workspace-nav-item ' + (isActive ? 'nav-active' : '')}>
+                  <Icon size={17} strokeWidth={1.9} /><span>{label}</span>{location.pathname === to && <span className="workspace-nav-indicator" />}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
-        <div className="sidebar-bottom">
-          <div className="sidebar-note"><ShieldCheck size={16} /><p>Access is checked by the connected backend. Menu visibility does not replace server authorization.</p></div>
-          <div className="profile-row">
+        <div className="workspace-sidebar-bottom">
+          <div className="workspace-security-note"><ShieldCheck size={16} /><span><strong>Secure access</strong><small>Permissions are enforced by the connected service.</small></span></div>
+          <div className="workspace-profile">
             <span className="profile-avatar">{initials}</span>
-            <span className="profile-copy"><strong>{user.full_name}</strong><small>{user.role.replace(/_/g, ' ')}</small></span>
-            <button className="signout-button" type="button" onClick={signOut} aria-label="Sign out"><LogOut size={16} /></button>
+            <span className="profile-copy"><strong>{user.full_name}</strong><small>{roleLabel}</small></span>
+            <button className="signout-button" type="button" onClick={signOut} aria-label="Sign out" title="Sign out"><LogOut size={16} /></button>
           </div>
         </div>
       </aside>
-      <main className="main-area">
-        <header className="topbar">
-          <button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileOpen(true)}><Menu size={20} /></button>
-          <div className="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong>{pageLabel}</strong></div>
-          <div className="topbar-actions">
-            <div className="workspace-topbar-meta">
-              <span className="workspace-topbar-label">SECURE WORKSPACE</span>
-              <span className="topbar-context">PRAVAAH workspace</span>
-            </div>
-            <span className="topbar-divider" />
-            <span className="top-avatar" aria-label={'Signed in as ' + user.full_name}>{initials}</span>
+      <main className="main-area workspace-main">
+        <header className="topbar workspace-topbar">
+          <div className="workspace-topbar-left">
+            <button className="mobile-menu workspace-mobile-menu" aria-label="Open navigation" onClick={() => setMobileOpen(true)}><Menu size={19} /></button>
+            <div className="workspace-breadcrumb"><span>PRAVAAH</span><span className="workspace-breadcrumb-separator">/</span><strong>{pageLabel}</strong></div>
+          </div>
+          <div className="workspace-topbar-right">
+            <span className={'workspace-environment ' + (demoSession ? 'is-demo' : 'is-live')}><i />{demoSession ? 'DEMO ENVIRONMENT' : 'CONNECTED WORKSPACE'}</span>
+            <span className="workspace-topbar-divider" />
+            <div className="workspace-top-user"><span className="top-avatar">{initials}</span><span><strong>{user.full_name}</strong><small>{roleLabel}</small></span></div>
           </div>
         </header>
-        <div className="page-content">
-          <Routes>
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/applications" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
-            <Route path="/applications/:id" element={demoSession ? <DemoWorkspacePage /> : <ApplicationDetailPage />} />
-            <Route path="/scrutiny" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
-            <Route path="/compliance" element={demoSession ? <DemoWorkspacePage /> : <CompliancePage />} />
-            <Route path="/evidence" element={<Navigate to="/applications" replace />} />
-            <Route path="/workflows" element={<Navigate to="/applications" replace />} />
-            <Route path="/operations" element={demoSession ? <DemoWorkspacePage /> : <OperationsPage />} />
-            <Route path="/audit" element={<Navigate to="/operations" replace />} />
-            <Route path="/institutions" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="institutions" />} />
-            <Route path="/officers" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="officers" />} />
-            <Route path="/policies" element={demoSession ? <DemoWorkspacePage /> : <PoliciesPage />} />
-            <Route path="/settings" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="settings" />} />
-            <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
-            <Route path="*" element={<Navigate to="/overview" replace />} />
-          </Routes>
+        <div className="workspace-content">
+          <div className="workspace-page-intro">
+            <div><p className="workspace-overline">WORKSPACE / {pageLabel.toUpperCase()}</p><p className="workspace-page-context">{demoSession ? 'Demonstration workspace · Sample records only' : 'Authorised operational workspace'}</p></div>
+            <div className="workspace-date-stamp"><span className="workspace-date-dot" /> Workflow services {demoSession ? 'simulated' : 'connected'}</div>
+          </div>
+          <div className="page-content">
+            <Routes>
+              <Route path="/overview" element={<Overview />} />
+              <Route path="/applications" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
+              <Route path="/applications/:id" element={demoSession ? <DemoWorkspacePage /> : <ApplicationDetailPage />} />
+              <Route path="/scrutiny" element={demoSession ? <DemoWorkspacePage /> : <ApplicationsPage />} />
+              <Route path="/compliance" element={demoSession ? <DemoWorkspacePage /> : <CompliancePage />} />
+              <Route path="/evidence" element={<Navigate to="/applications" replace />} />
+              <Route path="/workflows" element={<Navigate to="/applications" replace />} />
+              <Route path="/operations" element={demoSession ? <DemoWorkspacePage /> : <OperationsPage />} />
+              <Route path="/audit" element={<Navigate to="/operations" replace />} />
+              <Route path="/institutions" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="institutions" />} />
+              <Route path="/officers" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="officers" />} />
+              <Route path="/policies" element={demoSession ? <DemoWorkspacePage /> : <PoliciesPage />} />
+              <Route path="/settings" element={demoSession ? <DemoWorkspacePage /> : <AdminScopePage kind="settings" />} />
+              <Route path="/sign-in" element={<Navigate to="/applications" replace />} />
+              <Route path="*" element={<Navigate to="/overview" replace />} />
+            </Routes>
+          </div>
         </div>
       </main>
     </div>
