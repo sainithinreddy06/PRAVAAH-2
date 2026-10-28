@@ -90,10 +90,15 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   const signOut = () => {
     setAccessToken(null);
-    if (demoMode) { sessionStorage.removeItem('pravaah-demo-session'); sessionStorage.removeItem('pravaah-demo-profile'); }
+    sessionStorage.removeItem('pravaah-demo-session');
+    sessionStorage.removeItem('pravaah-demo-profile');
+    sessionStorage.removeItem('pravaah-selected-portal');
     setUser(null);
     setPassword('');
     setError('');
+    // Return to the public entry route after logout. This avoids a hard request
+    // to a nested static-host route when the host has no SPA rewrite configured.
+    window.location.assign('/');
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
