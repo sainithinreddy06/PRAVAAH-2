@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow, Clock3, FileText, Search, ChevronRight } from 'lucide-react';
+import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, UserRoundCog, Workflow, Clock3, FileText, Search, ChevronRight, Scale, Award, Headphones, Lock, Phone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,18 +23,34 @@ export default function AccessPortal() {
     navigate('/sign-in?portal=' + encodeURIComponent(portal.title));
   };
   return <div className="access-portal-page">
-    <header className="access-portal-header">
-      <button className="access-portal-brand" onClick={() => navigate('/')} aria-label="PRAVAAH home">
-        <span className="access-portal-emblem"><Workflow size={21}/></span>
-        <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>
+    <div className="pr-top-strip access-portal-top-strip"><div><b>GOVERNMENT WORKFLOW PROTOTYPE</b><span> | </span><span>Smart India Hackathon 2026 · Problem Statement SIH26262</span></div><div><a href="/">Public Overview</a><span> | </span><button onClick={() => document.getElementById('portal-help')?.scrollIntoView({behavior:'smooth'})}><Phone size={12}/> Help &amp; Support</button></div></div>
+    <header className="pr-header access-portal-pr-header">
+      <button className="pr-brand access-portal-pr-brand" onClick={() => navigate('/')} aria-label="PRAVAAH home">
+        <span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span>
+        <span><strong>PRAVAAH <em>(प्रवाह)</em> <i>SIH26262</i></strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>National Technical Education Regulatory Demonstration · Independent Portal</small></span>
       </button>
-      <div className="access-portal-header-actions"><span className="access-portal-header-status"><i/> DEMONSTRATION PORTAL</span><button onClick={() => document.getElementById('portal-help')?.scrollIntoView({behavior:'smooth'})}>Help &amp; Support</button><button onClick={() => navigate('/')}>Back to Overview <ArrowRight size={14}/></button></div>
+      <div className="pr-header-tools access-portal-pr-tools">
+        <form onSubmit={(event) => { event.preventDefault(); document.querySelector('.access-portal-search input')?.focus(); document.querySelector('.access-portal-search')?.scrollIntoView({behavior:'smooth',block:'center'}); }}>
+          <Search size={15}/><input aria-label="Search workspaces" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dashboard, role or responsibility…"/>
+        </form>
+        <button className="pr-officer-access" onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={13}/> Officer Portal Access</button>
+      </div>
     </header>
+    <nav className="pr-nav access-portal-pr-nav"><div>
+      <a href="/"><Layers size={14}/> Public Overview</a>
+      <a href="/#policies"><Scale size={14}/> Policy &amp; Norms (APH)</a>
+      <a href="/#services"><Award size={14}/> Public &amp; Institutional Services</a>
+      <a href="/#verification"><Search size={14}/> Track &amp; Verify Status</a>
+      <a href="/#process"><Workflow size={14}/> Approval Process (How It Works)</a>
+      <a href="/#compliance-charter"><ShieldCheck size={14}/> Citizen Charter</a>
+      <a href="/#support"><Headphones size={14}/> Help &amp; Support Desk</a>
+    </div><button onClick={() => document.getElementById('workspace-directory')?.scrollIntoView({behavior:'smooth'})}><Lock size={12}/> Officer Login</button></nav>
+    <div className="pr-substrip access-portal-substrip"><span><b>PRAVAAH CITIZEN &amp; INSTITUTIONAL GATEWAY</b> · All India Council for Technical Education (AICTE) Workflow Prototype</span><span><Phone size={12}/> Independent demonstration · <a href="/#policies">APH Guidelines →</a></span></div>
     <main className="access-portal-main">
       <div className="access-portal-breadcrumb"><button onClick={() => navigate('/')}>Home</button><ChevronRight size={13}/><strong>Access Portal</strong></div>
       <div className="access-portal-title-row"><div><span className="access-portal-eyebrow">WORKSPACE DIRECTORY</span><h1>Choose your PRAVAAH workspace</h1><p>Select the stakeholder workspace relevant to your responsibilities. Sign-in is handled by the connected authentication service; selecting a workspace does not grant permissions.</p></div><span className="access-portal-rbac"><ShieldCheck size={16}/> Role-aware access</span></div>
       <label className="access-portal-search"><Search size={17}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search dashboards, roles or responsibilities…"/><span>{filteredPortals.length} workspaces</span></label>
-      <section className="access-portal-grid" aria-label="Available PRAVAAH dashboard roles">{filteredPortals.map((portal) => { const Icon = portal.icon; return <article className="access-portal-card" key={portal.number}>
+      <section className="access-portal-grid" id="workspace-directory" aria-label="Available PRAVAAH dashboard roles">{filteredPortals.map((portal) => { const Icon = portal.icon; return <article className="access-portal-card" key={portal.number}>
         <div className="access-portal-card-top"><span className={'access-portal-icon tone-' + portal.tone}><Icon size={21}/></span><span className="access-portal-category">{portal.category}</span></div>
         <h2>{portal.title}</h2><h3>{portal.subtitle}</h3><p className="access-portal-description">{portal.description}</p>
         <div className="access-portal-meta"><span><Clock3 size={14}/>{portal.meta}</span><span><FileText size={14}/>{portal.documents}</span></div>
