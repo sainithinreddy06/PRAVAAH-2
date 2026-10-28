@@ -27,6 +27,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'AICTE Headquarters Review Dashboard': { name: 'Headquarters Reviewer (Demo)', email: 'headquarters.demo@pravaah.local', role: 'headquarters_reviewer' },
     'Compliance Monitoring & Audit Dashboard': { name: 'Compliance Auditor (Demo)', email: 'audit.demo@pravaah.local', role: 'compliance_auditor' },
     'Platform Administrator Dashboard': { name: 'Platform Administrator (Demo)', email: 'platform-admin.demo@pravaah.local', role: 'platform_admin' },
+    'Regional Committee Dashboard': { name: 'Regional Committee (Demo)', email: 'regional-committee.demo@pravaah.local', role: 'regional_committee' },
+    'Standing Appellate Dashboard': { name: 'Standing Appellate (Demo)', email: 'standing-appellate.demo@pravaah.local', role: 'standing_appellate' },
   };
   const activeDemoProfile = selectedPortal ? demoProfiles[selectedPortal] : undefined;
   const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> =
@@ -40,6 +42,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'AICTE Headquarters Review Dashboard': { eyebrow: 'HEADQUARTERS WORKSPACE', emailLabel: 'Headquarters work email', emailPlaceholder: 'reviewer@organisation.gov.in', guidance: 'Use the authorised headquarters review account.', icon: FileSearch },
     'Compliance Monitoring & Audit Dashboard': { eyebrow: 'COMPLIANCE & AUDIT WORKSPACE', emailLabel: 'Compliance / audit email', emailPlaceholder: 'auditor@organisation.gov.in', guidance: 'Use the account provisioned for compliance monitoring and audit.', icon: ShieldCheck },
     'Platform Administrator Dashboard': { eyebrow: 'PLATFORM OPERATIONS', emailLabel: 'Administrator work email', emailPlaceholder: 'admin@organisation.gov.in', guidance: 'Use the designated platform administration demo profile.', icon: ShieldCheck },
+    'Regional Committee Dashboard': { eyebrow: 'REGIONAL COMMITTEE WORKSPACE', emailLabel: 'Committee work email', emailPlaceholder: 'committee@organisation.gov.in', guidance: 'Use the demonstration account assigned to committee evaluation.', icon: Landmark },
+    'Standing Appellate Dashboard': { eyebrow: 'APPELLATE REVIEW WORKSPACE', emailLabel: 'Appellate review email', emailPlaceholder: 'appellate@organisation.gov.in', guidance: 'Use the demonstration account assigned to appeals and reconsideration.', icon: FileSearch },
   };
   const activeWorkspace = selectedPortal ? workspaceConfig[selectedPortal] : undefined;
   const WorkspaceIcon = activeWorkspace?.icon || Building2;
