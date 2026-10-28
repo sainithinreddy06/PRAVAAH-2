@@ -895,3 +895,46 @@ body { background: var(--workspace-canvas); }
 .demo-next-actions>a:hover{color:#1f639f}
 @media(max-width:1000px){.demo-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-bottom-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:640px){.demo-overview .welcome-row{align-items:stretch;flex-direction:column}.demo-overview .overview-actions{align-items:stretch;flex-direction:column}.demo-metric-grid{grid-template-columns:minmax(0,1fr)}.demo-queue .panel-heading{align-items:flex-start;flex-direction:column}.demo-queue .panel-footer{align-items:flex-start;flex-direction:column}.demo-user-chip{align-self:flex-start}}
+
+
+/* Role-aware operational overview: workflow distribution, priorities and deadlines */
+.demo-workbench-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:18px 0}
+.demo-workbench-grid .panel{min-width:0;padding:18px;border:1px solid #e0e7ef;box-shadow:0 2px 8px rgba(27,55,88,.035)}
+.demo-workflow-panel .panel-heading,.demo-priority-panel .panel-heading,.demo-deadline-panel .panel-heading{margin-bottom:14px}
+.demo-workflow-panel .panel-heading>svg,.demo-priority-panel .panel-heading>svg,.demo-deadline-panel .panel-heading>svg{flex:0 0 auto;color:#6e8298}
+.demo-stage-list{display:flex;flex-direction:column;gap:15px;padding:5px 0 13px}
+.demo-stage-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px;font-size:11px;color:#435970}
+.demo-stage-label>span{display:flex;align-items:center;gap:8px}
+.demo-stage-label strong{font-size:12px;color:#213b56;font-variant-numeric:tabular-nums}
+.demo-stage-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#4384c5}
+.demo-stage-dot.tone-blue,.demo-stage-fill.tone-blue{background:#4786c6}
+.demo-stage-dot.tone-purple,.demo-stage-fill.tone-purple{background:#8a76c7}
+.demo-stage-dot.tone-amber,.demo-stage-fill.tone-amber{background:#d79a37}
+.demo-stage-dot.tone-green,.demo-stage-fill.tone-green{background:#299a74}
+.demo-stage-dot.tone-rose,.demo-stage-fill.tone-rose{background:#cf6d63}
+.demo-stage-track{height:7px;overflow:hidden;border-radius:20px;background:#edf1f6}
+.demo-stage-fill{display:block;height:100%;border-radius:20px;transition:width .2s ease}
+.demo-panel-footnote{display:flex;align-items:center;gap:7px;padding-top:12px;border-top:1px solid #edf1f5;color:#8492a3;font-size:10px;line-height:1.5}
+.demo-panel-footnote svg{flex:0 0 auto;color:#6d8ba9}
+.demo-priority-panel{grid-column:2;grid-row:1 / span 2}
+.demo-action-list,.demo-deadline-list{display:flex;flex-direction:column}
+.demo-action-item,.demo-deadline-item{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-bottom:1px solid #edf1f5;min-width:0}
+.demo-action-item:first-child,.demo-deadline-item:first-child{padding-top:3px}
+.demo-action-item:last-child,.demo-deadline-item:last-child{border-bottom:0;padding-bottom:2px}
+.demo-action-icon,.demo-deadline-marker{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:#edf4fc;color:#356a9c}
+.demo-action-icon.tone-amber,.demo-deadline-marker.tone-amber{background:#fff4df;color:#a86b12}
+.demo-action-icon.tone-green,.demo-deadline-marker.tone-green{background:#e5f7ef;color:#16815d}
+.demo-action-icon.tone-rose,.demo-deadline-marker.tone-rose{background:#fff0ed;color:#b84e43}
+.demo-action-icon.tone-purple,.demo-deadline-marker.tone-purple{background:#f0eaff;color:#7452b4}
+.demo-action-copy,.demo-deadline-item>div{flex:1;min-width:0}
+.demo-action-copy strong,.demo-deadline-item>div strong{display:block;color:#2d455e;font-size:11px;line-height:1.45;font-weight:750}
+.demo-action-copy p,.demo-deadline-item>div p{margin:4px 0 0;color:#7b8ba0;font-size:10px;line-height:1.55}
+.demo-action-tag{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:112px;padding:5px 7px;border-radius:6px;background:#edf4fc;color:#356a9c;font-size:9px;font-weight:750;text-align:center;line-height:1.3}
+.demo-action-tag.tone-amber{background:#fff4df;color:#98620f}
+.demo-action-tag.tone-green{background:#e5f7ef;color:#16815d}
+.demo-action-tag.tone-rose{background:#fff0ed;color:#b84e43}
+.demo-action-tag.tone-purple{background:#f0eaff;color:#7452b4}
+.demo-deadline-panel{grid-column:1}
+.demo-deadline-marker{flex-basis:29px;width:29px;height:29px;border-radius:8px}
+@media(max-width:1050px){.demo-workbench-grid{grid-template-columns:minmax(0,1fr)}.demo-priority-panel,.demo-deadline-panel{grid-column:1;grid-row:auto}}
+@media(max-width:640px){.demo-workbench-grid{gap:12px;margin:14px 0}.demo-workbench-grid .panel{padding:14px}.demo-action-item,.demo-deadline-item{gap:8px;flex-wrap:wrap}.demo-action-copy,.demo-deadline-item>div{flex-basis:calc(100% - 42px)}.demo-action-tag{margin-left:40px}.demo-workflow-panel .panel-heading{align-items:flex-start;flex-direction:column}}
