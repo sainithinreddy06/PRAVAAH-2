@@ -769,3 +769,29 @@ body { background: var(--workspace-canvas); }
 .access-portal-page .access-portal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media(max-width:1000px){.access-portal-page .access-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.access-portal-page .access-portal-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Refined, workspace-aware PRAVAAH authentication */
+.auth-card-pravaah{width:min(100%,520px);padding:32px 36px}
+.auth-card-pravaah .auth-brand{display:flex;align-items:center;gap:12px}
+.auth-card-pravaah .auth-brand>span:nth-child(2){min-width:0}
+.auth-card-pravaah .auth-brand-status{margin-left:auto;flex-shrink:0}
+.auth-card-pravaah .auth-intro{margin:26px 0 22px}
+.auth-card-pravaah .auth-intro h1{font-size:clamp(25px,3vw,30px);line-height:1.2;letter-spacing:-.8px}
+.auth-card-pravaah .auth-intro>p{font-size:12px;line-height:1.65;color:#6c7d91}
+.auth-selected-workspace{display:flex;align-items:flex-start;gap:12px;padding:14px;margin-top:17px;border:1px solid #dce7f2;border-radius:9px;background:#f7faff}
+.auth-selected-workspace>span{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:8px;background:#e8f0fc;color:#245d91}
+.auth-selected-workspace>div{min-width:0}
+.auth-selected-workspace small{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:#72849a;margin-bottom:4px}
+.auth-selected-workspace strong{display:block;font-size:12px;line-height:1.45;color:#213852}
+.auth-selected-workspace p{margin:5px 0 0;font-size:10px;line-height:1.5;color:#6f8197}
+.auth-card-pravaah .auth-form{gap:8px}
+.auth-card-pravaah .auth-form label{margin-top:5px;font-size:11px;font-weight:700;color:#26384d}
+.auth-email-field{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;border:1px solid #d6e1ec;border-radius:7px;background:#fff;color:#8495a9;transition:border-color .15s,box-shadow .15s}
+.auth-email-field:focus-within{border-color:#6d9bc7;box-shadow:0 0 0 3px #2b65950f}
+.auth-card-pravaah .auth-email-field input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;box-shadow:none;background:transparent;font-size:12px;color:#24364b}
+.auth-card-pravaah .auth-email-field input:focus{outline:0;box-shadow:none}
+.auth-card-pravaah .auth-form>input{height:46px}
+.auth-card-pravaah .auth-submit{margin-top:8px;min-height:46px;font-size:12px}
+.auth-card-pravaah .auth-footnote{margin-top:20px;color:#728196;font-size:10px}
+@media(max-width:700px){.auth-card-pravaah{width:100%;padding:24px 20px}.auth-card-pravaah .auth-brand-status{display:none}.auth-selected-workspace{padding:11px}}
