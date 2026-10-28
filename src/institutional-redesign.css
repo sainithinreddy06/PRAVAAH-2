@@ -951,3 +951,183 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .v3-shell .v3-hero-bottom>span:last-child { display:none !important; }
   .v3-shell .v3-panel { padding:14px !important; }
 }
+
+
+/* SITE-WIDE CLEAN UI SYSTEM — apply consistently to every route, not just Overview.
+   Covers public information, access portal, authentication, registries, case dossiers,
+   policy/compliance pages, forms, settings, operations and all shared controls. */
+:root {
+  --site-bg:#F4F6F8; --site-surface:#FFFFFF; --site-ink:#17365D;
+  --site-blue:#2457A7; --site-muted:#526176; --site-border:#D7DFE9;
+  --site-soft:#EAF0F7; --site-hover:#F8FAFC;
+}
+html, body, #root { background:var(--site-bg) !important; color:var(--site-ink) !important; }
+body { font-family:Inter,Arial,sans-serif !important; }
+button, input, textarea, select { font:inherit; }
+button { cursor:pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline:2px solid #2457A7 !important; outline-offset:2px !important;
+}
+/* Authenticated shell and every route inside it */
+.v3-shell .v3-main, .v3-shell .v3-content, .v3-shell .v3-page,
+.v3-shell .v3-case-page, .v3-shell .v3-register-page, .v3-shell .v3-workflow-page {
+  background:var(--site-bg) !important; color:var(--site-ink) !important;
+}
+.v3-shell .v3-page { width:100% !important; min-width:0 !important; }
+.v3-shell .v3-page > section:not(.v3-hero),
+.v3-shell .v3-case-main > section,
+.v3-shell .v3-case-layout > section,
+.v3-shell .v3-case-layout .v3-panel,
+.v3-shell .v3-panel, .v3-shell .v3-register,
+.v3-shell .workflow-section, .v3-shell .workflow-card,
+.v3-shell .v3-dossier-card, .v3-shell .v3-case-summary,
+.v3-shell .v3-settings-card, .v3-shell .v3-policy-card,
+.v3-shell .v3-compliance-card {
+  background:#FFFFFF !important; color:#17365D !important;
+  border-color:#D7DFE9 !important; border-radius:8px !important;
+  box-shadow:0 1px 4px rgba(23,54,93,.035) !important;
+}
+.v3-shell .v3-case-heading h1, .v3-shell .v3-case-heading h2,
+.v3-shell .v3-case-layout h2, .v3-shell .v3-case-layout h3,
+.v3-shell .v3-register h2, .v3-shell .v3-register h3,
+.v3-shell .v3-page h1, .v3-shell .v3-page h2, .v3-shell .v3-page h3 {
+  color:#17365D !important; letter-spacing:-.2px;
+}
+.v3-shell .v3-case-heading p, .v3-shell .v3-case-layout p,
+.v3-shell .v3-register p, .v3-shell .v3-page p,
+.v3-shell .v3-page small { color:#526176; }
+.v3-shell .v3-case-breadcrumb, .v3-shell .v3-case-tabs,
+.v3-shell .v3-table-foot, .v3-shell .v3-case-policy-row,
+.v3-shell .v3-dossier-grid { border-color:#D7DFE9 !important; }
+.v3-shell .v3-case-tabs { background:#FFFFFF !important; border:1px solid #D7DFE9 !important; border-radius:7px !important; }
+.v3-shell .v3-case-tabs a { color:#526176 !important; }
+.v3-shell .v3-case-tabs a:hover, .v3-shell .v3-case-tabs a:focus { color:#2457A7 !important; background:#EAF0F7 !important; }
+.v3-shell .v3-case-metrics .v3-metric { background:#FFFFFF !important; }
+.v3-shell .v3-dossier-progress, .v3-shell .v3-dossier-grid>div { background:#F8FAFC !important; border-color:#D7DFE9 !important; }
+.v3-shell .v3-dossier-track, .v3-shell .v3-stage-track { background:#E7ECF2 !important; }
+.v3-shell .v3-dossier-track>span { background:#2457A7 !important; }
+.v3-shell .v3-table-wrap { max-width:100% !important; }
+.v3-shell .v3-table { min-width:720px; }
+.v3-shell .v3-table th { white-space:nowrap; }
+.v3-shell .v3-table-action, .v3-shell .v3-case-actions button,
+.v3-shell .v3-priority-foot button, .v3-shell .v3-panel button:not(.v3-btn-primary):not(.v3-btn-light):not(.v3-link-button):not(.v3-check) {
+  border-radius:5px;
+}
+.v3-shell .v3-btn-primary, .v3-shell .v3-btn-light, .v3-shell .primary-button,
+.v3-shell button[type=submit], .v3-shell .workflow-submit {
+  background:#17365D !important; color:#FFFFFF !important; border:1px solid #17365D !important;
+  min-height:36px; border-radius:5px; font-weight:650; opacity:1 !important;
+}
+.v3-shell .v3-btn-primary:hover, .v3-shell .v3-btn-light:hover,
+.v3-shell button[type=submit]:hover, .v3-shell .workflow-submit:hover {
+  background:#2457A7 !important; border-color:#2457A7 !important; color:#FFFFFF !important;
+}
+.v3-shell .v3-btn-outline, .v3-shell .v3-btn-ghost, .v3-shell .secondary-button,
+.v3-shell .v3-table-action, .v3-shell .v3-icon-button, .v3-shell .v3-top-icon,
+.v3-shell .v3-case-actions .v3-btn-outline {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important;
+  min-height:34px; opacity:1 !important;
+}
+.v3-shell .v3-btn-outline:hover, .v3-shell .v3-btn-ghost:hover,
+.v3-shell .secondary-button:hover, .v3-shell .v3-table-action:hover,
+.v3-shell .v3-icon-button:hover, .v3-shell .v3-top-icon:hover {
+  background:#EAF0F7 !important; border-color:#2457A7 !important; color:#17365D !important;
+}
+.v3-shell input:not([type=checkbox]):not([type=radio]), .v3-shell select,
+.v3-shell textarea, .access-portal input, .auth-screen-pravaah input,
+.auth-screen-pravaah select, .auth-screen-pravaah textarea {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important;
+  border-radius:5px !important; box-shadow:none !important;
+}
+.v3-shell input::placeholder, .v3-shell textarea::placeholder,
+.access-portal input::placeholder, .auth-screen-pravaah input::placeholder { color:#718096 !important; opacity:1 !important; }
+.v3-shell label { color:#526176 !important; }
+.v3-shell .v3-table thead th, .v3-shell .v3-table-toolbar,
+.v3-shell .v3-register .panel-heading { background:#F4F6F8 !important; color:#526176 !important; border-color:#D7DFE9 !important; }
+.v3-shell .v3-table tbody tr:hover { background:#F8FAFC !important; }
+.v3-shell .v3-table tbody td { border-bottom:1px solid #E6EBF1 !important; }
+.v3-shell .v3-ref, .v3-shell .v3-link-button, .v3-shell a { color:#2457A7; }
+.v3-shell .v3-notice { background:#EAF0F7 !important; color:#17365D !important; border:1px solid #C7D6EA !important; border-radius:6px !important; }
+.v3-shell .v3-empty, .v3-shell .v3-empty-state { background:#FFFFFF !important; border:1px dashed #BFCBD9 !important; color:#526176 !important; border-radius:8px !important; }
+.v3-shell .v3-footer { background:transparent !important; }
+
+/* Public pages: all sections and legal/support surfaces share the same visual language. */
+.pr-public, .pr-public main, .pr-public .pr-section, .pr-public .pr-legal {
+  background:#F4F6F8 !important; color:#17365D !important;
+}
+.pr-public .pr-legal { max-width:1100px !important; margin:24px auto !important; padding:28px !important; background:#FFFFFF !important; border:1px solid #D7DFE9 !important; border-radius:8px !important; }
+.pr-public .pr-legal h1, .pr-public .pr-legal h2, .pr-public .pr-legal h3 { color:#17365D !important; }
+.pr-public .pr-legal p, .pr-public .pr-legal li { color:#526176 !important; line-height:1.7 !important; }
+.pr-public .pr-section { padding-top:clamp(28px,4vw,56px) !important; padding-bottom:clamp(28px,4vw,56px) !important; }
+.pr-public .pr-section-title h2, .pr-public .pr-section h2, .pr-public .pr-section h3 { color:#17365D !important; }
+.pr-public .pr-section-title p, .pr-public .pr-section p { color:#526176 !important; }
+.pr-public .pr-service-card, .pr-public .pr-governance-card, .pr-public .pr-institution-card,
+.pr-public .pr-role-workspace-card, .pr-public .pr-charter-grid article,
+.pr-public .pr-directory-grid article, .pr-public .pr-faq article,
+.pr-public .pr-faq-item, .pr-public .pr-hero-feature-grid article {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #D7DFE9 !important;
+  border-radius:7px !important; box-shadow:0 1px 4px rgba(23,54,93,.035) !important;
+}
+.pr-public .pr-service-card h3, .pr-public .pr-governance-card h3,
+.pr-public .pr-institution-card h3, .pr-public .pr-role-workspace-card h3,
+.pr-public .pr-charter-grid h3, .pr-public .pr-directory-grid h3,
+.pr-public .pr-faq button { color:#17365D !important; }
+.pr-public .pr-service-card p, .pr-public .pr-governance-card p,
+.pr-public .pr-institution-card p, .pr-public .pr-role-workspace-card p,
+.pr-public .pr-charter-grid p, .pr-public .pr-directory-grid p,
+.pr-public .pr-faq p { color:#526176 !important; }
+.pr-public .pr-modal, .pr-public [role=dialog] { background:#FFFFFF !important; color:#17365D !important; border:1px solid #D7DFE9 !important; box-shadow:0 12px 36px rgba(23,54,93,.16) !important; }
+.pr-public .pr-modal button, .pr-public [role=dialog] button { opacity:1 !important; }
+.pr-public .pr-modal input, .pr-public .pr-modal select, .pr-public .pr-modal textarea,
+.pr-public input, .pr-public select, .pr-public textarea {
+  background:#FFFFFF !important; color:#17365D !important; border-color:#BFCBD9 !important; border-radius:5px !important;
+}
+.pr-public .pr-primary-btn, .pr-public .pr-service-start, .pr-public .pr-dark-action {
+  background:#17365D !important; color:#FFFFFF !important; border:1px solid #17365D !important;
+  border-radius:5px !important; opacity:1 !important; font-weight:650 !important;
+}
+.pr-public .pr-primary-btn:hover, .pr-public .pr-service-start:hover, .pr-public .pr-dark-action:hover {
+  background:#2457A7 !important; color:#FFFFFF !important; border-color:#2457A7 !important;
+}
+.pr-public .pr-outline-btn, .pr-public .pr-hero-shortcuts button {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important; border-radius:5px !important;
+}
+.pr-public .pr-outline-btn:hover, .pr-public .pr-hero-shortcuts button:hover { background:#EAF0F7 !important; border-color:#2457A7 !important; }
+
+/* Role/workspace directory and authentication: legible cards and visible actions. */
+.access-portal, .access-portal-page, .auth-screen-pravaah { background:#F4F6F8 !important; color:#17365D !important; }
+.access-portal-card, .access-portal article, .access-portal-help,
+.auth-screen-pravaah .auth-card-pravaah, .auth-screen-pravaah .auth-login-card,
+.auth-screen-pravaah .auth-context-card {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #D7DFE9 !important;
+  border-radius:8px !important; box-shadow:0 2px 6px rgba(23,54,93,.04) !important;
+}
+.access-portal h1, .access-portal h2, .access-portal h3,
+.auth-screen-pravaah h1, .auth-screen-pravaah h2, .auth-screen-pravaah h3 { color:#17365D !important; }
+.access-portal p, .access-portal small, .auth-screen-pravaah p,
+.auth-screen-pravaah small { color:#526176 !important; }
+.access-portal button, .auth-screen-pravaah button { opacity:1 !important; }
+.access-portal .access-portal-select, .auth-screen-pravaah button[type=submit] {
+  background:#17365D !important; color:#FFFFFF !important; border:1px solid #17365D !important;
+  border-radius:5px !important; min-height:38px !important; font-weight:650 !important;
+}
+.access-portal .access-portal-select:hover, .auth-screen-pravaah button[type=submit]:hover {
+  background:#2457A7 !important; color:#FFFFFF !important; border-color:#2457A7 !important;
+}
+.access-portal button:not(.access-portal-select), .auth-screen-pravaah button:not([type=submit]) {
+  color:#17365D !important;
+}
+.access-portal .access-portal-disclaimer { color:#526176 !important; border-color:#D7DFE9 !important; }
+
+/* Avoid horizontal overflow and keep all pages usable at smaller viewport widths. */
+@media(max-width:900px) {
+  .v3-shell .v3-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .v3-shell .v3-dashboard-grid, .v3-shell .v3-bottom-grid { grid-template-columns:minmax(0,1fr) !important; }
+  .v3-shell .v3-case-heading { flex-direction:column !important; align-items:flex-start !important; }
+  .v3-shell .v3-case-actions { flex-wrap:wrap !important; }
+  .access-portal .access-portal-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+}
+@media(max-width:560px) {
+  .v3-shell .v3-metric-grid, .access-portal .access-portal-grid { grid-template-columns:minmax(0,1fr) !important; }
+  .pr-public .pr-legal { margin:12px !important; padding:18px !important; }
+}
