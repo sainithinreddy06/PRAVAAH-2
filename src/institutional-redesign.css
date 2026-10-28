@@ -761,3 +761,79 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .pr-public .pr-modal h2, .pr-public .pr-modal label { color:#17365D !important; }
 .pr-public .pr-modal input, .pr-public .pr-modal select, .pr-public .pr-modal textarea { background:#fff !important; color:#17365D !important; border-color:#BFCBD9 !important; }
 .pr-public .pr-modal .pr-primary-btn { background:#17365D !important; color:#fff !important; }
+
+
+/* CONTRAST AND LEGIBILITY FIXES — public final CTA + authenticated workspace sidebar/buttons. */
+.pr-public .pr-final-cta {
+  background:#17365D !important;
+  border:1px solid #17365D !important;
+  color:#FFFFFF !important;
+}
+.pr-public .pr-final-cta>div:first-child>span,
+.pr-public .pr-final-cta>div:first-child h2,
+.pr-public .pr-final-cta>div:first-child p { color:#FFFFFF !important; }
+.pr-public .pr-final-cta>div:first-child>span { color:#F4C15D !important; }
+.pr-public .pr-final-cta>div:last-child button {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  gap:9px !important; min-height:42px !important; padding:11px 16px !important;
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #FFFFFF !important;
+  border-radius:5px !important; font-weight:750 !important; opacity:1 !important;
+}
+.pr-public .pr-final-cta>div:last-child button:hover { background:#EAF0F7 !important; color:#17365D !important; }
+.pr-public .pr-final-cta>div:last-child a {
+  display:inline-flex !important; align-items:center !important; gap:7px !important;
+  color:#FFFFFF !important; opacity:1 !important; text-decoration:underline !important;
+}
+.pr-public .pr-final-cta>div:last-child a:hover { color:#DCE7F5 !important; }
+
+/* Keep the authenticated app light and aligned to the navy/blue design reference. */
+.v3-shell, .v3-shell .v3-main, .v3-shell .v3-content { background:#F4F6F8 !important; color:#17365D !important; }
+.v3-shell .v3-sidebar {
+  background:#FFFFFF !important; color:#17365D !important; border-right:1px solid #D7DFE9 !important;
+  box-shadow:none !important;
+}
+.v3-shell .v3-brand, .v3-shell .v3-sidebar-bottom, .v3-shell .v3-account { border-color:#D7DFE9 !important; }
+.v3-shell .v3-brand strong, .v3-shell .v3-account-copy strong,
+.v3-shell .v3-secure strong, .v3-shell .v3-workspace-select strong { color:#17365D !important; }
+.v3-shell .v3-brand small, .v3-shell .v3-account-copy small,
+.v3-shell .v3-secure small, .v3-shell .v3-workspace-select small { color:#526176 !important; }
+.v3-shell .v3-workspace-select { background:#F4F6F8 !important; color:#526176 !important; border:1px solid #D7DFE9 !important; }
+.v3-shell .v3-workspace-symbol { background:#EAF0F7 !important; color:#2457A7 !important; }
+.v3-shell .v3-nav-group>p { color:#526176 !important; }
+.v3-shell .v3-nav-item { color:#526176 !important; background:transparent !important; border-color:transparent !important; }
+.v3-shell .v3-nav-item svg { color:#526176 !important; }
+.v3-shell .v3-nav-item:hover { background:#F4F6F8 !important; color:#17365D !important; }
+.v3-shell .v3-nav-item.active {
+  background:#EAF0F7 !important; color:#17365D !important; border-color:#C7D6EA !important;
+}
+.v3-shell .v3-nav-item.active svg { color:#2457A7 !important; }
+.v3-shell .v3-nav-item.active:before { background:#2457A7 !important; }
+.v3-shell .v3-nav-count { background:#2457A7 !important; color:#FFFFFF !important; }
+.v3-shell .v3-secure { color:#237A57 !important; }
+.v3-shell .v3-account>button {
+  min-width:36px !important; min-height:36px !important; display:inline-flex !important;
+  align-items:center !important; justify-content:center !important;
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important;
+  border-radius:5px !important; opacity:1 !important;
+}
+.v3-shell .v3-account>button:hover { background:#EAF0F7 !important; border-color:#2457A7 !important; }
+.v3-shell .v3-btn-primary, .v3-shell .v3-btn-light, .v3-shell .primary-button {
+  background:#17365D !important; color:#FFFFFF !important; border:1px solid #17365D !important;
+  opacity:1 !important; text-shadow:none !important;
+}
+.v3-shell .v3-btn-primary:hover, .v3-shell .v3-btn-light:hover, .v3-shell .primary-button:hover {
+  background:#2457A7 !important; color:#FFFFFF !important; border-color:#2457A7 !important;
+}
+.v3-shell .v3-btn-ghost, .v3-shell .v3-btn-outline, .v3-shell .secondary-button,
+.v3-shell .v3-table-action, .v3-shell .v3-icon-button, .v3-shell .v3-top-icon {
+  background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important;
+  opacity:1 !important; text-shadow:none !important;
+}
+.v3-shell .v3-btn-ghost:hover, .v3-shell .v3-btn-outline:hover, .v3-shell .secondary-button:hover,
+.v3-shell .v3-table-action:hover, .v3-shell .v3-icon-button:hover, .v3-shell .v3-top-icon:hover {
+  background:#EAF0F7 !important; color:#17365D !important; border-color:#2457A7 !important;
+}
+.v3-shell button:disabled { opacity:.55 !important; color:#526176 !important; }
+.v3-shell .v3-hero .v3-btn-light { background:#17365D !important; color:#FFFFFF !important; }
+.v3-shell .v3-page-stats strong, .v3-shell .v3-metric strong { color:#17365D !important; }
+.v3-shell .v3-table thead th { background:#EAF0F7 !important; color:#17365D !important; }
