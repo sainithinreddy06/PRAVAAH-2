@@ -870,3 +870,84 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .v3-shell .v3-brand { gap:0 !important; }
 .access-portal-brand { gap:0 !important; }
+
+
+/* Clean institutional dashboard polish: compact white panels, calm surfaces, clear hierarchy. */
+.v3-shell .v3-content { max-width:1680px !important; padding:22px clamp(18px,2vw,32px) 28px !important; }
+.v3-shell .v3-context-bar { background:#F4F6F8 !important; border:0 !important; color:#526176 !important; }
+.v3-shell .v3-hero {
+  position:relative !important; display:block !important; overflow:hidden !important;
+  padding:24px 26px 0 !important; margin:0 0 26px !important;
+  background:#FFFFFF !important; color:#17365D !important;
+  border:1px solid #D7DFE9 !important; border-radius:10px !important;
+  box-shadow:0 2px 6px rgba(23,54,93,.035) !important;
+}
+.v3-shell .v3-hero-copy { max-width:100% !important; }
+.v3-shell .v3-hero .v3-kicker { color:#526176 !important; }
+.v3-shell .v3-hero h1 { color:#17365D !important; font-size:clamp(24px,2.2vw,32px) !important; letter-spacing:-.65px !important; }
+.v3-shell .v3-hero p { max-width:820px !important; color:#526176 !important; line-height:1.65 !important; }
+.v3-shell .v3-hero-art { display:none !important; }
+.v3-shell .v3-hero-actions { display:flex !important; flex-wrap:wrap !important; gap:10px !important; margin-top:18px !important; }
+.v3-shell .v3-hero-actions .v3-btn-light,
+.v3-shell .v3-hero-actions .v3-btn-primary {
+  min-height:40px !important; padding:0 15px !important; background:#17365D !important;
+  color:#FFFFFF !important; border:1px solid #17365D !important; border-radius:6px !important;
+  font-weight:700 !important;
+}
+.v3-shell .v3-hero-actions .v3-btn-light:hover,
+.v3-shell .v3-hero-actions .v3-btn-primary:hover { background:#2457A7 !important; border-color:#2457A7 !important; }
+.v3-shell .v3-hero-actions .v3-btn-ghost,
+.v3-shell .v3-hero-actions .v3-btn-outline {
+  min-height:40px !important; padding:0 15px !important; background:#FFFFFF !important;
+  color:#17365D !important; border:1px solid #BFCBD9 !important; border-radius:6px !important;
+}
+.v3-shell .v3-hero-actions .v3-btn-ghost:hover,
+.v3-shell .v3-hero-actions .v3-btn-outline:hover { background:#EAF0F7 !important; border-color:#2457A7 !important; }
+.v3-shell .v3-hero-bottom {
+  display:flex !important; justify-content:space-between !important; gap:12px !important;
+  margin:22px -26px 0 !important; padding:11px 26px !important;
+  background:#F8FAFC !important; border-top:1px solid #E2E8F0 !important;
+  color:#526176 !important; font-size:10px !important;
+}
+.v3-shell .v3-section-heading { margin:24px 0 14px !important; align-items:flex-end !important; }
+.v3-shell .v3-section-heading h2 { color:#17365D !important; font-size:20px !important; letter-spacing:-.35px !important; }
+.v3-shell .v3-section-heading p { color:#526176 !important; }
+.v3-shell .v3-section-heading select { min-height:38px !important; background:#FFFFFF !important; color:#17365D !important; border:1px solid #BFCBD9 !important; border-radius:6px !important; }
+.v3-shell .v3-metric-grid { gap:14px !important; margin-bottom:22px !important; }
+.v3-shell .v3-metric, .v3-shell .v3-panel {
+  background:#FFFFFF !important; border:1px solid #D7DFE9 !important; border-radius:9px !important;
+  box-shadow:0 2px 6px rgba(23,54,93,.035) !important;
+}
+.v3-shell .v3-metric { padding:18px 19px !important; }
+.v3-shell .v3-metric strong { color:#17365D !important; font-size:27px !important; }
+.v3-shell .v3-metric small, .v3-shell .v3-metric p { color:#526176 !important; }
+.v3-shell .v3-dashboard-grid, .v3-shell .v3-bottom-grid { gap:16px !important; }
+.v3-shell .v3-panel { padding:20px !important; }
+.v3-shell .v3-panel-title h3, .v3-shell .v3-panel-heading h3,
+.v3-shell .v3-panel h3 { color:#17365D !important; }
+.v3-shell .v3-panel-title p, .v3-shell .v3-panel-heading p { color:#526176 !important; }
+.v3-shell .v3-table-wrap { border:1px solid #D7DFE9 !important; border-radius:7px !important; overflow:auto !important; }
+.v3-shell .v3-table { background:#FFFFFF !important; }
+.v3-shell .v3-table thead th { background:#F4F6F8 !important; color:#526176 !important; font-size:10px !important; letter-spacing:.45px !important; border-bottom:1px solid #D7DFE9 !important; }
+.v3-shell .v3-table tbody td { color:#344B66 !important; border-bottom:1px solid #E6EBF1 !important; }
+.v3-shell .v3-table tbody tr:hover { background:#F8FAFC !important; }
+.v3-shell .v3-table .v3-ref strong { color:#2457A7 !important; }
+.v3-shell .v3-table-sub { color:#718096 !important; }
+.v3-shell .v3-link-button { color:#2457A7 !important; font-weight:700 !important; }
+.v3-shell .v3-link-button:hover { color:#17365D !important; }
+.v3-shell .v3-priority-item { border-color:#E2E8F0 !important; }
+.v3-shell .v3-priority-copy strong, .v3-shell .v3-deadline strong, .v3-shell .v3-event strong { color:#17365D !important; }
+.v3-shell .v3-priority-copy p, .v3-shell .v3-priority-copy small,
+.v3-shell .v3-deadline small, .v3-shell .v3-event small { color:#526176 !important; }
+.v3-shell .v3-priority-open { background:#FFFFFF !important; color:#2457A7 !important; border:1px solid #D7DFE9 !important; }
+.v3-shell .v3-priority-foot { border-top:1px solid #E2E8F0 !important; color:#526176 !important; }
+.v3-shell .v3-priority-foot button { background:#EAF0F7 !important; color:#17365D !important; border:1px solid #D7DFE9 !important; border-radius:5px !important; }
+.v3-shell .v3-footer { border-top:1px solid #D7DFE9 !important; color:#526176 !important; }
+.v3-shell .v3-disclaimer { background:#F8FAFC !important; color:#526176 !important; border:1px solid #E2E8F0 !important; border-radius:6px !important; padding:10px 12px !important; }
+@media(max-width:760px) {
+  .v3-shell .v3-content { padding:14px 12px 22px !important; }
+  .v3-shell .v3-hero { padding:18px 16px 0 !important; }
+  .v3-shell .v3-hero-bottom { margin-left:-16px !important; margin-right:-16px !important; padding:10px 16px !important; }
+  .v3-shell .v3-hero-bottom>span:last-child { display:none !important; }
+  .v3-shell .v3-panel { padding:14px !important; }
+}
