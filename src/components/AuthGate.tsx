@@ -17,9 +17,18 @@ export function useAuth(): AuthContextValue {
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
-  const demoEmail = 'demo@pravaah.local';
   const demoPassword = 'Demo@123';
   const selectedPortal = sessionStorage.getItem('pravaah-selected-portal') || new URLSearchParams(window.location.search).get('portal');
+  const demoProfiles: Record<string, { name: string; email: string; role: string }> = {
+    'Institution Coordinator Dashboard': { name: 'Institution Coordinator (Demo)', email: 'institution.demo@pravaah.local', role: 'institution_coordinator' },
+    'Scrutiny Officer Dashboard': { name: 'Scrutiny Officer (Demo)', email: 'scrutiny.demo@pravaah.local', role: 'scrutiny_officer' },
+    'EVC Coordination Dashboard': { name: 'EVC Coordinator (Demo)', email: 'evc.demo@pravaah.local', role: 'evc_coordinator' },
+    'Regional Officer Dashboard': { name: 'Regional Officer (Demo)', email: 'regional.demo@pravaah.local', role: 'regional_officer' },
+    'AICTE Headquarters Review Dashboard': { name: 'Headquarters Reviewer (Demo)', email: 'headquarters.demo@pravaah.local', role: 'headquarters_reviewer' },
+    'Compliance Monitoring & Audit Dashboard': { name: 'Compliance Auditor (Demo)', email: 'audit.demo@pravaah.local', role: 'compliance_auditor' },
+  };
+  const activeDemoProfile = selectedPortal ? demoProfiles[selectedPortal] : undefined;
+  const demoEmail = activeDemoProfile?.email || 'demo@pravaah.local';
   const workspaceConfig: Record<string, { eyebrow: string; emailLabel: string; emailPlaceholder: string; guidance: string; icon: typeof Building2 }> = {
     'Institution Coordinator Dashboard': { eyebrow: 'INSTITUTION WORKSPACE', emailLabel: 'Institutional work email', emailPlaceholder: 'name@institution.edu.in', guidance: 'Use the email registered to your institution account.', icon: Building2 },
     'Scrutiny Officer Dashboard': { eyebrow: 'SCRUTINY WORKSPACE', emailLabel: 'Authorised officer email', emailPlaceholder: 'officer@organisation.gov.in', guidance: 'Use the officer account provisioned for application scrutiny.', icon: ClipboardCheck },
@@ -39,7 +48,15 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (demoMode && sessionStorage.getItem('pravaah-demo-session') === 'active') {
-      setUser({ id: 0, email: demoEmail, full_name: 'PRAVAAH Demo User', role: 'system_admin', region_code: null, is_active: true, created_at: new Date().toISOString() });
+      try {
+        const profile = JSON.parse(sessionStorage.getItem('pravaah-demo-profile') || '{}') as { name?: string; email?: string; role?: string };
+        if (profile.email && profile.role) {
+          setUser({ id: 0, email: profile.email, full_name: profile.name || 'PRAVAAH Demo User', role: profile.role, region_code: null, is_active: true, created_at: new Date().toISOString() });
+        }
+      } catch {
+        sessionStorage.removeItem('pravaah-demo-session');
+        sessionStorage.removeItem('pravaah-demo-profile');
+      }
       setChecking(false);
     }
     const onUnauthorized = () => {
@@ -63,7 +80,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   const signOut = () => {
     setAccessToken(null);
-    if (demoMode) sessionStorage.removeItem('pravaah-demo-session');
+    if (demoMode) { sessionStorage.removeItem('pravaah-demo-session'); sessionStorage.removeItem('pravaah-demo-profile'); }
     setUser(null);
     setPassword('');
     setError('');
@@ -74,12 +91,19 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     setBusy(true);
     setError('');
     if (demoMode) {
-      if (email.trim().toLowerCase() === demoEmail && password === demoPassword) {
+      const profile = activeDemoProfile;
+      if (profile && email.trim().toLowerCase() === profile.email && password === demoPassword) {
         sessionStorage.setItem('pravaah-demo-session', 'active');
-        setUser({ id: 0, email: demoEmail, full_name: 'PRAVAAH Demo User', role: 'system_admin', region_code: null, is_active: true, created_at: new Date().toISOString() });
+        sessionStorage.setItem('pravaah-demo-profile', JSON.stringify(profile));
+        setUser({ id: 0, email: profile.email, full_name: profile.name, role: profile.role, region_code: null, is_active: true, created_at: new Date().toISOString() });
+        setPassword('');
+      } else if (!profile && email.trim().toLowerCase() === 'demo@pravaah.local' && password === demoPassword) {
+        sessionStorage.setItem('pravaah-demo-session', 'active');
+        sessionStorage.setItem('pravaah-demo-profile', JSON.stringify({ name: 'PRAVAAH Demo User', email: 'demo@pravaah.local', role: 'system_admin' }));
+        setUser({ id: 0, email: 'demo@pravaah.local', full_name: 'PRAVAAH Demo User', role: 'system_admin', region_code: null, is_active: true, created_at: new Date().toISOString() });
         setPassword('');
       } else {
-        setError('Those demo credentials do not match. Use the credentials shown below.');
+        setError('Those demo credentials do not match the selected workspace profile.');
       }
       setBusy(false);
       setChecking(false);
@@ -120,7 +144,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
             {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
-          {demoMode && <div className="auth-demo-notice" role="note"><strong>Demo mode enabled</strong><span>Use the sample credentials below to preview the workspace. Demo mode does not authenticate against the backend or save real records.</span><button type="button" onClick={() => { setEmail(demoEmail); setPassword(demoPassword); setError(''); }}>Fill demo credentials</button></div>}
+          {demoMode && <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>Workspace demo profiles</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><p>Choose the sample profile matching this workspace. These are local UI-demo accounts, not real organisation credentials.</p><div className="auth-demo-profiles">{(activeDemoProfile ? [[selectedPortal || 'Selected workspace', activeDemoProfile]] : Object.entries(demoProfiles).map(([portal, profile]) => [portal, profile] as [string, typeof demoProfiles[string]])).map(([portal, profile]) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
             <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
@@ -131,7 +155,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
               {busy ? 'Verifying account…' : 'Continue securely'} {!busy && <ArrowRight size={16} />}
             </button>
           </form>
-          <p className="auth-footnote">{demoMode ? <>Demo email: <strong>{demoEmail}</strong><br />Demo password: <strong>{demoPassword}</strong><br />UI preview only — live API data requires a configured backend.</> : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
+          <p className="auth-footnote">{demoMode ? <>Demo profile for this workspace: <strong>{demoEmail}</strong><br />Shared demo password: <strong>{demoPassword}</strong><br />UI preview only — demo profiles do not authenticate against the backend.</> : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
         </section>
         <p className="auth-disclaimer">PRAVAAH-2 demonstration platform · Not an official AICTE service</p>
       </main>
