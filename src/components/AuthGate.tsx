@@ -138,7 +138,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         <section className="auth-card auth-card-pravaah">
           <div className="auth-brand">
             <span className="auth-brand-mark"><Workflow size={23} /></span>
-            <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>\n            <span className="auth-brand-status"><i/> SECURE ACCESS</span>
+            <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>
+            <span className="auth-brand-status"><i/> SECURE ACCESS</span>
           </div>
           <div className="auth-intro">
             <span className="auth-kicker"><ShieldCheck size={14} /> {activeWorkspace?.eyebrow || 'SECURE WORKSPACE AUTHENTICATION'}</span>
@@ -146,7 +147,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
             {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
-          {demoMode && <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO CREDENTIALS · SELECT A ROLE TO PREFILL</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><p>Role-specific demo email addresses are listed below. Use the profile for the selected workspace; these are local UI-demo accounts, not real organisation credentials.</p><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>}
+          <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO CREDENTIALS · SELECT A ROLE TO PREFILL</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><p>Role-specific demo email addresses are listed below. Use the profile for the selected workspace; these are local UI-demo accounts, not real organisation credentials.</p><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
             <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
