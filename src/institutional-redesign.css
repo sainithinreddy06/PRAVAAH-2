@@ -90,7 +90,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v3-section-heading h1, .v3-section-heading h2 { margin:5px 0 4px !important; color:var(--pr-ink) !important; font-size:21px !important; line-height:1.25 !important; letter-spacing:-.45px !important; font-weight:750 !important; }
 .v3-section-heading p { color:var(--pr-muted) !important; font-size:11px !important; line-height:1.55 !important; }
 .v3-section-heading select { min-height:33px !important; padding:6px 9px !important; border:1px solid var(--pr-line) !important; border-radius:5px !important; background:#fff !important; color:#405772 !important; font-size:10px !important; }
-.v3-metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:10px !important; margin-bottom:13px !important; }
+.v3-metric-grid { grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) !important; gap:10px !important; margin-bottom:13px !important; }
 .v3-metric { padding:13px 14px !important; border:1px solid var(--pr-line) !important; border-radius:6px !important; background:#fff !important; box-shadow:none !important; }
 .v3-metric-top { color:#64768c !important; font-size:9px !important; font-weight:700 !important; }
 .v3-metric-icon { width:28px !important; height:28px !important; border-radius:5px !important; background:#eaf1fb !important; color:var(--pr-blue) !important; }
