@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Activity, AlertTriangle, ArrowLeft, Bell, Building2, CheckCircle2, ClipboardCheck, FileCheck2, FileText, Plus, RefreshCw, Save, Search, Settings, ShieldCheck, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, Bell, CheckCircle2, FileCheck2, Plus, RefreshCw, Save, Search, Settings, ShieldCheck, Workflow } from 'lucide-react';
 
 type DemoRow = { ref: string; institution: string; stage: string; status: string; due: string; tone: 'blue' | 'green' | 'amber' | 'rose' };
 const initialRows: DemoRow[] = [
@@ -67,7 +67,6 @@ export default function DemoWorkspacePage() {
   const [draftRef, setDraftRef] = useState('');
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [digestEnabled, setDigestEnabled] = useState(false);
-  const [selectedAction, setSelectedAction] = useState('All');
   const filtered = useMemo(() => rows.filter(r => (r.ref + ' ' + r.institution + ' ' + r.stage + ' ' + r.status).toLowerCase().includes(query.toLowerCase())), [rows, query]);
   const record = rows.find(r => r.ref.endsWith(id || '')) || rows[0];
   const setStatus = (ref: string, status: string, stage: string, tone: DemoRow['tone']) => {
