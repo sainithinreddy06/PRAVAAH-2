@@ -764,3 +764,8 @@ body { background: var(--workspace-canvas); }
 .access-portal-return button svg{transform:rotate(180deg)}
 .access-portal-return button:hover{background:#e8f0ff;border-color:#b7cdf0}
 @media(max-width:700px){.access-portal-return{width:100%}.access-portal-return button{width:100%;justify-content:center}}
+
+/* Keep the six stakeholder workspaces in the same three-column rhythm as public services */
+.access-portal-page .access-portal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media(max-width:1000px){.access-portal-page .access-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.access-portal-page .access-portal-grid{grid-template-columns:minmax(0,1fr)}}
