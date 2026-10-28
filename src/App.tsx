@@ -8,6 +8,7 @@ import {
 import AuthGate, { useAuth } from './components/AuthGate';
 import ApplicationsPage from './pages/ApplicationsPage';
 import PublicSite from './pages/PublicSite';
+import AccessPortal from './pages/AccessPortal';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import { AdminScopePage, CompliancePage, OperationsPage, PoliciesPage } from './pages/OperationsPages';
 import { api, ApiError, formatStatus, type Application } from './lib/api';
@@ -215,5 +216,6 @@ export default function App() {
   if (location.pathname === '/' || location.pathname === '/privacy' || location.pathname === '/terms') {
     return <PublicSite path={location.pathname} />;
   }
+  if (location.pathname === '/access-portal') return <AccessPortal />;
   return <AuthGate><WorkspaceApp /></AuthGate>;
 }
