@@ -110,7 +110,7 @@ function Hero({onPortal}:{onPortal:()=>void}){
  ];
  return <section id="main-content" className="pr-hero">
   <div className="pr-hero-copy">
-   <img className="pr-hero-logo-image" src="/pravaah-logo-transparent.svg" alt="PRAVAAH" />
+   <img className="pr-hero-logo-image" src="/pravaah-logo-original-transparent.png" alt="PRAVAAH" />
    <span className="pr-hero-kicker"><i/> PUBLIC SERVICES &amp; INSTITUTIONAL INFORMATION</span>
    <h1>Public services, made clearer.</h1>
    <h2>Find institutional records, understand approval requirements and follow the application process.</h2>
