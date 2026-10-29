@@ -1907,3 +1907,25 @@ input,select,textarea{border-radius:6px}
   .pr-public .pr-hero .pr-hero-logo-image{width:min(100%,320px)}
   .pr-public .pr-hero h1{font-size:clamp(32px,9vw,40px)}
 }
+
+
+/* Give the public hero wordmark more presence while preserving the artwork */
+.pr-public .pr-hero .pr-hero-logo-image{
+  display:block;
+  width:clamp(380px,43vw,540px);
+  max-width:100%;
+  height:auto;
+  margin:0 0 28px;
+}
+@media(max-width:900px){
+  .pr-public .pr-hero .pr-hero-logo-image{
+    width:clamp(340px,58vw,460px);
+    margin-bottom:24px;
+  }
+}
+@media(max-width:600px){
+  .pr-public .pr-hero .pr-hero-logo-image{
+    width:min(100%,360px);
+    margin-bottom:20px;
+  }
+}
