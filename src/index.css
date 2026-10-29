@@ -1824,3 +1824,13 @@ input,select,textarea{border-radius:6px}
 
 /* Keep the original hero typography after removing the extra logo lockup */
 .pr-public .pr-hero .pr-hero-identity{display:none}
+
+
+/* Match the requested text-only public brand lockup: no emblem, larger Salem BC wordmark */
+.pr-public .pr-header .pr-brand-text{gap:0}
+.pr-public .pr-header .pr-brand-text strong{font-family:"Salem BC","Salem",Georgia,serif!important;font-size:27px!important;font-weight:700!important;letter-spacing:.01em!important;line-height:1.2!important;color:#242622!important}
+.pr-public .pr-header .pr-brand-text em{font-family:"Salem BC","Salem","Noto Sans Devanagari","Nirmala UI",serif!important;font-size:24px!important;color:#53685a!important}
+.pr-public .pr-header .pr-brand-text small{font-size:12px!important;line-height:1.45!important;color:#686b64!important}
+.pr-public .pr-header .pr-brand-text small+small{font-size:11px!important;color:#85877f!important}
+@media(max-width:900px){.pr-public .pr-header .pr-brand-text strong{font-size:25px!important}.pr-public .pr-header .pr-brand-text em{font-size:22px!important}}
+@media(max-width:600px){.pr-public .pr-header .pr-brand-text strong{font-size:21px!important}.pr-public .pr-header .pr-brand-text em{font-size:19px!important}.pr-public .pr-header .pr-brand-text small{font-size:10px!important}}
