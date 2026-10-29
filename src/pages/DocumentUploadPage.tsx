@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { api, ApiError, formatStatus, type Application } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
 
-const uploadRoles = ['applicant', 'institution_admin', 'institution_coordinator', 'regional_officer', 'platform_admin'];
+const uploadRoles = ['applicant', 'institution_admin', 'institution_coordinator', 'platform_admin'];
+const normaliseRole = (role: string) => role.trim().toLowerCase().replace(/[ -]+/g, '_');
 
 export default function DocumentUploadPage() {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ export default function DocumentUploadPage() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError(''); setNotice('');
-    if (!uploadRoles.includes(user.role)) { setError('Your account role does not have document upload permission.'); return; }
+    if (!uploadRoles.includes(normaliseRole(user.role))) { setError('Your account role does not have document upload permission.'); return; }
     if (!selectedApplication) { setError('Find and confirm an application number first.'); return; }
     if (!file) { setError('Choose a photo or document to upload.'); return; }
     if (!['draft', 'changes_requested'].includes(selectedApplication.status)) {
@@ -77,7 +78,7 @@ export default function DocumentUploadPage() {
     } finally { setWorking(false); }
   };
 
-  if (!uploadRoles.includes(user.role)) return <div className="v3-upload-page"><section className="v3-upload-card"><AlertCircle size={24}/><h1>Upload permission required</h1><p>Your current role cannot upload evidence. Ask an authorised institution coordinator or administrator.</p></section></div>;
+  if (!uploadRoles.includes(normaliseRole(user.role))) return <div className="v3-upload-page"><section className="v3-upload-card"><AlertCircle size={24}/><h1>Upload permission required</h1><p>Your current role cannot upload evidence. Ask an authorised institution coordinator or administrator.</p></section></div>;
 
   return <div className="v3-upload-page">
     <div className="v3-upload-heading"><div><span className="v3-kicker"><span className="v3-kicker-line"/>DOCUMENT MANAGEMENT</span><h1>Document upload centre</h1><p>Attach a photo, scanned document, or PDF to an existing application and set its review priority.</p></div><div className="v3-upload-heading-icon"><UploadCloud size={25}/></div></div>
