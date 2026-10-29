@@ -1813,3 +1813,10 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-header .pr-brand-text .pr-brand-copy{min-width:0}
 @media(max-width:900px){.pr-public .pr-header .pr-brand-mark{width:46px;height:46px}.pr-public .pr-header .pr-brand-text{gap:10px}}
 @media(max-width:600px){.pr-public .pr-header .pr-brand-mark{width:36px;height:36px}.pr-public .pr-header .pr-brand-text{gap:8px}}
+
+
+/* Match the reference: prominent emblem and wordmark above the public hero heading */
+.pr-public .pr-hero .pr-hero-identity{display:flex;align-items:center;gap:16px;width:fit-content;margin:0 0 34px;color:#245d91}
+.pr-public .pr-hero .pr-hero-identity-mark{display:block;width:74px;height:74px;flex:0 0 auto}
+.pr-public .pr-hero .pr-hero-identity span{font-family:Georgia,"Times New Roman",serif;font-size:clamp(35px,3.5vw,48px);font-weight:600;letter-spacing:.025em;line-height:1;color:#245d91}
+@media(max-width:600px){.pr-public .pr-hero .pr-hero-identity{gap:10px;margin-bottom:24px}.pr-public .pr-hero .pr-hero-identity-mark{width:52px;height:52px}.pr-public .pr-hero .pr-hero-identity span{font-size:32px}}
