@@ -2181,3 +2181,65 @@ html body {
     animation: none !important;
   }
 }
+
+
+/* Restore original workspace navigator appearance; keep the formal content styling. */
+.v3-shell .v3-sidebar {
+  background: #172331 !important;
+  border-right: 1px solid #253545 !important;
+  box-shadow: none !important;
+}
+.v3-shell .v3-brand {
+  background: #172331 !important;
+  border-bottom: 1px solid rgba(222,235,246,.12) !important;
+}
+.v3-shell .v3-workspace-select {
+  background: rgba(255,255,255,.045) !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  border-radius: 9px !important;
+  color: #e4edf5 !important;
+}
+.v3-shell .v3-workspace-symbol {
+  background: #2b4054 !important;
+  color: #c4d8e8 !important;
+  border-radius: 8px !important;
+}
+.v3-shell .v3-nav-item {
+  border-color: transparent !important;
+  border-radius: 7px !important;
+  color: #c0cedb !important;
+}
+.v3-shell .v3-nav-item:hover {
+  background: rgba(255,255,255,.075) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.v3-shell .v3-nav-item.active {
+  background: #294a68 !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: inset 2px 0 #9fc6e5 !important;
+}
+.v3-shell .v3-nav-item.active svg {
+  color: #d2e9fa !important;
+}
+.v3-shell .v3-nav-group > p {
+  color: #8fa6bb !important;
+}
+.v3-shell .v3-secure {
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  border-radius: 9px !important;
+  color: #c0d2e1 !important;
+}
+.v3-shell .v3-account-copy strong {
+  color: #f3f7fa !important;
+}
+.v3-shell .v3-account-copy small {
+  color: #a8bbcd !important;
+}
+.v3-shell .v3-account > button {
+  background: #203b52 !important;
+  border-color: #38546b !important;
+  color: #dbe8f2 !important;
+}
