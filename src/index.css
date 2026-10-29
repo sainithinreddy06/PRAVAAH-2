@@ -1844,3 +1844,8 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-header .pr-brand-text small{display:block;margin-top:3px;font-size:10px!important;line-height:1.4!important;color:#42526a!important}
 .pr-public .pr-header .pr-brand-text small+small{font-size:9px!important;color:#738096!important}
 @media(max-width:900px){.pr-public .pr-header .pr-brand-text strong{font-size:19px!important}.pr-public .pr-header .pr-brand-text em{font-size:15px!important}.pr-public .pr-header .pr-brand-text small{font-size:9px!important}.pr-public .pr-header .pr-brand-text small+small{display:none}}
+
+
+/* User-provided PRAVAAH logo image belongs above the public hero badge only */
+.pr-public .pr-hero .pr-hero-logo-image{display:block;width:250px;max-width:70%;height:auto;object-fit:contain;object-position:left center;margin:0 0 20px 0;border:0;border-radius:0;box-shadow:none}
+@media(max-width:600px){.pr-public .pr-hero .pr-hero-logo-image{width:190px;max-width:65%;margin-bottom:16px}}
