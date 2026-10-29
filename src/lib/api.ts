@@ -2,7 +2,17 @@ const configuredApiUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
 export const API_BASE_URL = (configuredApiUrl || 'https://pravaah-api-vxnx.onrender.com').replace(/\/+$/, '');
 
-let accessToken: string | null = null;
+const TOKEN_STORAGE_KEY = 'pravaah-access-token';
+
+function readStoredAccessToken(): string | null {
+  try {
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+let accessToken: string | null = readStoredAccessToken();
 
 export type User = {
   id: number;
@@ -69,6 +79,12 @@ export class ApiError extends Error {
 
 export function setAccessToken(token: string | null): void {
   accessToken = token;
+  try {
+    if (token) sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // Keep the in-memory session working if browser storage is unavailable.
+  }
 }
 
 export function hasAccessToken(): boolean {
@@ -89,7 +105,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (response.status === 401) {
-    accessToken = null;
+    setAccessToken(null);
     window.dispatchEvent(new Event('pravaah:unauthorized'));
   }
 
