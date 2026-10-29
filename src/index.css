@@ -1834,3 +1834,13 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-header .pr-brand-text small+small{font-size:11px!important;color:#85877f!important}
 @media(max-width:900px){.pr-public .pr-header .pr-brand-text strong{font-size:25px!important}.pr-public .pr-header .pr-brand-text em{font-size:22px!important}}
 @media(max-width:600px){.pr-public .pr-header .pr-brand-text strong{font-size:21px!important}.pr-public .pr-header .pr-brand-text em{font-size:19px!important}.pr-public .pr-header .pr-brand-text small{font-size:10px!important}}
+
+
+/* Public header brand now mirrors the Access Portal brand exactly */
+.pr-public .pr-header .pr-brand-text{display:flex;align-items:center;gap:0;min-width:0;text-decoration:none}
+.pr-public .pr-header .pr-brand-text .pr-brand-copy{display:block;min-width:0}
+.pr-public .pr-header .pr-brand-text strong{display:block;font:800 23px/1.25 Georgia,serif!important;letter-spacing:0!important;white-space:nowrap;color:#242622!important}
+.pr-public .pr-header .pr-brand-text em{font:500 18px Georgia,serif!important;font-style:normal!important;color:#53685a!important}
+.pr-public .pr-header .pr-brand-text small{display:block;margin-top:3px;font-size:10px!important;line-height:1.4!important;color:#42526a!important}
+.pr-public .pr-header .pr-brand-text small+small{font-size:9px!important;color:#738096!important}
+@media(max-width:900px){.pr-public .pr-header .pr-brand-text strong{font-size:19px!important}.pr-public .pr-header .pr-brand-text em{font-size:15px!important}.pr-public .pr-header .pr-brand-text small{font-size:9px!important}.pr-public .pr-header .pr-brand-text small+small{display:none}}
