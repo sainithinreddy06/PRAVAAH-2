@@ -1820,3 +1820,7 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-hero .pr-hero-identity-mark{display:block;width:74px;height:74px;flex:0 0 auto}
 .pr-public .pr-hero .pr-hero-identity span{font-family:Georgia,"Times New Roman",serif;font-size:clamp(35px,3.5vw,48px);font-weight:600;letter-spacing:.025em;line-height:1;color:#245d91}
 @media(max-width:600px){.pr-public .pr-hero .pr-hero-identity{gap:10px;margin-bottom:24px}.pr-public .pr-hero .pr-hero-identity-mark{width:52px;height:52px}.pr-public .pr-hero .pr-hero-identity span{font-size:32px}}
+
+
+/* Keep the original hero typography after removing the extra logo lockup */
+.pr-public .pr-hero .pr-hero-identity{display:none}
