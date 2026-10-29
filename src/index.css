@@ -1855,3 +1855,9 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-hero .pr-hero-logo-image{display:block;width:420px;max-width:min(72%,420px);height:auto;object-fit:contain;object-position:left center;margin:0 0 24px 0;border:0;border-radius:0;box-shadow:none;background:#fff}
 @media(max-width:900px){.pr-public .pr-hero .pr-hero-logo-image{width:360px;max-width:70%;margin-bottom:20px}}
 @media(max-width:600px){.pr-public .pr-hero .pr-hero-logo-image{width:285px;max-width:78%;margin-bottom:16px}}
+
+
+/* Transparent logo: no white rectangle or grid behind the original-style mark */
+.pr-public .pr-hero .pr-hero-logo-image{display:block;width:526px;max-width:min(72%,526px);height:auto;object-fit:contain;object-position:left center;margin:0 0 24px 0;border:0;border-radius:0;box-shadow:none;background:transparent!important;mix-blend-mode:normal}
+@media(max-width:900px){.pr-public .pr-hero .pr-hero-logo-image{width:440px;max-width:76%;margin-bottom:20px}}
+@media(max-width:600px){.pr-public .pr-hero .pr-hero-logo-image{width:320px;max-width:82%;margin-bottom:16px}}
