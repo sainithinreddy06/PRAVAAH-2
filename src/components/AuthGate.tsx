@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, ShieldCheck, Workflow, Building2, ClipboardCheck, MapPinned, Landmark, FileSearch, Mail, Fingerprint, FileCheck2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Building2, ClipboardCheck, MapPinned, Landmark, FileSearch, Mail, Fingerprint, FileCheck2 } from 'lucide-react';
 import { api, ApiError, hasAccessToken, setAccessToken, type User } from '../lib/api';
 
 type AuthContextValue = {
@@ -145,7 +145,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   };
 
   if (checking) {
-    return <main className="auth-screen"><div className="auth-card auth-loading"><span className="auth-brand-mark"><Workflow size={22} /></span><p>Checking your session…</p></div></main>;
+    return <main className="auth-screen"><div className="auth-card auth-loading"><p>Checking your session…</p></div></main>;
   }
 
   if (!user) {
@@ -153,7 +153,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
       <main className="auth-screen auth-screen-pravaah">
         <div className="pr-top-strip auth-public-topstrip"><div><b>APPROVAL WORKFLOW PLATFORM</b><span> · </span><span>Institutional approvals, evidence review and compliance services</span></div><div><a href="/">Public Overview</a><span> · </span><a href="/access-portal">Access Portal</a></div></div>
         <header className="pr-header auth-public-header">
-          <a className="pr-brand auth-public-brand" href="/" aria-label="PRAVAAH public portal"><span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span><span><strong>PRAVAAH <em>(प्रवाह)</em></strong><small>Integrated Approval Workflow &amp; Compliance</small></span></a>
+          <a className="pr-brand auth-public-brand" href="/" aria-label="PRAVAAH public portal"><span><strong>PRAVAAH <em>(प्रवाह)</em></strong><small>Integrated Approval Workflow &amp; Compliance</small></span></a>
           <nav className="auth-public-nav" aria-label="Public portal navigation"><a href="/">Public Overview</a><a href="/#policy">Statutory Norms</a><a href="/#services">Services</a><a href="/#verification">Track &amp; Verify</a><a href="/#process">7-Stage Process</a></nav>
           <a className="auth-public-access" href="/access-portal">Access Portal <ArrowRight size={14}/></a>
         </header>
@@ -168,7 +168,6 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           </div>
           <section className="auth-card auth-card-pravaah">
           <div className="auth-brand">
-            <span className="auth-brand-mark"><Workflow size={23} /></span>
             <span><strong>PRAVAAH</strong><small>Approval &amp; Compliance Management</small></span>
             <span className="auth-brand-status"><i/> SECURE ACCESS</span>
           </div>
