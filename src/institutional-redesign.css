@@ -1222,3 +1222,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .v3-shell .v3-hero-actions button { width:auto !important; max-width:100% !important; }
   .v3-shell .v3-hero-bottom { margin-left:-16px !important; margin-right:-16px !important; padding:10px 16px !important; }
 }
+
+
+/* Final global logo-symbol removal. Keep brand names as plain text; hide graphic marks everywhere. */
+.pr-emblem, .v3-brand-icon, .auth-brand-mark, .brand-mark,
+.public-brand-mark, .pv-brand-mark, .pv-logo-mark,
+.auth-logo-mark, .auth-emblem, .access-portal-emblem,
+[class~="logo-mark"], [class~="brand-symbol"], [class~="brand-emblem"] {
+  display:none !important;
+  visibility:hidden !important;
+  width:0 !important;
+  min-width:0 !important;
+  height:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
