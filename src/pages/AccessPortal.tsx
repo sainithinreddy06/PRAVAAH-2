@@ -25,7 +25,6 @@ export default function AccessPortal() {
     <div className="pr-top-strip access-portal-top-strip"><div><b>APPROVAL WORKFLOW PLATFORM</b><span> | </span><span>Institutional approvals, policy norms and compliance services</span></div><div><a href="/">Public Overview</a><span> | </span><button onClick={() => document.getElementById('portal-help')?.scrollIntoView({behavior:'smooth'})}><Phone size={12}/> Help &amp; Support</button></div></div>
     <header className="pr-header access-portal-pr-header">
       <button className="pr-brand access-portal-pr-brand" onClick={() => navigate('/')} aria-label="PRAVAAH home">
-        <span className="pr-emblem"><b>PV</b><small>प्रवाह</small></span>
         <span><strong>PRAVAAH <em>(प्रवाह)</em> </strong><small>Integrated AICTE Approval Workflow Automation, Policy Norms &amp; Citizen Services</small><small>Approval workflow and compliance platform</small></span>
       </button>
       <div className="access-portal-return">
