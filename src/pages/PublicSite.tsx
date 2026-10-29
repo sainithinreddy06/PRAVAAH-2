@@ -110,7 +110,6 @@ function Hero({onPortal}:{onPortal:()=>void}){
  ];
  return <section id="main-content" className="pr-hero">
   <div className="pr-hero-copy">
-   <div className="pr-hero-identity" aria-label="PRAVAAH logo"><svg className="pr-hero-identity-mark" viewBox="0 0 100 100" aria-hidden="true"><rect x="34" y="35" width="37" height="36" rx="4" fill="currentColor"/><path d="M20 49 L42 73 L83 19" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/><circle cx="20" cy="49" r="14" fill="currentColor"/><circle cx="42" cy="73" r="14" fill="currentColor"/><circle cx="83" cy="19" r="12" fill="currentColor"/><circle cx="20" cy="49" r="5" fill="#fff"/><circle cx="42" cy="73" r="5" fill="#fff"/><circle cx="83" cy="19" r="5" fill="#fff"/></svg><span>PRAVAAH</span></div>
    <span className="pr-hero-kicker"><i/> PUBLIC SERVICES &amp; INSTITUTIONAL INFORMATION</span>
    <h1>Public services, made clearer.</h1>
    <h2>Find institutional records, understand approval requirements and follow the application process.</h2>
