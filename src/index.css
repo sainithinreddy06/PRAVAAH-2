@@ -1758,3 +1758,28 @@ input,select,textarea{border-radius:6px}
   .pr-public .pr-footer-grid > div > a,
   .pr-public .pr-footer-grid > div > button { font-size: 12px; }
 }
+
+
+/* Refined PRAVAAH identity: restrained sage, charcoal and muted saffron */
+.pr-public .pr-header .pr-brand{gap:14px;align-items:center;flex:0 1 auto}
+.pr-public .pr-logo-mark{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border:1px solid #e4e7df;border-radius:10px;background:#f8f8f4}
+.pr-public .pr-logo-mark svg{display:block;width:39px;height:42px}
+.pr-public .pr-brand-copy{display:block;min-width:0}
+.pr-public .pr-brand-copy strong{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:25px;font-weight:800;letter-spacing:-.055em;line-height:1.15;color:#242722}
+.pr-public .pr-brand-copy em{font-style:normal;font-size:.78em;font-weight:550;letter-spacing:-.025em;color:#53685a}
+.pr-public .pr-brand-copy small{font-size:11px!important;line-height:1.45;color:#62675f}
+.pr-public .pr-brand-copy small+small{color:#85887f;font-size:10px!important}
+@media(max-width:900px){
+ .pr-public .pr-header .pr-brand{gap:11px}
+ .pr-public .pr-logo-mark{flex-basis:42px;width:42px;height:42px}
+ .pr-public .pr-logo-mark svg{width:34px;height:37px}
+ .pr-public .pr-brand-copy strong{font-size:22px}
+}
+@media(max-width:600px){
+ .pr-public .pr-header .pr-brand{align-items:center;max-width:100%}
+ .pr-public .pr-logo-mark{flex-basis:36px;width:36px;height:38px;border-radius:8px}
+ .pr-public .pr-logo-mark svg{width:29px;height:32px}
+ .pr-public .pr-brand-copy strong{font-size:19px;white-space:normal}
+ .pr-public .pr-brand-copy small{font-size:10px!important}
+ .pr-public .pr-brand-copy small+small{display:none}
+}
