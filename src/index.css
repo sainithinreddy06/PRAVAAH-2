@@ -1789,3 +1789,13 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-header .pr-brand-simple strong{font-family:Inter,Manrope,"Segoe UI",Arial,sans-serif;font-size:clamp(26px,2.25vw,34px);font-weight:850;letter-spacing:-.065em;line-height:1;color:#17345a;white-space:nowrap}
 .pr-public .pr-header .pr-brand-simple:hover strong{color:#245bd0}
 @media(max-width:600px){.pr-public .pr-header .pr-brand-simple{min-height:38px}.pr-public .pr-header .pr-brand-simple strong{font-size:27px}}
+
+/* Header wordmark restored to the user's preferred text-only lockup */
+.pr-public .pr-header .pr-brand-text{display:flex;align-items:center;min-width:0;flex:0 1 auto;text-decoration:none}
+.pr-public .pr-header .pr-brand-text .pr-brand-copy{display:block;min-width:0}
+.pr-public .pr-header .pr-brand-text strong{display:block;font:800 22px/1.25 Inter,"Segoe UI",Arial,sans-serif;letter-spacing:-.035em;color:#17345a;white-space:nowrap}
+.pr-public .pr-header .pr-brand-text em{font:500 20px/1.25 "Noto Sans Devanagari","Nirmala UI",serif;font-style:normal;color:#17345a;letter-spacing:-.02em}
+.pr-public .pr-header .pr-brand-text small{display:block;margin-top:3px;color:#52627a;font-size:12px;line-height:1.45}
+.pr-public .pr-header .pr-brand-text small+small{color:#65758a;font-size:11px}
+@media(max-width:900px){.pr-public .pr-header .pr-brand-text strong{font-size:21px}.pr-public .pr-header .pr-brand-text em{font-size:19px}.pr-public .pr-header .pr-brand-text small{font-size:11px}}
+@media(max-width:600px){.pr-public .pr-header .pr-brand-text strong{font-size:19px;white-space:normal}.pr-public .pr-header .pr-brand-text em{font-size:17px}.pr-public .pr-header .pr-brand-text small{font-size:10px;line-height:1.4}.pr-public .pr-header .pr-brand-text small+small{display:none}}
