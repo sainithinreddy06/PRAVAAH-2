@@ -1805,3 +1805,11 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-header .pr-brand-text em{color:#53685a!important}
 .pr-public .pr-header .pr-brand-text small{color:#686b64!important}
 .pr-public .pr-header .pr-brand-text small+small{color:#85877f!important}
+
+
+/* PRAVAAH emblem lockup in the public-site header */
+.pr-public .pr-header .pr-brand-text{gap:14px}
+.pr-public .pr-header .pr-brand-mark{display:block;flex:0 0 auto;width:58px;height:58px;color:#245d91}
+.pr-public .pr-header .pr-brand-text .pr-brand-copy{min-width:0}
+@media(max-width:900px){.pr-public .pr-header .pr-brand-mark{width:46px;height:46px}.pr-public .pr-header .pr-brand-text{gap:10px}}
+@media(max-width:600px){.pr-public .pr-header .pr-brand-mark{width:36px;height:36px}.pr-public .pr-header .pr-brand-text{gap:8px}}
