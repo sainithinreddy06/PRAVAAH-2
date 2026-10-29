@@ -1281,3 +1281,153 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media(max-width:760px) {
   .pr-public .pr-header-tools { justify-content:space-between !important; }
 }
+
+
+/* Access Portal header: match the corrected public header palette and improve legibility. */
+.access-portal-page .access-portal-top-strip {
+  background:#EAF0F7 !important;
+  color:#17365D !important;
+  border-bottom:1px solid #D7DFE9 !important;
+}
+.access-portal-page .access-portal-top-strip b,
+.access-portal-page .access-portal-top-strip span,
+.access-portal-page .access-portal-top-strip a,
+.access-portal-page .access-portal-top-strip button,
+.access-portal-page .access-portal-top-strip svg {
+  color:#17365D !important;
+}
+.access-portal-page .access-portal-top-strip a,
+.access-portal-page .access-portal-top-strip button {
+  opacity:1 !important;
+  text-decoration:none !important;
+}
+.access-portal-page .access-portal-top-strip a:hover,
+.access-portal-page .access-portal-top-strip button:hover {
+  color:#2457A7 !important;
+  text-decoration:underline !important;
+}
+.access-portal-page .access-portal-pr-header {
+  background:#FFFFFF !important;
+  border-bottom:1px solid #D7DFE9 !important;
+  color:#17365D !important;
+}
+.access-portal-page .access-portal-pr-brand,
+.access-portal-page .access-portal-pr-brand strong,
+.access-portal-page .access-portal-pr-brand em {
+  color:#17365D !important;
+}
+.access-portal-page .access-portal-pr-brand small { color:#526176 !important; }
+.access-portal-page .access-portal-return button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:9px !important;
+  min-height:42px !important;
+  padding:10px 16px !important;
+  background:#17365D !important;
+  color:#FFFFFF !important;
+  border:1px solid #17365D !important;
+  border-radius:5px !important;
+  font-weight:700 !important;
+  opacity:1 !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+}
+.access-portal-page .access-portal-return button svg { color:#FFFFFF !important; }
+.access-portal-page .access-portal-return button:hover {
+  background:#2457A7 !important;
+  color:#FFFFFF !important;
+  border-color:#2457A7 !important;
+}
+.access-portal-page .access-portal-breadcrumb { color:#526176 !important; }
+.access-portal-page .access-portal-breadcrumb button {
+  background:transparent !important;
+  color:#2457A7 !important;
+  border:0 !important;
+  font-weight:600 !important;
+}
+.access-portal-page .access-portal-breadcrumb strong { color:#17365D !important; }
+.access-portal-page .access-portal-title-row p { color:#526176 !important; }
+.access-portal-page .access-portal-rbac {
+  background:#EAF0F7 !important;
+  color:#17365D !important;
+  border:1px solid #C7D6EA !important;
+  border-radius:5px !important;
+}
+.access-portal-page .access-portal-search {
+  background:#FFFFFF !important;
+  border:1px solid #BFCBD9 !important;
+  border-radius:6px !important;
+}
+.access-portal-page .access-portal-search svg { color:#526176 !important; }
+.access-portal-page .access-portal-search input {
+  background:transparent !important;
+  color:#17365D !important;
+}
+.access-portal-page .access-portal-search input::placeholder { color:#718096 !important; opacity:1 !important; }
+.access-portal-page .access-portal-search span { color:#526176 !important; }
+.access-portal-page .access-portal-card {
+  background:#FFFFFF !important;
+  border:1px solid #D7DFE9 !important;
+  border-radius:8px !important;
+  box-shadow:0 2px 6px rgba(23,54,93,.035) !important;
+}
+.access-portal-page .access-portal-card:hover {
+  border-color:#9CB5D5 !important;
+  box-shadow:0 5px 16px rgba(23,54,93,.08) !important;
+}
+.access-portal-page .access-portal-icon,
+.access-portal-page .access-portal-icon.tone-blue,
+.access-portal-page .access-portal-icon.tone-green,
+.access-portal-page .access-portal-icon.tone-violet,
+.access-portal-page .access-portal-icon.tone-amber {
+  background:#EAF0F7 !important;
+  color:#2457A7 !important;
+}
+.access-portal-page .access-portal-category {
+  background:#F4F6F8 !important;
+  color:#526176 !important;
+  border:1px solid #D7DFE9 !important;
+}
+.access-portal-page .access-portal-card h2 { color:#17365D !important; }
+.access-portal-page .access-portal-card h3,
+.access-portal-page .access-portal-description { color:#526176 !important; }
+.access-portal-page .access-portal-select {
+  min-height:40px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  padding:10px 14px !important;
+  background:#17365D !important;
+  color:#FFFFFF !important;
+  border:1px solid #17365D !important;
+  border-radius:5px !important;
+  font-weight:700 !important;
+  opacity:1 !important;
+}
+.access-portal-page .access-portal-select svg { color:#FFFFFF !important; }
+.access-portal-page .access-portal-select:hover {
+  background:#2457A7 !important;
+  color:#FFFFFF !important;
+  border-color:#2457A7 !important;
+}
+.access-portal-page .access-portal-help {
+  background:#FFFFFF !important;
+  color:#17365D !important;
+  border:1px solid #D7DFE9 !important;
+  border-radius:8px !important;
+}
+.access-portal-page .access-portal-help p { color:#526176 !important; }
+.access-portal-page .access-portal-help button {
+  background:#FFFFFF !important;
+  color:#17365D !important;
+  border:1px solid #BFCBD9 !important;
+  border-radius:5px !important;
+  min-height:38px !important;
+}
+.access-portal-page .access-portal-help button:hover {
+  background:#EAF0F7 !important;
+  border-color:#2457A7 !important;
+}
+.access-portal-page .access-portal-disclaimer { color:#526176 !important; }
