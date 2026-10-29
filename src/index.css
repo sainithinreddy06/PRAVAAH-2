@@ -1861,3 +1861,9 @@ input,select,textarea{border-radius:6px}
 .pr-public .pr-hero .pr-hero-logo-image{display:block;width:526px;max-width:min(72%,526px);height:auto;object-fit:contain;object-position:left center;margin:0 0 24px 0;border:0;border-radius:0;box-shadow:none;background:transparent!important;mix-blend-mode:normal}
 @media(max-width:900px){.pr-public .pr-hero .pr-hero-logo-image{width:440px;max-width:76%;margin-bottom:20px}}
 @media(max-width:600px){.pr-public .pr-hero .pr-hero-logo-image{width:320px;max-width:82%;margin-bottom:16px}}
+
+
+/* Final clean hero branding: crisp logo, transparent background, balanced spacing */
+.pr-public .pr-hero .pr-hero-logo-image{display:block;width:430px;max-width:min(72%,430px);height:auto;object-fit:contain;object-position:left center;margin:0 0 18px 0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent!important;image-rendering:auto;mix-blend-mode:normal}
+@media(max-width:900px){.pr-public .pr-hero .pr-hero-logo-image{width:390px;max-width:76%;margin-bottom:16px}}
+@media(max-width:600px){.pr-public .pr-hero .pr-hero-logo-image{width:300px;max-width:82%;margin-bottom:14px}}
