@@ -14,6 +14,14 @@ const statusOptions: Array<{ value: ApplicationStatus | ''; label: string }> = [
   { value: 'rejected', label: 'Rejected' },
 ];
 
+const sampleApplications: Application[] = [
+  { id: 142, reference_code: 'APP-2026-0142', institution_id: 1, submitted_by_user_id: null, workflow_stage: 'scrutiny', status: 'draft', created_at: '2026-10-28T10:00:00Z', updated_at: '2026-10-28T10:00:00Z' },
+  { id: 148, reference_code: 'APP-2026-0148', institution_id: 2, submitted_by_user_id: null, workflow_stage: 'scrutiny', status: 'under_review', created_at: '2026-10-27T09:30:00Z', updated_at: '2026-10-28T11:15:00Z' },
+  { id: 155, reference_code: 'APP-2026-0155', institution_id: 3, submitted_by_user_id: null, workflow_stage: 'evc_coordination', status: 'submitted', created_at: '2026-10-26T08:15:00Z', updated_at: '2026-10-27T14:00:00Z' },
+  { id: 161, reference_code: 'APP-2026-0161', institution_id: 4, submitted_by_user_id: null, workflow_stage: 'regional_review', status: 'changes_requested', created_at: '2026-10-25T12:00:00Z', updated_at: '2026-10-28T15:45:00Z' },
+  { id: 172, reference_code: 'APP-2026-0172', institution_id: 5, submitted_by_user_id: null, workflow_stage: 'application_filing', status: 'draft', created_at: '2026-10-24T07:45:00Z', updated_at: '2026-10-24T07:45:00Z' },
+];
+
 function canReview(role: string): boolean {
   return role === 'regional_officer' || role === 'platform_admin';
 }
@@ -38,6 +46,7 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [usingSampleData, setUsingSampleData] = useState(false);
   const [notice, setNotice] = useState('');
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -56,11 +65,17 @@ export default function ApplicationsPage() {
       // Ignore out-of-order responses so an older filter cannot overwrite newer results.
       if (loadId !== latestLoadId.current) return;
       setApplications(result);
+      setUsingSampleData(false);
     } catch (reason) {
       if (loadId !== latestLoadId.current) return;
-      // A failed filter/load must not leave records from a previous result set looking current.
-      if (!quiet) setApplications([]);
-      setError(reason instanceof ApiError ? reason.detail : 'Could not load applications.');
+      // Keep useful illustrative records visible if the API is unavailable or the token expires.
+      // Sample records are read-only; all write actions still require a successful API response.
+      setUsingSampleData(true);
+      setApplications(sampleApplications.filter((application) => !statusFilter || application.status === statusFilter));
+      setError(reason instanceof ApiError && reason.status === 401
+        ? 'API sign-in expired or credentials were rejected. Showing illustrative sample records; sign in again to make real changes.'
+        : 'Could not reach the application API. Showing illustrative sample records; real changes require the API.');
+
     } finally {
       if (loadId === latestLoadId.current) {
         setLoading(false);
@@ -137,7 +152,7 @@ export default function ApplicationsPage() {
         <div>
           <p className="eyebrow">WORKSPACE / CASE MANAGEMENT</p>
           <h2>Applications</h2>
-          <p className="muted">Live records returned by the connected PRAVAAH API, limited to your account permissions.</p>
+          <p className="muted">{usingSampleData ? 'Illustrative sample records · API unavailable' : 'Live records returned by the connected PRAVAAH API, limited to your account permissions.'}</p>
         </div>
         <div className="applications-heading-actions">
           {canCreate(user.role) && <button className="primary-button" type="button" onClick={() => setCreateOpen((open) => !open)}><Plus size={15} /> New application</button>}
@@ -148,7 +163,7 @@ export default function ApplicationsPage() {
       </div>
 
       <div className="applications-toolbar panel">
-        <div><strong>{loading ? 'Loading records…' : applications.length + ' application' + (applications.length === 1 ? '' : 's')}</strong><span>API-backed results · Maximum 50 records per request</span></div>
+        <div><strong>{loading ? 'Loading records…' : applications.length + ' application' + (applications.length === 1 ? '' : 's')}</strong><span>{usingSampleData ? 'Demo data only · read-only fallback' : 'API-backed results · Maximum 50 records per request'}</span></div>
         <label className="status-filter">Status
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ApplicationStatus | '')}>
             {statusOptions.map((option) => <option key={option.value || 'all'} value={option.value}>{option.label}</option>)}
@@ -166,7 +181,7 @@ export default function ApplicationsPage() {
         <div className="create-actions"><button className="secondary-button" type="button" onClick={() => setCreateOpen(false)} disabled={creating}>Cancel</button><button className="primary-button" type="submit" disabled={creating}>{creating ? 'Creating…' : 'Create draft'}</button></div>
       </form>}
 
-      {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} /><span>{error}</span><button type="button" onClick={() => void loadApplications(true)}>Retry</button></div>}
+      {error && <div className={'feedback '+(usingSampleData ? 'feedback-warning' : 'feedback-error')} role="alert"><AlertCircle size={17} /><span>{error}</span><button type="button" onClick={() => void loadApplications(true)}>Retry</button></div>}
       {notice && <div className="feedback feedback-success" role="status"><ShieldCheck size={17} /><span>{notice}</span><button type="button" onClick={() => setNotice('')} aria-label="Dismiss message">Dismiss</button></div>}
 
       <div className="panel applications-table-panel">
