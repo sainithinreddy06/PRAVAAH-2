@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api, ApiError, formatStatus, type Application } from '../lib/api';
 import { useAuth } from '../components/AuthGate';
 
-const uploadRoles = ['applicant', 'institution_admin', 'regional_officer', 'platform_admin'];
+const uploadRoles = ['applicant', 'institution_admin', 'institution_coordinator', 'regional_officer', 'platform_admin'];
 
 export default function DocumentUploadPage() {
   const { user } = useAuth();
