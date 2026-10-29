@@ -2452,3 +2452,24 @@ html body {
 .v3-shell * {
   text-shadow: none !important;
 }
+
+
+/* Fix low-contrast PRAVAAH wordmark in the light sidebar. */
+.v3-shell .v3-sidebar .v3-brand,
+.v3-shell .v3-sidebar .v3-brand span,
+.v3-shell .v3-sidebar .v3-brand strong,
+.v3-shell .v3-sidebar .v3-brand strong span {
+  color: #24364B !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #24364B !important;
+  text-shadow: none !important;
+}
+.v3-shell .v3-sidebar .v3-brand small {
+  color: #64758B !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #64758B !important;
+  font-weight: 700 !important;
+}
+.v3-shell .v3-sidebar .v3-brand {
+  background: #FFFFFF !important;
+}
