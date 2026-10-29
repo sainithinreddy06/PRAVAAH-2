@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Activity, ArrowRight, ArrowUpRight, Bell, BookOpenCheck, Building2, CalendarClock, Check, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, Clock3, Command, Download, FileCheck2, FileText, Filter, Fingerprint, LayoutDashboard, LogOut, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, Users, Workflow, X } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, Bell, BookOpenCheck, Building2, CalendarClock, Check, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, Clock3, Command, Download, FileCheck2, FileText, Filter, Fingerprint, LayoutDashboard, LogOut, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, Users, UploadCloud, Workflow, X } from 'lucide-react';
 import { useAuth } from './components/AuthGate';
 import SecurityDepositRepository from './SecurityDepositRepository';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
