@@ -1,193 +1,244 @@
-# PRAVAAH-2
+# PRAVAAH
+### Enterprise Autonomous Transformation — Approval Workflow Automation & Compliance Monitoring
 
-PRAVAAH-2 is an approval workflow and compliance operations prototype. It connects a React workspace to a FastAPI service for application review, evidence, policy metadata, obligations, notifications, undertakings, EVC readiness snapshots, audit queries, operational metrics, and explainable recommendations.
+PRAVAAH is a prototype platform for organising approval workflows, supporting evidence-based reviews, tracking compliance obligations, and maintaining an operational history of key actions. It is designed to demonstrate how a structured digital workspace can help teams manage application records and compliance activities more consistently.
 
-This is a prototype, not an official AICTE service or a compliance decision system. EVC and recommendation results are workflow aids. Policy metadata is not verified official guidance, audit records are not immutable, and local evidence storage is not production storage.
+> **Project status:** Academic / hackathon prototype. PRAVAAH is not an official AICTE service, does not issue official approvals, and must not be treated as a substitute for applicable regulations or authorised human review. Demonstration data should be synthetic.
 
-## Current implementation
+## Table of contents
+- [Problem context](#problem-context)
+- [Objectives](#objectives)
+- [Key capabilities](#key-capabilities)
+- [Roles and workflow](#roles-and-workflow)
+- [Architecture](#architecture)
+- [Technology stack](#technology-stack)
+- [Run locally](#run-locally)
+- [Configuration](#configuration)
+- [API overview](#api-overview)
+- [Security and data handling](#security-and-data-handling)
+- [Testing and verification](#testing-and-verification)
+- [Repository structure](#repository-structure)
+- [Known limitations](#known-limitations)
+- [Future scope](#future-scope)
 
-| Area | What works |
+## Problem context
+Approval and compliance processes can involve multiple stakeholders, policy requirements, supporting documents, review stages, deadlines, and follow-up actions. When these activities are spread across separate records and communication channels, it becomes harder to understand application status, identify missing evidence, and follow up on obligations.
+
+PRAVAAH demonstrates a centralised workflow where application information, evidence review, policy metadata, obligations, readiness information, notifications, and audit events can be managed from one workspace.
+
+## Objectives
+- Centralise application and review information in a consistent workflow.
+- Make evidence requirements and review outcomes easier to track.
+- Organise compliance obligations and follow-up actions.
+- Present role-oriented views for operational work.
+- Provide a traceable record of relevant application and compliance events.
+- Demonstrate a modular frontend and backend architecture that can be extended and tested.
+
+## Key capabilities
+
+| Capability | Purpose |
 |---|---|
-| Public site | Landing page at `/`; privacy and terms pages are review drafts. |
-| Sign-in | Email/password login and current-user lookup; access token stays in browser memory. There is no self-registration or default account. |
-| Applications | List, status filter, create draft, inspect details, and request supported status transitions. Backend authorization governs every operation. |
-| Evidence | Application-scoped PDF/JPEG/PNG upload, metadata listing, optional policy association, and officer review action. The UI does not download private files. |
-| Policies | List policy metadata and create versions where the API role allows it. |
-| Compliance operations | List/create/update obligations, trigger overdue escalation, and view the signed-in user's notification inbox. Escalation is an API action, not a scheduled job; queued notifications are not email/SMS delivery. |
-| Undertakings | Create draft, submit for review, and accept/reject/request changes. This is not a digital signature. |
-| EVC and recommendations | View assessment snapshots and reviewer recommendations from the application detail. EVC is a readiness indicator; recommendations are rule-based, not a validated predictive model. |
-| Audit and metrics | Regional or global views according to backend role and scope. Audit records are not tamper-evident or immutable. |
-| Institution/officer administration and settings | No user-facing management API or persistent settings API is implemented. Operator provisioning scripts are available for local setup. The UI states these limitations rather than presenting mock controls. |
+| Application workflow | Organise application records and their review stages. |
+| Evidence management | Associate supporting evidence with workflow records and reviews. |
+| Policy metadata | Represent policy requirements and related information for workflow use. |
+| Compliance obligations | Track obligations, status, and follow-up work. |
+| Undertakings | Represent undertaking-related workflow information. |
+| EVC readiness snapshots | Present readiness information to support human review. |
+| Recommendations | Surface workflow guidance where implemented; these are not official decisions. |
+| Notifications | Display or track notification-related workflow items supported by the current implementation. |
+| Audit events | Expose operational events for traceability and review. |
+| Operational metrics | Summarise available workflow data for monitoring. |
+| Role-oriented workspace | Organise the interface around user responsibilities and access. |
 
-The application detail page is the home for evidence, undertakings, EVC snapshots, and reviewer recommendations. The global evidence library and configurable workflow studio are not backed by APIs; their old routes lead to supported application workflows.
+Feature availability depends on the configured environment and current implementation. Do not interpret a displayed status, recommendation, or readiness snapshot as an official approval or compliance determination.
+
+## Roles and workflow
+The application is intended to demonstrate role-oriented access for users involved in submitting, reviewing, administering, or monitoring workflow records. Exact permissions depend on the active backend configuration.
+
+A typical workflow is:
+
+1. Create or register an application record.
+2. Associate the relevant policy and evidence information.
+3. Review the submitted information and record findings.
+4. Track outstanding obligations, undertakings, or follow-up actions.
+5. Review readiness information and workflow recommendations, where available.
+6. Consult operational history and metrics to understand progress.
+
+This sequence is illustrative; the enabled transitions depend on the implementation and configured roles.
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  Browser[React + TypeScript / Vite] -->|Bearer JWT, JSON or multipart| API[FastAPI /api/v1]
-  API --> DB[(PostgreSQL 16+)]
-  API --> Files[Local evidence directory]
-  API --> Audit[Audit events]
-  Compose[Docker Compose] --> DB
-  Compose --> Migrate[Alembic migrations]
-  Compose --> API
+flowchart TD
+    U[User / Reviewer] --> FE[React + TypeScript Frontend]
+    FE -->|HTTP API| API[FastAPI Backend]
+    API --> DB[(PostgreSQL Database)]
+    API --> EV[Evidence / File Storage]
+    API --> AUD[Operational Audit Events]
+    API --> WF[Workflow Services]
 ```
 
-The browser API base is configured with `VITE_API_BASE_URL` (default `http://127.0.0.1:8000`). The API reads settings from environment variables or `backend/.env`. The Docker Compose file starts PostgreSQL, runs Alembic migrations, then starts the API. Vite runs separately during local development.
+The frontend provides the user interface, while the FastAPI backend exposes application functionality and coordinates workflow operations. SQLAlchemy and Alembic support database access and schema migrations. The deployed configuration may differ from a local development setup.
 
-## Requirements
+## Technology stack
 
-- Docker Desktop / Docker Engine with Compose plugin for the documented full-stack setup.
-- Node.js 20+ and npm for the frontend.
-- Python 3.12+ for local backend development.
-- PostgreSQL 16+ if running the backend outside Compose.
+| Layer | Technologies |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Backend | Python, FastAPI |
+| Data access | SQLAlchemy |
+| Database migrations | Alembic |
+| Database | PostgreSQL for the intended deployment configuration; SQLite may be used in selected tests |
+| API format | HTTP endpoints with JSON where applicable |
+| Deployment | Render services; Docker for the backend deployment |
 
-## Run with Docker Compose
+Check the repository's dependency and configuration files for the exact versions used by the current branch.
 
-From the repository root:
+## Run locally
 
+### Prerequisites
+- Git
+- Node.js and npm compatible with the frontend lockfile
+- Python version supported by the backend dependency configuration
+- PostgreSQL, or the database configured for your local/test environment
+- Docker and Docker Compose if using the container workflow
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/sainithinreddy06/PRAVAAH.git
+cd PRAVAAH
+git switch nithin-pravaah
+```
+
+### 2. Configure the backend
+Open a terminal in the repository root, then:
+```bash
+cd backend
+python -m venv .venv
+```
+
+Activate the virtual environment:
+
+**Windows PowerShell**
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux**
+```bash
+source .venv/bin/activate
+```
+
+Install the backend requirements using the dependency file present in `backend/`. For example, if the repository provides `requirements.txt`:
+```bash
+python -m pip install -r requirements.txt
+```
+
+Set the environment variables required by the backend, configure a local database, and run migrations using the repository's Alembic configuration. Then start the API using the entry point documented in the backend configuration. A common FastAPI development command, when the module is named `main.py`, is:
+```bash
+uvicorn main:app --reload
+```
+
+Do not assume this example module name applies if the current backend entry point differs.
+
+### 3. Start the frontend
+Open a second terminal at the repository root:
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Use the local URL printed by Vite. Configure the frontend API base URL to point to the local backend before testing API-backed screens.
+
+### 4. Docker workflow
+If a Docker Compose file is present in the checked-out branch, review its services and required environment variables, then start the configured stack:
 ```bash
 docker compose up --build
 ```
 
-In a second terminal, install frontend dependencies and start Vite:
+Use the Compose file as the source of truth for service names, ports, database initialization, and migrations. Do not run both Docker and manual services on the same ports at the same time.
 
-```bash
-npm install
-npm run dev
-```
+## Configuration
+Use the repository's example environment file, if provided, as the starting point. Typical settings in a project of this architecture may include:
 
-Local URLs:
+- Database connection string
+- Application environment and logging level
+- API host and port
+- Frontend API base URL
+- CORS allowed origins
+- Evidence/file storage location
+- Authentication or session configuration, if enabled
 
-- Frontend: <http://localhost:5173>
-- API: <http://localhost:8000>
-- Interactive API docs (development): <http://localhost:8000/docs>
-- Liveness: <http://localhost:8000/api/v1/health>
-- Readiness (includes a database check): <http://localhost:8000/api/v1/ready>
-
-Compose uses local development defaults. Set `POSTGRES_PASSWORD` and `JWT_SECRET_KEY` in the environment before starting when custom local values are needed. Do not use development secrets in a deployed environment. Compose persists PostgreSQL data and evidence in named volumes. To reset local Compose state, stop the stack and deliberately remove the named volumes; this permanently deletes that local data.
-
-Create an institution and user through the interactive operator scripts after migrations finish:
-
-```bash
-docker compose exec api python -m scripts.create_institution
-docker compose exec api python -m scripts.create_user
-```
-
-Create the institution first. Use the institution's region when provisioning the user. There are no seeded default accounts, public signup, or client-side role switching.
-
-## Run services without Compose
-
-Start a PostgreSQL 16+ database and set its connection string, then configure backend settings in `backend/.env` (see `backend/app/core/config.py` for supported defaults):
-
-```dotenv
-APP_ENV=development
-DATABASE_URL=postgresql+psycopg://USER:PASSWORD@localhost:5432/pravaah
-JWT_SECRET_KEY=replace-with-a-random-secret-of-at-least-32-characters
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-EVIDENCE_STORAGE_DIR=.data/evidence
-MAX_EVIDENCE_SIZE_BYTES=10485760
-```
-
-Windows PowerShell:
-
-```powershell
-cd backend
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-alembic upgrade head
-python -m scripts.create_institution
-python -m scripts.create_user
-uvicorn app.main:app --reload
-```
-
-macOS/Linux:
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-alembic upgrade head
-python -m scripts.create_institution
-python -m scripts.create_user
-uvicorn app.main:app --reload
-```
-
-In another terminal from the repository root:
-
-```bash
-npm install
-npm run dev
-```
-
-To point the frontend at another API origin, set `VITE_API_BASE_URL` in a root `.env` file before starting/building Vite. `.env.example` documents the default.
+Names and required values vary by branch; verify them against the actual settings code and deployment configuration. Never commit real credentials, private keys, production database passwords, or personal data. Use environment variables or the hosting provider's secret settings.
 
 ## API overview
+The backend exposes HTTP endpoints for the workflow areas enabled in the current build. Depending on the implementation, these may include:
 
-All routes are under `/api/v1`. Use `/docs` in development for schemas and request details.
+- Health or service status
+- Applications and review workflow
+- Policy metadata
+- Evidence and review records
+- Obligations and undertakings
+- Readiness snapshots and recommendations
+- Notifications
+- Audit-event queries
+- Operational metrics
 
-| Group | Routes |
-|---|---|
-| Authentication | `POST /auth/login`, `GET /auth/me` |
-| Applications | `POST /applications`, `GET /applications`, `GET /applications/{id}`, `POST /applications/{id}/transitions` |
-| Policies and evidence | `GET/POST /policies`, `POST /applications/{id}/evidence`, `GET /applications/{id}/evidence`, `PATCH /evidence/{id}/review` |
-| Obligations and notifications | `POST/GET /obligations`, `PATCH /obligations/{id}`, `POST /obligations/escalate-due`, `GET /notifications` |
-| Undertakings and EVC | `POST /undertakings`, `GET /applications/{id}/undertakings`, `POST /undertakings/{id}/submit`, `POST /undertakings/{id}/review`, `POST /evc/assessments`, `GET /applications/{id}/evc-assessments` |
-| Operations | `GET /audit/events`, `GET /operations/metrics` |
-| Recommendations | `GET /applications/{id}/recommendations` |
-| Service status | `GET /health`, `GET /ready` |
+For exact routes, request schemas, response formats, and authentication requirements, inspect the backend route definitions and the API documentation served by the running FastAPI instance (commonly `/docs` when enabled). This README intentionally does not promise endpoint paths that have not been verified against the active branch.
 
-The application state machine supports `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, and `rejected`. Applicants are limited to their own records. Other non-admin users are region-scoped, and review actions are restricted by role. Backend checks are authoritative; hiding a UI control is not an authorization boundary.
+## Security and data handling
+- Use synthetic data for demos and evaluation unless appropriate authorisation and safeguards are in place.
+- Keep secrets in environment variables or deployment secret stores; never put them in source control.
+- Restrict CORS to the frontend origins required by the environment.
+- Apply authentication and role-based authorisation appropriate to the deployment before exposing sensitive workflows.
+- Validate uploads and inputs, enforce file size/type limits, and control access to stored evidence.
+- Avoid logging passwords, tokens, confidential documents, or unnecessary personal information.
+- Back up the database and define retention and access policies before any real operational use.
+- Treat audit events as application-level records unless independent tamper-resistance has been implemented and verified.
 
-## Security and operational notes
-
-- Passwords use Argon2; signed bearer tokens use JWT. The frontend keeps its token in memory, so a page refresh requires signing in again. Production should assess a server-managed HttpOnly session/BFF design.
-- Set a cryptographically random `JWT_SECRET_KEY` of at least 32 characters in production. Configure deployment-specific CORS and secure secret management.
-- Evidence uploads are constrained by supported file types, file signatures, and `MAX_EVIDENCE_SIZE_BYTES`; files are stored locally by default. Signature checks do not scan for malware. Production needs private durable object storage, encryption, malware scanning, retention controls, and controlled download links.
-- Overdue escalation only queues in-app notifications when the API is called. There is no scheduler, email/SMS delivery, or retry worker.
-- Audit events are queryable but are not protected as immutable or tamper-evident records.
-- Metrics and overview counts are scoped to the requesting user and API response. The overview may show only the endpoint's returned limit, not global totals.
-- The privacy and terms pages are review drafts and need deployment owner, contact, provider, and retention details before publication.
-
-## Quality checks
-
-Frontend:
+## Testing and verification
+Run the tests and checks defined by the current branch and its configuration. Common examples, when corresponding scripts or configuration are present, include:
 
 ```bash
+# Frontend
+npm ci
 npm run typecheck
-npm run lint
 npm run build
+
+# Backend
+python -m pytest
 ```
 
-Backend (from `backend`, with the virtual environment active):
+Use the actual script names in `package.json` and the backend test configuration; commands above are examples and may need adjustment. A successful unit-test run does not by itself verify every end-to-end workflow, a production database, deployment configuration, or external integrations. Record fresh test results before presenting them as verified.
 
-```bash
-pytest
-ruff check app tests migrations
-alembic history
-```
+## Repository structure
+The repository is organised around a frontend and backend. Exact paths can change between branches.
 
-The current backend tests use SQLite fixtures. For PostgreSQL compatibility, run migration and integration checks against a disposable PostgreSQL instance as part of CI/release verification; a SQLite test pass does not prove PostgreSQL behavior.
+- `frontend/` — React/TypeScript user interface.
+- `backend/` — FastAPI application, workflow logic, database access, and tests.
+- Database migration files and deployment configuration — schema evolution and runtime setup.
+- Documentation and environment examples — project setup and developer guidance, where present.
 
-## Verification record for this working tree
+## Known limitations
+- This is a prototype intended for demonstration and evaluation, not a certified production platform.
+- Official AICTE integrations, approval authority, and regulatory correctness are not implied.
+- Recommendation and readiness outputs require human interpretation and validation.
+- Email/SMS delivery, scheduled processing, external integrations, and tamper-resistant audit guarantees should be considered available only if separately configured, implemented, and verified.
+- Local test success does not establish production readiness or full workflow coverage.
 
-On 25 October 2026, the frontend typecheck and production build passed. ESLint passed with one existing Fast Refresh warning in `src/components/AuthGate.tsx`. The backend suite reported 57 passed using SQLite fixtures; Ruff and Alembic history passed. A local browser-to-API journey successfully signed in, loaded the current user, created/listed/opened an application, and created/read back an undertaking draft against a disposable SQLite database.
+## Future scope
+- Expand automated integration and end-to-end tests across role-specific journeys.
+- Add deployment monitoring, backups, and operational runbooks.
+- Strengthen identity, authorisation, and evidence retention controls.
+- Add validated integration adapters for approved external systems, subject to access and policy.
+- Improve reporting, accessibility, and reviewer feedback loops.
+- Conduct security, performance, and usability reviews before real-world deployment.
 
-A PostgreSQL-backed run was not completed: local PostgreSQL rejected the documented Compose development credential and Docker was unavailable in the environment. Evidence upload/review, policy mutation, obligation operations, EVC, audit/metrics, recommendation display, and applicant/officer/admin browser authorization boundaries still need browser verification. These results are not a full end-to-end release gate or production certification. See [integration coverage matrix](docs/integration-coverage-matrix.md) and [implementation checklist](docs/implementation-checklist.md) for the detailed status.
+## Project links
+- **Repository:** https://github.com/sainithinreddy06/PRAVAAH
+- **Target development branch:** `nithin-pravaah`
 
-## Repository map
+---
 
-```text
-backend/                 FastAPI service, models, migrations, tests, operator scripts
-src/components/          Authentication gate and shared UI
-src/lib/api.ts           Typed API client and request handling
-src/pages/               Public site, application list/detail, operations pages
-docs/                    Integration coverage, checklist, presentation notes
-.github/workflows/       Frontend and backend CI workflows
-docker-compose.yml       PostgreSQL, migration, API services
-```
-
-Additional references: [backend setup and API notes](backend/README.md), [presentation brief](docs/PRESENTATION_README.md), [implementation master prompt](docs/IMPLEMENTATION_MASTER_PROMPT.md), [ZIP inventory review](docs/zip-review-2026-10-25.md).
+**PRAVAAH — structured workflows, evidence visibility, and compliance operations.**
