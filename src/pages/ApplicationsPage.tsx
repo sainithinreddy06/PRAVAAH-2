@@ -155,7 +155,7 @@ export default function ApplicationsPage() {
           <p className="muted">{usingSampleData ? 'Illustrative sample records · API unavailable' : 'Live records returned by the connected PRAVAAH API, limited to your account permissions.'}</p>
         </div>
         <div className="applications-heading-actions">
-          {canCreate(user.role) && <button className="primary-button" type="button" onClick={() => setCreateOpen((open) => !open)}><Plus size={15} /> New application</button>}
+          {canCreate(user.role) && <button className="primary-button" type="button" onClick={() => setCreateOpen((open) => !open)} disabled={usingSampleData} title={usingSampleData ? 'Reconnect to the API to create real applications' : 'Create a new application'}><Plus size={15} /> New application</button>}
           <button className="secondary-button" type="button" onClick={() => void loadApplications(true)} disabled={loading || refreshing}>
             <RefreshCw size={15} className={refreshing ? 'spin' : ''} /> Refresh
           </button>
@@ -198,7 +198,7 @@ export default function ApplicationsPage() {
                   <td>{formatStatus(application.workflow_stage)}</td>
                   <td><span className={'status status-' + (application.status === 'approved' ? 'green' : application.status === 'rejected' ? 'rose' : application.status === 'under_review' ? 'blue' : application.status === 'changes_requested' ? 'amber' : 'blue')}><i />{formatStatus(application.status)}</span></td>
                   <td>{new Date(application.created_at).toLocaleDateString() + ' ' + new Date(application.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td>{actionable.length > 0 ? <div className="application-actions">{actionable.map((target) => <button key={target} className="table-action" type="button" disabled={pendingId !== null} onClick={() => void transition(application, target)}>{pendingId === application.id ? 'Saving…' : formatStatus(target)}</button>)}</div> : <span className="muted">No permitted action</span>}</td>
+                  <td>{actionable.length > 0 ? <div className="application-actions">{actionable.map((target) => <button key={target} className="table-action" type="button" disabled={pendingId !== null || usingSampleData} title={usingSampleData ? 'Sample records are read-only until API authentication is restored' : undefined} onClick={() => void transition(application, target)}>{pendingId === application.id ? 'Saving…' : formatStatus(target)}</button>)}</div> : <span className="muted">No permitted action</span>}</td>
                 </tr>;
               })}
             </tbody></table></div>}
