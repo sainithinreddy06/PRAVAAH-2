@@ -1714,3 +1714,47 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .pr-public .pr-process .pr-stage-track { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
   .pr-public .pr-process .pr-stage-track > button { min-height:112px !important; padding:12px 10px !important; }
 }
+
+
+/* Public information strip: keep the two utility links aligned and readable. */
+.pr-substrip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 8px 24px !important;
+  padding: 10px clamp(16px, 4vw, 56px) !important;
+}
+.pr-substrip > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+.pr-substrip > span:last-child {
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  white-space: nowrap !important;
+}
+.pr-substrip > span:last-child a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  text-decoration: none !important;
+}
+.pr-substrip > span:last-child a:hover {
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+}
+@media (max-width: 760px) {
+  .pr-substrip {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .pr-substrip > span:last-child {
+    justify-content: flex-start !important;
+    white-space: normal !important;
+  }
+}
