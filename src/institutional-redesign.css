@@ -2012,3 +2012,172 @@ html body {
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Final workspace direction: formal public-sector product UI; solid fills only. */
+.v3-shell,
+.v3-shell .v3-main,
+.v3-shell .v3-page,
+.v3-shell .v3-content {
+  background: #F3F5F7 !important;
+  background-image: none !important;
+}
+.v3-shell .v3-main {
+  background-image: none !important;
+}
+.v3-shell .v3-topbar {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid #D9DEE5 !important;
+}
+.v3-shell .v3-sidebar {
+  background: #202B38 !important;
+  box-shadow: none !important;
+  border-right: 1px solid #202B38 !important;
+}
+.v3-shell .v3-brand {
+  background: #202B38 !important;
+  border-bottom: 1px solid #394451 !important;
+}
+.v3-shell .v3-workspace-select {
+  background: #293746 !important;
+  border: 1px solid #465361 !important;
+  border-radius: 5px !important;
+}
+.v3-shell .v3-workspace-symbol {
+  background: #394A5C !important;
+  border-radius: 4px !important;
+}
+.v3-shell .v3-nav-item {
+  border-radius: 4px !important;
+  margin: 2px 10px !important;
+}
+.v3-shell .v3-nav-item:hover {
+  background: #303E4D !important;
+  border-color: #303E4D !important;
+}
+.v3-shell .v3-nav-item.active {
+  background: #394B5E !important;
+  border-color: #394B5E !important;
+  box-shadow: inset 3px 0 #D5DEE7 !important;
+}
+.v3-shell .v3-secure {
+  background: #293746 !important;
+  border: 1px solid #465361 !important;
+  border-radius: 5px !important;
+}
+.v3-shell .v3-hero,
+.v3-shell .v3-panel,
+.v3-shell .v3-case-summary,
+.v3-shell .v3-register,
+.v3-shell .v3-settings-card,
+.v3-shell .v3-policy-card,
+.v3-shell .v3-compliance-card,
+.v3-shell .v3-dossier-card,
+.v3-shell .v3-case-layout > section,
+.v3-shell .v3-case-main > section {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border: 1px solid #D9DEE5 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.v3-shell .v3-hero h1,
+.v3-shell .v3-hero h2,
+.v3-shell .v3-panel h1,
+.v3-shell .v3-panel h2,
+.v3-shell .v3-panel h3 {
+  color: #202B38 !important;
+  letter-spacing: -0.25px !important;
+}
+.v3-shell .v3-btn-primary,
+.v3-shell .primary-button,
+.v3-shell button[type=submit],
+.v3-shell .workflow-submit {
+  background: #244B70 !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border: 1px solid #244B70 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.v3-shell .v3-btn-primary:hover,
+.v3-shell .primary-button:hover,
+.v3-shell button[type=submit]:hover,
+.v3-shell .workflow-submit:hover {
+  background: #1B3C5A !important;
+  border-color: #1B3C5A !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.v3-shell .v3-btn-outline,
+.v3-shell .v3-btn-light,
+.v3-shell .secondary-button {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  color: #344256 !important;
+  border: 1px solid #C8D0D9 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+.v3-shell input,
+.v3-shell select,
+.v3-shell textarea,
+.v3-shell .v3-global-search {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  color: #273444 !important;
+  border: 1px solid #C8D0D9 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+.v3-shell input:focus,
+.v3-shell select:focus,
+.v3-shell textarea:focus {
+  border-color: #54799C !important;
+  box-shadow: 0 0 0 2px rgba(36,75,112,.10) !important;
+}
+.v3-shell .v3-global-search:hover {
+  background: #FFFFFF !important;
+  border-color: #AAB6C3 !important;
+}
+.v3-shell thead {
+  background: #F1F3F5 !important;
+  background-image: none !important;
+}
+.v3-shell th {
+  color: #596777 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .45px !important;
+}
+.v3-shell td {
+  color: #465568 !important;
+}
+.v3-shell tbody tr:hover {
+  background: #F5F7F9 !important;
+}
+.v3-shell .v3-top-icon:hover {
+  background: #EEF1F4 !important;
+}
+.v3-shell .v3-avatar-light {
+  box-shadow: none !important;
+}
+.v3-shell .v3-mobile-overlay {
+  background: rgba(20,30,42,.48) !important;
+  backdrop-filter: none !important;
+}
+.v3-shell * {
+  text-shadow: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v3-shell *, .v3-shell *::before, .v3-shell *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
