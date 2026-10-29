@@ -1758,3 +1758,257 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     white-space: normal !important;
   }
 }
+
+
+/* Workspace refresh v2: target the actual v3 workspace components (loaded after index.css). */
+:root {
+  --site-bg: #f1f5f8;
+  --site-ink: #172b40;
+}
+html body {
+  background: #f1f5f8 !important;
+}
+.v3-shell {
+  min-height: 100vh !important;
+  background: #f1f5f8 !important;
+  color: #172b40 !important;
+}
+.v3-shell .v3-sidebar {
+  background: #132538 !important;
+  border-right: 1px solid #243b50 !important;
+  box-shadow: 8px 0 28px rgba(18, 39, 58, .07) !important;
+}
+.v3-shell .v3-brand {
+  background: #132538 !important;
+  border-bottom: 1px solid rgba(222,235,246,.12) !important;
+}
+.v3-shell .v3-brand strong {
+  color: #f5f8fb !important;
+  letter-spacing: 1.5px !important;
+}
+.v3-shell .v3-brand small {
+  color: #9db2c6 !important;
+  letter-spacing: 1.15px !important;
+}
+.v3-shell .v3-workspace-select {
+  margin: 16px 14px 20px !important;
+  padding: 12px !important;
+  background: #1b3349 !important;
+  border: 1px solid #304a61 !important;
+  border-radius: 9px !important;
+  color: #e4edf5 !important;
+}
+.v3-shell .v3-workspace-select small,
+.v3-shell .v3-workspace-select strong {
+  color: #e4edf5 !important;
+}
+.v3-shell .v3-workspace-select small {
+  color: #9db2c6 !important;
+  letter-spacing: 1px !important;
+}
+.v3-shell .v3-workspace-symbol {
+  background: #284760 !important;
+  color: #c4def2 !important;
+  border-radius: 8px !important;
+}
+.v3-shell .v3-nav-group > p {
+  color: #8fa6bb !important;
+  font-size: 9px !important;
+  letter-spacing: 1.35px !important;
+  padding-left: 12px !important;
+}
+.v3-shell .v3-nav-item {
+  min-height: 41px !important;
+  margin: 3px 10px !important;
+  padding: 0 12px !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px !important;
+  color: #c0cedb !important;
+  transition: background .16s ease, color .16s ease, border-color .16s ease !important;
+}
+.v3-shell .v3-nav-item:hover {
+  background: #203c54 !important;
+  border-color: #2d4a63 !important;
+  color: #fff !important;
+}
+.v3-shell .v3-nav-item.active {
+  background: #2a4d6b !important;
+  border-color: #3b6283 !important;
+  color: #fff !important;
+  box-shadow: inset 3px 0 #9dc9e9 !important;
+}
+.v3-shell .v3-nav-item.active svg {
+  color: #d2e9fa !important;
+}
+.v3-shell .v3-sidebar-bottom {
+  border-top: 1px solid rgba(222,235,246,.12) !important;
+}
+.v3-shell .v3-secure {
+  margin: 12px !important;
+  padding: 11px !important;
+  border: 1px solid #2b465d !important;
+  border-radius: 8px !important;
+  background: #192f43 !important;
+  color: #c0d2e1 !important;
+}
+.v3-shell .v3-secure strong { color: #e8f2f9 !important; }
+.v3-shell .v3-secure small { color: #9db2c6 !important; }
+.v3-shell .v3-account {
+  margin: 0 12px 12px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(222,235,246,.12) !important;
+}
+.v3-shell .v3-account-copy strong { color: #f3f7fa !important; }
+.v3-shell .v3-account-copy small { color: #a8bbcd !important; }
+.v3-shell .v3-account > button {
+  background: #203b52 !important;
+  border: 1px solid #38546b !important;
+  color: #dbe8f2 !important;
+  border-radius: 7px !important;
+}
+.v3-shell .v3-main {
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(216,231,242,.45), transparent 34%),
+    #f1f5f8 !important;
+}
+.v3-shell .v3-topbar {
+  min-height: 66px !important;
+  background: rgba(255,255,255,.88) !important;
+  border-bottom: 1px solid #dfe7ee !important;
+  box-shadow: 0 3px 14px rgba(23,43,64,.035) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+.v3-shell .v3-crumb span {
+  color: #8796a6 !important;
+  letter-spacing: 1.1px !important;
+}
+.v3-shell .v3-crumb strong {
+  color: #20384e !important;
+  font-weight: 750 !important;
+}
+.v3-shell .v3-global-search {
+  background: #f7f9fb !important;
+  border: 1px solid #dfe7ee !important;
+  border-radius: 8px !important;
+}
+.v3-shell .v3-global-search:hover {
+  border-color: #a9c0d3 !important;
+  background: #fff !important;
+}
+.v3-shell .v3-top-icon {
+  border-radius: 8px !important;
+  transition: background .16s ease, border-color .16s ease !important;
+}
+.v3-shell .v3-top-icon:hover {
+  background: #edf3f7 !important;
+}
+.v3-shell .v3-avatar-light {
+  box-shadow: 0 0 0 3px #edf3f7 !important;
+}
+.v3-shell .v3-page,
+.v3-shell .v3-content {
+  background: transparent !important;
+}
+.v3-shell .v3-hero,
+.v3-shell .v3-panel,
+.v3-shell .v3-case-summary,
+.v3-shell .v3-register,
+.v3-shell .v3-settings-card,
+.v3-shell .v3-policy-card,
+.v3-shell .v3-compliance-card,
+.v3-shell .v3-dossier-card,
+.v3-shell .v3-case-layout > section,
+.v3-shell .v3-case-main > section {
+  border: 1px solid #dce5ed !important;
+  border-radius: 11px !important;
+  box-shadow: 0 5px 18px rgba(23,43,64,.045) !important;
+}
+.v3-shell .v3-hero {
+  background: rgba(255,255,255,.94) !important;
+}
+.v3-shell .v3-hero h1,
+.v3-shell .v3-hero h2 {
+  color: #1b3147 !important;
+  letter-spacing: -.7px !important;
+}
+.v3-shell .v3-hero p {
+  line-height: 1.7 !important;
+}
+.v3-shell .v3-btn-primary,
+.v3-shell .primary-button,
+.v3-shell button[type=submit],
+.v3-shell .workflow-submit {
+  background: #285d8c !important;
+  border: 1px solid #285d8c !important;
+  border-radius: 7px !important;
+  box-shadow: 0 2px 5px rgba(40,93,140,.12) !important;
+  transition: background .16s ease, transform .16s ease, box-shadow .16s ease !important;
+}
+.v3-shell .v3-btn-primary:hover,
+.v3-shell .primary-button:hover,
+.v3-shell button[type=submit]:hover,
+.v3-shell .workflow-submit:hover {
+  background: #1e4d78 !important;
+  border-color: #1e4d78 !important;
+  box-shadow: 0 5px 12px rgba(40,93,140,.16) !important;
+  transform: translateY(-1px);
+}
+.v3-shell .v3-btn-outline,
+.v3-shell .v3-btn-light,
+.v3-shell .secondary-button {
+  border-radius: 7px !important;
+}
+.v3-shell input,
+.v3-shell select,
+.v3-shell textarea {
+  border-radius: 7px !important;
+  border-color: #d6e0e9 !important;
+}
+.v3-shell input:focus,
+.v3-shell select:focus,
+.v3-shell textarea:focus {
+  border-color: #8eafca !important;
+  box-shadow: 0 0 0 3px rgba(40,93,140,.09) !important;
+}
+.v3-shell table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+.v3-shell thead {
+  background: #f5f8fa !important;
+}
+.v3-shell th {
+  color: #74869a !important;
+  font-size: 9px !important;
+  letter-spacing: .75px !important;
+  text-transform: uppercase !important;
+}
+.v3-shell td {
+  color: #53677b !important;
+}
+.v3-shell tbody tr {
+  transition: background .14s ease !important;
+}
+.v3-shell tbody tr:hover {
+  background: #f6f9fb !important;
+}
+.v3-shell .v3-mobile-overlay {
+  background: rgba(13,29,44,.52) !important;
+  backdrop-filter: blur(3px) !important;
+}
+@media (max-width: 760px) {
+  .v3-shell .v3-topbar {
+    min-height: 59px !important;
+  }
+  .v3-shell .v3-page {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v3-shell *, .v3-shell *::before, .v3-shell *::after {
+    transition: none !important;
+    animation-duration: .01ms !important;
+  }
+}
