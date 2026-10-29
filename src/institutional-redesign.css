@@ -1241,3 +1241,43 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background:transparent !important;
   box-shadow:none !important;
 }
+
+
+/* Public header polish: improve utility-bar contrast and keep one officer entry point. */
+.pr-public .pr-top-strip {
+  background:#EAF0F7 !important;
+  color:#17365D !important;
+  border-bottom:1px solid #D7DFE9 !important;
+}
+.pr-public .pr-top-strip b,
+.pr-public .pr-top-strip span,
+.pr-public .pr-top-strip a,
+.pr-public .pr-top-strip svg {
+  color:#17365D !important;
+}
+.pr-public .pr-top-strip a { text-decoration:none !important; }
+.pr-public .pr-top-strip a:hover { color:#2457A7 !important; text-decoration:underline !important; }
+.pr-public .pr-header-tools { justify-content:flex-end !important; gap:12px !important; }
+.pr-public .pr-header-tools form {
+  background:#F8FAFC !important; border:1px solid #C7D1DE !important;
+  border-radius:7px !important; box-shadow:none !important;
+}
+.pr-public .pr-header-tools form input {
+  background:transparent !important; color:#17365D !important;
+}
+.pr-public .pr-header-tools form input::placeholder { color:#718096 !important; opacity:1 !important; }
+.pr-public .pr-header-tools form > button {
+  background:#17365D !important; color:#FFFFFF !important; border-radius:4px !important;
+}
+.pr-public .pr-nav > button {
+  background:#17365D !important; color:#FFFFFF !important;
+  border:1px solid #17365D !important; border-radius:5px !important;
+  min-height:38px !important; padding:9px 14px !important; opacity:1 !important;
+}
+.pr-public .pr-nav > button:hover {
+  background:#2457A7 !important; border-color:#2457A7 !important; color:#FFFFFF !important;
+}
+.pr-public .pr-nav > button svg { color:#FFFFFF !important; }
+@media(max-width:760px) {
+  .pr-public .pr-header-tools { justify-content:space-between !important; }
+}
