@@ -25,8 +25,24 @@ export default function DocumentUploadPage() {
   const [working, setWorking] = useState(false);
   const [uploadedName, setUploadedName] = useState('');
 
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
+
   const load = useCallback(async () => {
     setLoading(true); setError('');
+    if (demoMode) {
+      // Demo identities are local-only and do not have backend API credentials.
+      // Use clearly synthetic records so the demo page does not issue protected API calls.
+      setApplications([
+        { id: 142, reference_code: 'APP-2026-0142', institution_id: 1, submitted_by_user_id: null, workflow_stage: 'draft', status: 'draft', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        { id: 148, reference_code: 'APP-2026-0148', institution_id: 2, submitted_by_user_id: null, workflow_stage: 'changes_requested', status: 'changes_requested', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      ]);
+      setPolicies([
+        { id: 1, policy_key: 'POL-APH-2024', version: 1, title: 'Approval Process Handbook (demo)' },
+        { id: 2, policy_key: 'POL-LSE-014', version: 2, title: 'Land and lease continuity (demo)' },
+      ]);
+      setLoading(false);
+      return;
+    }
     try {
       const [apps, policyRows] = await Promise.all([api.listApplications(), api.listPolicies()]);
       setApplications(apps);
@@ -34,7 +50,7 @@ export default function DocumentUploadPage() {
     } catch (reason) {
       setError(reason instanceof ApiError ? reason.detail : 'Could not load applications. Please check your connection and sign-in.');
     } finally { setLoading(false); }
-  }, []);
+  }, [demoMode]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -61,6 +77,10 @@ export default function DocumentUploadPage() {
     }
     if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       setError('Choose a PDF, JPG, PNG, or WebP file.');
+      return;
+    }
+    if (demoMode) {
+      setNotice('Demo mode: the selected file was not sent to the backend or stored. Sign in through a configured live backend to submit evidence.');
       return;
     }
     setWorking(true);
