@@ -2243,3 +2243,212 @@ html body {
   border-color: #38546b !important;
   color: #dbe8f2 !important;
 }
+
+
+/* Reference-inspired institutional workspace: clean white navigation, cool-grey canvas, restrained blue accents. */
+.v3-shell {
+  background: #F4F6F9 !important;
+  color: #243247 !important;
+}
+.v3-shell .v3-main,
+.v3-shell .v3-content {
+  background: #F4F6F9 !important;
+  background-image: none !important;
+}
+.v3-shell .v3-topbar {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #D8DEE8 !important;
+  box-shadow: none !important;
+}
+.v3-shell .v3-sidebar {
+  background: #FFFFFF !important;
+  border-right: 1px solid #D5DCE6 !important;
+  box-shadow: none !important;
+}
+.v3-shell .v3-brand {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E3E8EF !important;
+}
+.v3-shell .v3-brand,
+.v3-shell .v3-brand * {
+  color: #23364D !important;
+}
+.v3-shell .v3-workspace-select {
+  background: #F6F8FB !important;
+  border: 1px solid #E0E6EE !important;
+  border-radius: 6px !important;
+  color: #33445B !important;
+}
+.v3-shell .v3-workspace-symbol {
+  background: #E7EFFB !important;
+  color: #356FE5 !important;
+  border-radius: 5px !important;
+}
+.v3-shell .v3-nav-group > p {
+  color: #7A8798 !important;
+  letter-spacing: .06em !important;
+}
+.v3-shell .v3-nav-item {
+  background: transparent !important;
+  color: #46566D !important;
+  border: 1px solid transparent !important;
+  border-radius: 5px !important;
+  margin: 2px 9px !important;
+  box-shadow: none !important;
+  transition: background-color .16s ease, color .16s ease !important;
+}
+.v3-shell .v3-nav-item svg {
+  color: #77869B !important;
+}
+.v3-shell .v3-nav-item:hover {
+  background: #F1F4F8 !important;
+  color: #244F9D !important;
+  border-color: transparent !important;
+}
+.v3-shell .v3-nav-item.active {
+  background: #EAF1FF !important;
+  color: #2864D7 !important;
+  border-color: #E0E9FF !important;
+  box-shadow: inset 3px 0 #3978F6 !important;
+}
+.v3-shell .v3-nav-item.active svg {
+  color: #3978F6 !important;
+}
+.v3-shell .v3-secure {
+  background: #F7F9FC !important;
+  border: 1px solid #E0E6EE !important;
+  border-radius: 6px !important;
+  color: #5A6A80 !important;
+}
+.v3-shell .v3-account-copy strong {
+  color: #26374D !important;
+}
+.v3-shell .v3-account-copy small {
+  color: #7A8798 !important;
+}
+.v3-shell .v3-account > button {
+  background: #F3F6FA !important;
+  border: 1px solid #E0E6EE !important;
+  color: #52647A !important;
+}
+.v3-shell .v3-context-bar {
+  background: #FFFFFF !important;
+  border: 1px solid #E0E5ED !important;
+  border-radius: 5px !important;
+  color: #66758A !important;
+  box-shadow: none !important;
+}
+.v3-shell .v3-hero,
+.v3-shell .v3-panel,
+.v3-shell .v3-case-summary,
+.v3-shell .v3-register,
+.v3-shell .v3-settings-card,
+.v3-shell .v3-policy-card,
+.v3-shell .v3-compliance-card,
+.v3-shell .v3-dossier-card,
+.v3-shell .v3-case-layout > section,
+.v3-shell .v3-case-main > section,
+.v3-shell .v3-utility-panel,
+.v3-shell .v3-utility-popover {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border: 1px solid #DFE5ED !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 2px rgba(24, 39, 58, .035) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.v3-shell .v3-hero h1,
+.v3-shell .v3-hero h2,
+.v3-shell .v3-panel h1,
+.v3-shell .v3-panel h2,
+.v3-shell .v3-panel h3 {
+  color: #172A43 !important;
+  letter-spacing: -.025em !important;
+}
+.v3-shell .v3-btn-primary,
+.v3-shell .primary-button,
+.v3-shell button[type=submit],
+.v3-shell .workflow-submit {
+  background: #3978F6 !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border: 1px solid #3978F6 !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+  transition: background-color .16s ease, border-color .16s ease !important;
+}
+.v3-shell .v3-btn-primary:hover,
+.v3-shell .primary-button:hover,
+.v3-shell button[type=submit]:hover,
+.v3-shell .workflow-submit:hover {
+  background: #2864D7 !important;
+  border-color: #2864D7 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.v3-shell .v3-btn-outline,
+.v3-shell .v3-btn-light,
+.v3-shell .secondary-button {
+  background: #FFFFFF !important;
+  color: #40536D !important;
+  border: 1px solid #D6DEE9 !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+}
+.v3-shell input,
+.v3-shell select,
+.v3-shell textarea,
+.v3-shell .v3-global-search {
+  background: #FFFFFF !important;
+  color: #26374D !important;
+  border: 1px solid #CCD5E2 !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+}
+.v3-shell input::placeholder,
+.v3-shell textarea::placeholder {
+  color: #8A97A9 !important;
+}
+.v3-shell input:focus,
+.v3-shell select:focus,
+.v3-shell textarea:focus {
+  border-color: #7DA5F8 !important;
+  box-shadow: 0 0 0 3px rgba(57,120,246,.10) !important;
+  outline: none !important;
+}
+.v3-shell thead {
+  background: #F6F8FB !important;
+  border-bottom: 1px solid #DCE3EC !important;
+}
+.v3-shell th {
+  color: #65748A !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .035em !important;
+}
+.v3-shell td {
+  color: #40516A !important;
+  border-bottom-color: #E2E7EF !important;
+}
+.v3-shell tbody tr:hover {
+  background: #F8FAFD !important;
+}
+.v3-shell a {
+  color: #326FE5;
+}
+.v3-shell .v3-top-icon:hover {
+  background: #F0F4FA !important;
+}
+.v3-shell .v3-footer {
+  background: #F4F6F9 !important;
+  color: #8290A2 !important;
+  border-top: 1px solid #E1E6EE !important;
+}
+.v3-shell .v3-mobile-overlay {
+  background: rgba(22, 36, 55, .28) !important;
+  backdrop-filter: none !important;
+}
+.v3-shell * {
+  text-shadow: none !important;
+}
