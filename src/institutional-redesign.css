@@ -1431,3 +1431,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-color:#2457A7 !important;
 }
 .access-portal-page .access-portal-disclaimer { color:#526176 !important; }
+
+
+/* Access portal primary action buttons — use the shared navy/blue palette, never charcoal. */
+.access-portal-page .access-portal-select,
+.access-portal-page button.access-portal-select {
+  background:#17365D !important;
+  background-image:none !important;
+  color:#FFFFFF !important;
+  border:1px solid #17365D !important;
+  border-radius:5px !important;
+  box-shadow:none !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+  font-weight:700 !important;
+}
+.access-portal-page .access-portal-select *,
+.access-portal-page .access-portal-select svg {
+  color:#FFFFFF !important;
+  stroke:#FFFFFF !important;
+}
+.access-portal-page .access-portal-select:hover,
+.access-portal-page .access-portal-select:focus-visible {
+  background:#2457A7 !important;
+  background-image:none !important;
+  color:#FFFFFF !important;
+  border-color:#2457A7 !important;
+}
+.access-portal-page .access-portal-select:active {
+  background:#17365D !important;
+  color:#FFFFFF !important;
+  transform:translateY(1px);
+}
