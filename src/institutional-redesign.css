@@ -1633,3 +1633,84 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .pr-public .pr-public-service-note { padding:12px 16px; flex-wrap:wrap; }
   .pr-public .pr-public-service-note button { margin-left:26px; }
 }
+
+
+/* Approval workflow stage cards: unify with the institutional navy and blue palette. */
+.pr-public .pr-process .pr-stage-track {
+  display:grid !important;
+  grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+  gap:8px !important;
+  padding:0 !important;
+  background:transparent !important;
+}
+.pr-public .pr-process .pr-stage-track > button {
+  position:relative !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:8px !important;
+  min-width:0 !important;
+  min-height:116px !important;
+  padding:14px 12px !important;
+  background:#FFFFFF !important;
+  color:#17365D !important;
+  border:1px solid #D7DFE9 !important;
+  border-radius:7px !important;
+  box-shadow:none !important;
+  text-align:left !important;
+  opacity:1 !important;
+}
+.pr-public .pr-process .pr-stage-track > button > span {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  background:#EAF0F7 !important;
+  color:#17365D !important;
+  border:1px solid #C7D6EA !important;
+  font-size:11px !important;
+  font-weight:750 !important;
+}
+.pr-public .pr-process .pr-stage-track > button > b {
+  color:#17365D !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+  line-height:1.35 !important;
+}
+.pr-public .pr-process .pr-stage-track > button > small {
+  color:#526176 !important;
+  font-size:11px !important;
+  line-height:1.4 !important;
+}
+.pr-public .pr-process .pr-stage-track > button > svg {
+  position:absolute !important;
+  top:17px !important;
+  right:10px !important;
+  color:#718096 !important;
+}
+.pr-public .pr-process .pr-stage-track > button:hover {
+  background:#F8FAFC !important;
+  border-color:#9CB5D5 !important;
+}
+.pr-public .pr-process .pr-stage-track > button.active {
+  background:#EAF0F7 !important;
+  border:1px solid #2457A7 !important;
+  box-shadow:inset 3px 0 0 #2457A7 !important;
+}
+.pr-public .pr-process .pr-stage-track > button.active > span {
+  background:#17365D !important;
+  border-color:#17365D !important;
+  color:#FFFFFF !important;
+}
+.pr-public .pr-process .pr-stage-track > button.active > b { color:#17365D !important; }
+@media(max-width:900px) {
+  .pr-public .pr-process .pr-stage-track { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+}
+@media(max-width:600px) {
+  .pr-public .pr-process .pr-stage-track { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .pr-public .pr-process .pr-stage-track > button { min-height:112px !important; padding:12px 10px !important; }
+}
