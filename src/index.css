@@ -1592,3 +1592,169 @@ input,select,textarea{border-radius:6px}
   .access-portal-main{padding:var(--space-5) 15px}
   .access-portal-card{padding:var(--space-4)}
 }
+
+
+/* Public landing page readability pass — consistent readable type across every section */
+.pr-public { font-size: 15px; }
+.pr-public .pr-top-strip,
+.pr-public .pr-substrip { font-size: 12px; line-height: 1.55; }
+.pr-public .pr-top-strip b,
+.pr-public .pr-substrip b { font-size: 11px; }
+.pr-public .pr-brand small { font-size: 12px; }
+.pr-public .pr-brand small + small { font-size: 11px; }
+.pr-public .pr-nav a,
+.pr-public .pr-nav > button { font-size: 12px; }
+.pr-public .pr-officer-access { font-size: 12px; }
+.pr-public .pr-hero-kicker { font-size: 12px; line-height: 1.5; }
+.pr-public .pr-hero-copy > p { font-size: 15px; line-height: 1.75; }
+.pr-public .pr-hero-copy h2 { font-size: clamp(21px, 1.7vw, 25px); line-height: 1.45; }
+.pr-public .pr-hero-feature-grid b { font-size: 13px; line-height: 1.5; }
+.pr-public .pr-hero-feature-grid p { font-size: 13px; line-height: 1.65; }
+.pr-public .pr-hero-tabs button,
+.pr-public .pr-dark-action,
+.pr-public .pr-hero-shortcuts button { font-size: 12px; }
+.pr-public .pr-hero-tabs > span { font-size: 11px; }
+.pr-public .pr-hero-card-content > div > small,
+.pr-public .pr-role-card-head small { font-size: 11px; line-height: 1.5; }
+.pr-public .pr-hero-card-content h3 { font-size: 19px; line-height: 1.45; }
+.pr-public .pr-hero-card-content p { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-role-card-head h3 { font-size: 17px; }
+.pr-public .pr-role-card-head span,
+.pr-public .pr-role-card-head button,
+.pr-public .pr-role-switch > b,
+.pr-public .pr-role-switch button { font-size: 11px; }
+.pr-public .pr-demo-warning { font-size: 11px !important; line-height: 1.6; }
+.pr-public .pr-hero-foot { font-size: 11px; line-height: 1.6; }
+.pr-public .pr-announcement { font-size: 13px; line-height: 1.65; }
+.pr-public .pr-announcement > b { font-size: 11px; }
+.pr-public .pr-section-title > span,
+.pr-public .pr-faq-heading > span { font-size: 11px; line-height: 1.6; }
+.pr-public .pr-section-title h2 { font-size: clamp(27px, 2.5vw, 34px); line-height: 1.3; }
+.pr-public .pr-section-title p { font-size: 15px; line-height: 1.75; }
+.pr-public .pr-policy-tabs b { font-size: 13px; line-height: 1.5; }
+.pr-public .pr-policy-tabs small { font-size: 10px; line-height: 1.5; }
+.pr-public .pr-policy-heading > div > span { font-size: 10px; line-height: 1.5; }
+.pr-public .pr-policy-heading h3 { font-size: 21px; line-height: 1.4; }
+.pr-public .pr-policy-heading p { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-policy-heading input,
+.pr-public .pr-services-search input,
+.pr-public .pr-verify-tools input { font-size: 13px; }
+.pr-public .pr-policy-grid b { font-size: 13px; line-height: 1.5; }
+.pr-public .pr-policy-grid p { font-size: 12px; line-height: 1.65; }
+.pr-public .pr-policy-grid a { font-size: 12px; line-height: 1.5; }
+.pr-public .pr-policy-grid article > span { font-size: 11px; }
+.pr-public .pr-note p { font-size: 12px; line-height: 1.65; }
+.pr-public .pr-note a { font-size: 12px; }
+.pr-public .pr-services-search > span { font-size: 12px; }
+.pr-public .pr-service-grid h3 { font-size: 17px; line-height: 1.45; }
+.pr-public .pr-service-grid article > p { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-service-card-head small { font-size: 10px; }
+.pr-public .pr-service-meta span { font-size: 11px; }
+.pr-public .pr-service-details,
+.pr-public .pr-service-start { font-size: 12px; line-height: 1.5; }
+.pr-public .pr-verify-filters > b,
+.pr-public .pr-verify-filters > span { font-size: 12px; }
+.pr-public .pr-verify-filters button { font-size: 12px; }
+.pr-public .pr-institution-status > span,
+.pr-public .pr-institution-status small { font-size: 11px; }
+.pr-public .pr-institution-card h3 { font-size: 17px; line-height: 1.45; }
+.pr-public .pr-institution-location { font-size: 12px; line-height: 1.6; }
+.pr-public .pr-institution-facts span { font-size: 12px; line-height: 1.5; }
+.pr-public .pr-programme-tags span { font-size: 11px; }
+.pr-public .pr-institution-bottom > span,
+.pr-public .pr-institution-bottom button { font-size: 11px; }
+.pr-public .pr-data-note { font-size: 12px; line-height: 1.65; }
+.pr-public .pr-empty { font-size: 13px; line-height: 1.6; }
+.pr-public .pr-stage-track b { font-size: 12px; line-height: 1.45; }
+.pr-public .pr-stage-track small { font-size: 11px; line-height: 1.45; }
+.pr-public .pr-stage-track button > span { font-size: 11px; }
+.pr-public .pr-stage-panel-head,
+.pr-public .pr-stage-duration { font-size: 11px; line-height: 1.5; }
+.pr-public .pr-stage-panel h3 { font-size: 21px; line-height: 1.4; }
+.pr-public .pr-stage-panel-main > p { font-size: 13px; line-height: 1.75; }
+.pr-public .pr-stage-checks p { font-size: 12px; line-height: 1.6; }
+.pr-public .pr-stage-checks > div > span { font-size: 10px; }
+.pr-public .pr-primary-btn,
+.pr-public .pr-outline-btn { font-size: 12px; }
+.pr-public .pr-stage-side { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-stage-side p { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-stage-side small { font-size: 11px; line-height: 1.6; }
+.pr-public .pr-governance-card > span,
+.pr-public .pr-role-workspace-card > span { font-size: 11px; }
+.pr-public .pr-governance-card h3 { font-size: 18px; line-height: 1.45; }
+.pr-public .pr-governance-card p,
+.pr-public .pr-role-workspace-card p { font-size: 14px; line-height: 1.7; }
+.pr-public .pr-role-workspace-card h3 { font-size: 16px; line-height: 1.45; }
+.pr-public .pr-role-workspace-card b { font-size: 12px; }
+.pr-public .pr-directory-grid b { font-size: 13px; line-height: 1.5; }
+.pr-public .pr-directory-grid p { font-size: 12px; line-height: 1.65; }
+.pr-public .pr-directory-grid small { font-size: 11px; line-height: 1.6; }
+.pr-public .pr-faq-heading h3 { font-size: 24px; line-height: 1.35; }
+.pr-public .pr-faq article > button { font-size: 13px; line-height: 1.55; }
+.pr-public .pr-faq article > p { font-size: 13px; line-height: 1.75; }
+.pr-public .pr-final-cta > div:first-child > span { font-size: 11px; }
+.pr-public .pr-final-cta h2 { font-size: 27px; line-height: 1.4; }
+.pr-public .pr-final-cta p { font-size: 14px; line-height: 1.7; }
+.pr-public .pr-final-cta > div:last-child > button,
+.pr-public .pr-final-cta > div:last-child > a { font-size: 12px; line-height: 1.5; }
+.pr-public .pr-footer-grid > div > b { font-size: 11px; }
+.pr-public .pr-footer-grid > div > a,
+.pr-public .pr-footer-grid > div > button { font-size: 12px; line-height: 1.6; }
+.pr-public .pr-footer-brand > strong { font-size: 18px; }
+.pr-public .pr-footer-brand p { font-size: 12px; line-height: 1.7; }
+.pr-public .pr-footer-brand > small { font-size: 11px; }
+.pr-public .pr-footer-bottom { font-size: 11px; line-height: 1.6; }
+.pr-public .pr-floating-help b { font-size: 12px; }
+.pr-public .pr-floating-help small { font-size: 11px; }
+.pr-public .pr-modal-kicker { font-size: 11px; }
+.pr-public .pr-modal h2 { font-size: 26px; line-height: 1.4; }
+.pr-public .pr-modal > p { font-size: 14px; line-height: 1.75; }
+.pr-public .pr-modal h3 { font-size: 15px; line-height: 1.5; }
+.pr-public .pr-modal-facts small,
+.pr-public .pr-verify-detail-grid small { font-size: 12px; }
+.pr-public .pr-modal-facts b,
+.pr-public .pr-verify-detail-grid b { font-size: 13px; }
+.pr-public .pr-modal li { font-size: 13px; line-height: 1.7; }
+.pr-public .pr-modal-disclaimer { font-size: 12px !important; line-height: 1.65; }
+.pr-public .pr-ticket-modal form label { font-size: 13px; }
+.pr-public .pr-ticket-modal form input,
+.pr-public .pr-ticket-modal form select,
+.pr-public .pr-ticket-modal form textarea { font-size: 13px; }
+.pr-public .pr-ticket-success b { font-size: 13px; }
+.pr-public .pr-ticket-success p { font-size: 12px; line-height: 1.65; }
+.pr-public .pr-legal > span { font-size: 11px; }
+.pr-public .pr-legal h1 { font-size: 38px; line-height: 1.25; }
+.pr-public .pr-legal h2 { font-size: 23px; line-height: 1.4; }
+.pr-public .pr-legal p { font-size: 15px; line-height: 1.8; }
+
+@media (max-width: 900px) {
+  .pr-public .pr-section-title h2 { font-size: clamp(25px, 4vw, 31px); }
+  .pr-public .pr-policy-tabs b { font-size: 12px; }
+  .pr-public .pr-stage-track b { font-size: 12px; }
+}
+@media (max-width: 600px) {
+  .pr-public .pr-top-strip { font-size: 11px; }
+  .pr-public .pr-nav a { font-size: 12px; }
+  .pr-public .pr-hero h1 { font-size: clamp(34px, 10vw, 42px); line-height: 1.12; }
+  .pr-public .pr-hero-copy h2 { font-size: 20px; }
+  .pr-public .pr-hero-copy > p { font-size: 14px; }
+  .pr-public .pr-hero-feature-grid b { font-size: 14px; }
+  .pr-public .pr-hero-feature-grid p { font-size: 13px; }
+  .pr-public .pr-hero-foot { font-size: 11px; }
+  .pr-public .pr-section { padding: 34px 16px; }
+  .pr-public .pr-section-title h2 { font-size: 26px; }
+  .pr-public .pr-section-title p { font-size: 14px; }
+  .pr-public .pr-policy-tabs b { font-size: 12px; }
+  .pr-public .pr-policy-tabs small { font-size: 10px; }
+  .pr-public .pr-policy-heading h3 { font-size: 20px; }
+  .pr-public .pr-policy-grid b { font-size: 14px; }
+  .pr-public .pr-policy-grid p { font-size: 13px; }
+  .pr-public .pr-service-grid h3 { font-size: 18px; }
+  .pr-public .pr-service-grid article > p { font-size: 14px; }
+  .pr-public .pr-institution-card h3 { font-size: 17px; }
+  .pr-public .pr-stage-track b { font-size: 12px; }
+  .pr-public .pr-stage-panel h3 { font-size: 19px; }
+  .pr-public .pr-final-cta h2 { font-size: 24px; }
+  .pr-public .pr-footer-grid > div > a,
+  .pr-public .pr-footer-grid > div > button { font-size: 12px; }
+}
