@@ -31,8 +31,17 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     'Standing Appellate Dashboard': { name: 'Standing Appellate (Demo)', email: 'standing-appellate.demo@pravaah.local', role: 'standing_appellate' },
   };
   const activeDemoProfile = selectedPortal ? demoProfiles[selectedPortal] : undefined;
+  // Keep the sign-in demo list aligned with the six roles exposed in AccessPortal.
+  const visibleDemoPortals = [
+    'Institution Coordinator Dashboard',
+    'Scrutiny Officer Dashboard',
+    'EVC Coordination Dashboard',
+    'Regional Officer Dashboard',
+    'AICTE Headquarters Review Dashboard',
+    'Compliance Monitoring & Audit Dashboard',
+  ];
   const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> =
-    Object.entries(demoProfiles).map(([portal, profile]) => ({ portal, profile }));
+    visibleDemoPortals.map((portal) => ({ portal, profile: demoProfiles[portal] }));
   const demoEmail = activeDemoProfile?.email || 'demo@pravaah.local';
   const workspaceConfig: Record<string, { eyebrow: string; emailLabel: string; emailPlaceholder: string; guidance: string; icon: typeof Building2 }> = {
     'Institution Coordinator Dashboard': { eyebrow: 'INSTITUTION WORKSPACE', emailLabel: 'Institutional work email', emailPlaceholder: 'name@institution.edu.in', guidance: 'Use the email registered to your institution account.', icon: Building2 },
