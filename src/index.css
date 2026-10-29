@@ -1783,3 +1783,9 @@ input,select,textarea{border-radius:6px}
  .pr-public .pr-brand-copy small{font-size:10px!important}
  .pr-public .pr-brand-copy small+small{display:none}
 }
+
+/* Single-word professional wordmark matching the existing navy/blue public site */
+.pr-public .pr-header .pr-brand-simple{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;flex-shrink:0}
+.pr-public .pr-header .pr-brand-simple strong{font-family:Inter,Manrope,"Segoe UI",Arial,sans-serif;font-size:clamp(26px,2.25vw,34px);font-weight:850;letter-spacing:-.065em;line-height:1;color:#17345a;white-space:nowrap}
+.pr-public .pr-header .pr-brand-simple:hover strong{color:#245bd0}
+@media(max-width:600px){.pr-public .pr-header .pr-brand-simple{min-height:38px}.pr-public .pr-header .pr-brand-simple strong{font-size:27px}}
