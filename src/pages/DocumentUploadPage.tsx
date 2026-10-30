@@ -25,7 +25,7 @@ export default function DocumentUploadPage() {
   const [working, setWorking] = useState(false);
   const [uploadedName, setUploadedName] = useState('');
 
-  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && (sessionStorage.getItem('pravaah-demo-session') === 'active' || sessionStorage.getItem('pravaah-demo-session') === null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -75,7 +75,9 @@ export default function DocumentUploadPage() {
       setError('Documents can only be uploaded while the application is Draft or Changes requested. Current status: ' + formatStatus(selectedApplication.status) + '.');
       return;
     }
-    if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    const lowerName = file.name.toLowerCase();
+    const inferredType = file.type || (lowerName.endsWith('.pdf') ? 'application/pdf' : lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg') ? 'image/jpeg' : lowerName.endsWith('.png') ? 'image/png' : lowerName.endsWith('.webp') ? 'image/webp' : '');
+    if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(inferredType)) {
       setError('Choose a PDF, JPG, PNG, or WebP file.');
       return;
     }
@@ -92,7 +94,7 @@ export default function DocumentUploadPage() {
           application_id: selectedApplication.id,
           policy_id: policyId ? Number(policyId) : null,
           original_filename: file.name,
-          content_type: file.type || 'application/octet-stream',
+          content_type: inferredType,
           sha256_digest: digest,
           review_status: 'pending',
           reviewer_notes: description.trim() || 'Uploaded in demo mode; awaiting review.',
@@ -100,7 +102,7 @@ export default function DocumentUploadPage() {
           created_at: new Date().toISOString(),
           document_category: documentType,
           review_priority: priority,
-          data_url: 'data:' + (file.type || 'application/octet-stream') + ';base64,' + base64,
+          data_url: 'data:' + inferredType + ';base64,' + base64,
           demo_upload: true,
         };
         const next = [...existing.filter(item => !(item.application_id === selectedApplication.id && item.original_filename === file.name)), record];
