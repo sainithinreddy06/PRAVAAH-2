@@ -338,7 +338,10 @@ export default function ApplicationDetailPage() {
 
   };
 
-  const submitUndertaking = (item: Undertaking) => runAction(() => api.submitUndertaking(item.id), 'Undertaking submitted for review.');
+  const submitUndertaking = (item: Undertaking) => {
+    if (demoMode) { const next = undertakings.map(row => row.id === item.id ? { ...row, status: 'submitted', submitted_at: new Date().toISOString() } : row); try { const key = 'pravaah-demo-undertakings-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, Undertaking[]>; saved[String(id)] = next; localStorage.setItem(key, JSON.stringify(saved)); setUndertakings(next); setNotice('Undertaking submitted for demo review. Saved in this browser only.'); } catch { setError('Could not save demo undertaking transition.'); } return; }
+    return runAction(() => api.submitUndertaking(item.id), 'Undertaking submitted for review.');
+  };
 
   const reviewEvidence = (item: Evidence, decision: 'accepted' | 'rejected' | 'needs_changes') => {
 
@@ -372,6 +375,7 @@ export default function ApplicationDetailPage() {
 
     if (notes.trim().length < 3) { setError('Reviewer notes of at least 3 characters are required.'); return; }
 
+    if (demoMode) { const next = undertakings.map(row => row.id === item.id ? { ...row, status: decision, reviewer_notes: notes.trim(), reviewed_at: new Date().toISOString(), reviewed_by_user_id: user.id } : row); try { const key = 'pravaah-demo-undertakings-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, Undertaking[]>; saved[String(id)] = next; localStorage.setItem(key, JSON.stringify(saved)); setUndertakings(next); setNotice('Demo undertaking review saved: ' + formatStatus(decision) + '.'); } catch { setError('Could not save demo undertaking review.'); } return; }
     return runAction(() => api.reviewUndertaking(item.id, decision, notes.trim()), 'Undertaking review recorded.');
 
   };
@@ -393,6 +397,8 @@ export default function ApplicationDetailPage() {
     {error && <div className="feedback feedback-error" role="alert"><AlertCircle size={17} /><span>{error}</span><button type="button" onClick={() => void load()}>Retry</button></div>}
 
     {notice && <div className="feedback feedback-success" role="status"><ShieldCheck size={17} /><span>{notice}</span></div>}
+
+    {demoMode && <section className="panel workflow-section"><header className="panel-heading"><div><h3>Demo workflow controls</h3><p>Try supported transitions. Changes are saved in this browser only.</p></div></header><div className="workflow-actions">{application.status === 'draft' && <button type="button" onClick={() => transitionDemoApplication('submitted')}>Submit application</button>}{application.status === 'submitted' && reviewRole(user.role) && <><button type="button" onClick={() => transitionDemoApplication('under_review')}>Start review</button><button type="button" onClick={() => transitionDemoApplication('changes_requested')}>Request changes</button></>}{application.status === 'under_review' && reviewRole(user.role) && <><button type="button" onClick={() => transitionDemoApplication('approved')}>Approve</button><button type="button" onClick={() => transitionDemoApplication('changes_requested')}>Request changes</button><button type="button" onClick={() => transitionDemoApplication('rejected')}>Reject</button></>}{application.status === 'changes_requested' && <button type="button" onClick={() => transitionDemoApplication('submitted')}>Resubmit application</button>}</div></section>}
 
     <div className="detail-summary panel">
 
