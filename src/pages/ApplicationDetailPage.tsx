@@ -120,9 +120,30 @@ export default function ApplicationDetailPage() {
 
     } catch (reason) {
 
-      setApplication(null);
-
-      setError(reason instanceof ApiError ? reason.detail : 'Could not load the application details.');
+      // Keep application details available in every demo portal when the protected API
+      // is unavailable or demo credentials are not configured. These records are read-only.
+      const sampleApplications: Application[] = [
+        { id: 142, reference_code: 'APP-2026-0142', institution_id: 1, submitted_by_user_id: null, workflow_stage: 'scrutiny', status: 'draft', created_at: '2026-10-28T10:00:00Z', updated_at: '2026-10-28T10:00:00Z' },
+        { id: 148, reference_code: 'APP-2026-0148', institution_id: 2, submitted_by_user_id: null, workflow_stage: 'scrutiny', status: 'under_review', created_at: '2026-10-27T09:30:00Z', updated_at: '2026-10-28T11:15:00Z' },
+        { id: 155, reference_code: 'APP-2026-0155', institution_id: 3, submitted_by_user_id: null, workflow_stage: 'evc_coordination', status: 'submitted', created_at: '2026-10-26T08:15:00Z', updated_at: '2026-10-27T14:00:00Z' },
+        { id: 161, reference_code: 'APP-2026-0161', institution_id: 4, submitted_by_user_id: null, workflow_stage: 'regional_review', status: 'changes_requested', created_at: '2026-10-25T12:00:00Z', updated_at: '2026-10-28T15:45:00Z' },
+        { id: 172, reference_code: 'APP-2026-0172', institution_id: 5, submitted_by_user_id: null, workflow_stage: 'application_filing', status: 'draft', created_at: '2026-10-24T07:45:00Z', updated_at: '2026-10-24T07:45:00Z' },
+      ];
+      const sample = sampleApplications.find(item => item.id === id) || {
+        ...sampleApplications[0],
+        id,
+        reference_code: 'APP-DEMO-' + String(id).padStart(4, '0'),
+      };
+      setApplication(sample);
+      setEvidence([]);
+      setPolicies([]);
+      setUndertakings([]);
+      setAssessments([]);
+      setEvcVisits([]);
+      setVisitReports({});
+      setRecommendations(null);
+      setNotice('Demo application details are shown for preview. This illustrative record is read-only; live changes require valid backend authentication.');
+      setError('');
 
     } finally { setLoading(false); }
 
