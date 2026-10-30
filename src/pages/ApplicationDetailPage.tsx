@@ -31,6 +31,8 @@ export default function ApplicationDetailPage() {
 
   const { user } = useAuth();
 
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
+
   const [application, setApplication] = useState<Application | null>(null);
 
   const [evidence, setEvidence] = useState<Evidence[]>([]);
@@ -77,6 +79,22 @@ export default function ApplicationDetailPage() {
 
     setLoading(true); setError('');
 
+    if (demoMode) {
+      const samples: Application[] = [
+        { id: 142, reference_code: 'APP-2026-0142', institution_id: 1, submitted_by_user_id: null, workflow_stage: 'application_filing', status: 'draft', created_at: '2026-10-28T10:00:00Z', updated_at: '2026-10-28T10:00:00Z' },
+        { id: 148, reference_code: 'APP-2026-0148', institution_id: 2, submitted_by_user_id: null, workflow_stage: 'scrutiny', status: 'under_review', created_at: '2026-10-27T09:30:00Z', updated_at: '2026-10-28T11:15:00Z' },
+        { id: 155, reference_code: 'APP-2026-0155', institution_id: 3, submitted_by_user_id: null, workflow_stage: 'evc_coordination', status: 'submitted', created_at: '2026-10-26T08:15:00Z', updated_at: '2026-10-27T14:00:00Z' },
+        { id: 161, reference_code: 'APP-2026-0161', institution_id: 4, submitted_by_user_id: null, workflow_stage: 'regional_review', status: 'changes_requested', created_at: '2026-10-25T12:00:00Z', updated_at: '2026-10-28T15:45:00Z' },
+        { id: 172, reference_code: 'APP-2026-0172', institution_id: 5, submitted_by_user_id: null, workflow_stage: 'application_filing', status: 'draft', created_at: '2026-10-24T07:45:00Z', updated_at: '2026-10-24T07:45:00Z' },
+      ];
+      const sample = samples.find(item => item.id === id) || { ...samples[0], id, reference_code: 'APP-DEMO-' + String(id).padStart(4, '0') };
+      setApplication(sample);
+      setEvidence([]); setPolicies([]); setUndertakings([]); setAssessments([]); setEvcVisits([]); setVisitReports({}); setRecommendations(null);
+      setNotice('Demo mode: this is an illustrative, read-only application record. Changes are not saved to the live service.');
+      setLoading(false);
+      return;
+    }
+
     try {
 
       const [applicationResult, evidenceResult, policyResult, undertakingResult, assessmentResult, visitResult] = await Promise.all([
@@ -108,11 +126,13 @@ export default function ApplicationDetailPage() {
 
     } finally { setLoading(false); }
 
-  }, [id, user.role]);
+  }, [demoMode, id, user.role]);
 
   useEffect(() => { void load(); }, [load]);
 
   const runAction = async (action: () => Promise<unknown>, success: string) => {
+
+    if (demoMode) { setNotice('Demo mode is read-only. Sign in with a configured live account to save changes.'); return; }
 
     setWorking(true); setError(''); setNotice('');
 
