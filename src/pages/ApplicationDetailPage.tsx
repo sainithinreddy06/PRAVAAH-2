@@ -40,7 +40,7 @@ export default function ApplicationDetailPage() {
 
   const { user } = useAuth();
 
-  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && sessionStorage.getItem('pravaah-demo-session') === 'active';
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true' && (sessionStorage.getItem('pravaah-demo-session') === 'active' || sessionStorage.getItem('pravaah-demo-session') === null);
 
   const [application, setApplication] = useState<Application | null>(null);
 
@@ -97,17 +97,21 @@ export default function ApplicationDetailPage() {
         { id: 172, reference_code: 'APP-2026-0172', institution_id: 5, submitted_by_user_id: null, workflow_stage: 'application_filing', status: 'draft', created_at: '2026-10-24T07:45:00Z', updated_at: '2026-10-24T07:45:00Z' },
       ];
       const sample = samples.find(item => item.id === id) || { ...samples[0], id, reference_code: 'APP-DEMO-' + String(id).padStart(4, '0') };
-      setApplication(sample);
+      let demoApplication = sample;
+      try { const saved = JSON.parse(localStorage.getItem('pravaah-demo-applications-v1') || '{}') as Record<string, Application>; demoApplication = saved[String(id)] || sample; } catch { /* use sample data */ }
+      setApplication(demoApplication);
       const demoEvidence: Evidence[] = [
         { id: id * 10 + 1, application_id: id, policy_id: 1, original_filename: 'Institution_Approval_Application.pdf', content_type: 'application/pdf', sha256_digest: 'a3f8c91d6b247e50a1c9d8b7e4f60213a9b8c7d6e5f4012a3b4c5d6e7f8091ab', review_status: id === 161 ? 'needs_changes' : id === 142 || id === 172 ? 'pending' : 'accepted', reviewer_notes: id === 161 ? 'Please upload a clearer copy of the signed institutional declaration.' : id === 142 || id === 172 ? 'Awaiting initial document scrutiny.' : 'Document reviewed; details are legible and complete.', valid_until: '2027-10-31T00:00:00Z', created_at: sample.created_at },
         { id: id * 10 + 2, application_id: id, policy_id: 2, original_filename: 'Compliance_and_Infrastructure_Report.pdf', content_type: 'application/pdf', sha256_digest: 'b4e9d02a7c358f61b2d0e9c8f5a71324b0c9d8e7f6a5123b4c5d6e7f8091ab2c', review_status: id === 148 || id === 155 ? 'pending' : 'accepted', reviewer_notes: id === 148 || id === 155 ? 'Review pending by the assigned scrutiny team.' : 'Report received and recorded for compliance review.', valid_until: null, created_at: sample.updated_at },
       ];
-      const demoUndertakings: Undertaking[] = [
+      const defaultDemoUndertakings: Undertaking[] = [
         { id: id * 10 + 3, application_id: id, created_by_user_id: null, undertaking_type: 'Regulatory Compliance Declaration', statement: 'The institution undertakes to comply with applicable approval regulations, maintain required academic and infrastructure standards, and submit accurate supporting records whenever requested by the competent authority.', status: id === 142 || id === 172 ? 'draft' : id === 161 ? 'changes_requested' : 'submitted', version: 1, submitted_at: id === 142 || id === 172 ? null : sample.updated_at, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: id === 161 ? 'Clarify the compliance officer designation and resubmit the declaration.' : id === 142 || id === 172 ? null : 'Declaration received and queued for review.', created_at: sample.created_at },
         { id: id * 10 + 4, application_id: id, created_by_user_id: null, undertaking_type: 'Infrastructure and Faculty Commitment', statement: 'The institution confirms that the facilities and qualified faculty described in this application will be maintained for the relevant approval period, subject to applicable standards and verification.', status: id === 148 ? 'accepted' : 'draft', version: 1, submitted_at: id === 148 ? sample.updated_at : null, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: id === 148 ? 'Reviewed for the current application cycle.' : null, created_at: sample.created_at },
       ];
+      let demoUndertakings = defaultDemoUndertakings;
+      try { const saved = JSON.parse(localStorage.getItem('pravaah-demo-undertakings-v1') || '{}') as Record<string, Undertaking[]>; demoUndertakings = saved[String(id)] || defaultDemoUndertakings; } catch { /* use sample data */ }
       setEvidence([...demoEvidence, ...readDemoEvidence(id)]); setPolicies([]); setUndertakings(demoUndertakings); setAssessments([]); setEvcVisits([]); setVisitReports({}); setRecommendations(null);
-      setNotice('Demo mode: this is an illustrative, read-only application record. Changes are not saved to the live service.');
+      setNotice('Demo workflow actions are saved in this browser only; live service records are unchanged.');
       setLoading(false);
       return;
     }
@@ -313,6 +317,11 @@ export default function ApplicationDetailPage() {
     }
   };
 
+  const transitionDemoApplication = (status: string) => {
+    if (!application) return;
+    try { const key = 'pravaah-demo-applications-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, Application>; const next = { ...application, status, updated_at: new Date().toISOString() } as Application; saved[String(id)] = next; localStorage.setItem(key, JSON.stringify(saved)); setApplication(next); setNotice('Application status changed to ' + formatStatus(status) + '. Saved in this browser demo only.'); setError(''); } catch { setError('Could not save the demo status change.'); }
+  };
+
   const createUndertaking = async (event: FormEvent<HTMLFormElement>) => {
 
     event.preventDefault();
@@ -320,8 +329,11 @@ export default function ApplicationDetailPage() {
     const values = new FormData(event.currentTarget);
     const type = String(values.get('undertaking_type') ?? '').trim();
     const text = String(values.get('statement') ?? '').trim();
-    await runAction(() => api.createUndertaking({ application_id: id, undertaking_type: type, statement: text }), 'Undertaking draft created.');
-
+    if (demoMode) {
+      const item: Undertaking = { id: Date.now(), application_id: id, created_by_user_id: user.id, undertaking_type: type, statement: text, status: 'draft', version: 1, submitted_at: null, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: null, created_at: new Date().toISOString() };
+      const next = [...undertakings, item];
+      try { const key = 'pravaah-demo-undertakings-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, Undertaking[]>; saved[String(id)] = next; localStorage.setItem(key, JSON.stringify(saved)); setUndertakings(next); setNotice('Undertaking draft saved in this browser demo.'); setError(''); } catch { setError('Could not save the undertaking draft.'); return; }
+    } else { await runAction(() => api.createUndertaking({ application_id: id, undertaking_type: type, statement: text }), 'Undertaking draft created.'); }
     setUndertakingType(''); setStatement('');
 
   };
