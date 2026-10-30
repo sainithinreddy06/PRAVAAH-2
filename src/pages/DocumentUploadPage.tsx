@@ -80,7 +80,39 @@ export default function DocumentUploadPage() {
       return;
     }
     if (demoMode) {
-      setNotice('Demo mode: the selected file was not sent to the backend or stored. Sign in through a configured live backend to submit evidence.');
+      try {
+        const storageKey = 'pravaah-demo-evidence-v1';
+        const existing = JSON.parse(localStorage.getItem(storageKey) || '[]') as Array<Record<string, unknown>>;
+        const bytes = await file.arrayBuffer();
+        const digestBytes = await crypto.subtle.digest('SHA-256', bytes);
+        const digest = Array.from(new Uint8Array(digestBytes)).map(value => value.toString(16).padStart(2, '0')).join('');
+        const base64 = btoa(Array.from(new Uint8Array(bytes), value => String.fromCharCode(value)).join(''));
+        const record = {
+          id: Date.now(),
+          application_id: selectedApplication.id,
+          policy_id: policyId ? Number(policyId) : null,
+          original_filename: file.name,
+          content_type: file.type || 'application/octet-stream',
+          sha256_digest: digest,
+          review_status: 'pending',
+          reviewer_notes: description.trim() || 'Uploaded in demo mode; awaiting review.',
+          valid_until: null,
+          created_at: new Date().toISOString(),
+          document_category: documentType,
+          review_priority: priority,
+          data_url: 'data:' + (file.type || 'application/octet-stream') + ';base64,' + base64,
+          demo_upload: true,
+        };
+        const next = [...existing.filter(item => !(item.application_id === selectedApplication.id && item.original_filename === file.name)), record];
+        localStorage.setItem(storageKey, JSON.stringify(next));
+        setUploadedName(file.name);
+        setNotice('Demo upload saved in this browser and added to the application evidence list with Pending review status. No file was sent to the live backend.');
+        setFile(null); setDescription(''); setPolicyId('');
+        const input = document.getElementById('document-upload-file') as HTMLInputElement | null;
+        if (input) input.value = '';
+      } catch {
+        setError('Could not save this demo upload in browser storage. Try a smaller PDF or image.');
+      }
       return;
     }
     setWorking(true);
