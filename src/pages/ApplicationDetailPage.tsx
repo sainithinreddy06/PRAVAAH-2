@@ -14,6 +14,15 @@ const uploadRole = (role: string) => ['applicant', 'institution_admin', 'regiona
 
 const prettyDate = (value: string | null) => value ? new Date(value).toLocaleString() : 'Not recorded';
 
+type DemoEvidenceRecord = Evidence & { data_url?: string; demo_upload?: boolean; document_category?: string; review_priority?: string };
+
+const readDemoEvidence = (applicationId: number): Evidence[] => {
+  try {
+    const rows = JSON.parse(localStorage.getItem('pravaah-demo-evidence-v1') || '[]') as DemoEvidenceRecord[];
+    return rows.filter(row => row.application_id === applicationId);
+  } catch { return []; }
+};
+
 const parseChecklist = (value: string): EvcChecklistItem[] => {
   try {
     const parsed: unknown = JSON.parse(value);
@@ -97,7 +106,7 @@ export default function ApplicationDetailPage() {
         { id: id * 10 + 3, application_id: id, created_by_user_id: null, undertaking_type: 'Regulatory Compliance Declaration', statement: 'The institution undertakes to comply with applicable approval regulations, maintain required academic and infrastructure standards, and submit accurate supporting records whenever requested by the competent authority.', status: id === 142 || id === 172 ? 'draft' : id === 161 ? 'changes_requested' : 'submitted', version: 1, submitted_at: id === 142 || id === 172 ? null : sample.updated_at, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: id === 161 ? 'Clarify the compliance officer designation and resubmit the declaration.' : id === 142 || id === 172 ? null : 'Declaration received and queued for review.', created_at: sample.created_at },
         { id: id * 10 + 4, application_id: id, created_by_user_id: null, undertaking_type: 'Infrastructure and Faculty Commitment', statement: 'The institution confirms that the facilities and qualified faculty described in this application will be maintained for the relevant approval period, subject to applicable standards and verification.', status: id === 148 ? 'accepted' : 'draft', version: 1, submitted_at: id === 148 ? sample.updated_at : null, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: id === 148 ? 'Reviewed for the current application cycle.' : null, created_at: sample.created_at },
       ];
-      setEvidence(demoEvidence); setPolicies([]); setUndertakings(demoUndertakings); setAssessments([]); setEvcVisits([]); setVisitReports({}); setRecommendations(null);
+      setEvidence([...demoEvidence, ...readDemoEvidence(id)]); setPolicies([]); setUndertakings(demoUndertakings); setAssessments([]); setEvcVisits([]); setVisitReports({}); setRecommendations(null);
       setNotice('Demo mode: this is an illustrative, read-only application record. Changes are not saved to the live service.');
       setLoading(false);
       return;
@@ -143,10 +152,10 @@ export default function ApplicationDetailPage() {
         reference_code: 'APP-DEMO-' + String(id).padStart(4, '0'),
       };
       setApplication(sample);
-      setEvidence([
+      setEvidence([...[
         { id: id * 10 + 1, application_id: id, policy_id: 1, original_filename: 'Institution_Approval_Application.pdf', content_type: 'application/pdf', sha256_digest: 'a3f8c91d6b247e50a1c9d8b7e4f60213a9b8c7d6e5f4012a3b4c5d6e7f8091ab', review_status: id === 161 ? 'needs_changes' : id === 142 || id === 172 ? 'pending' : 'accepted', reviewer_notes: id === 161 ? 'Please upload a clearer copy of the signed institutional declaration.' : id === 142 || id === 172 ? 'Awaiting initial document scrutiny.' : 'Document reviewed; details are legible and complete.', valid_until: '2027-10-31T00:00:00Z', created_at: sample.created_at },
         { id: id * 10 + 2, application_id: id, policy_id: 2, original_filename: 'Compliance_and_Infrastructure_Report.pdf', content_type: 'application/pdf', sha256_digest: 'b4e9d02a7c358f61b2d0e9c8f5a71324b0c9d8e7f6a5123b4c5d6e7f8091ab2c', review_status: id === 148 || id === 155 ? 'pending' : 'accepted', reviewer_notes: id === 148 || id === 155 ? 'Review pending by the assigned scrutiny team.' : 'Report received and recorded for compliance review.', valid_until: null, created_at: sample.updated_at },
-      ]);
+      ], ...readDemoEvidence(id)]);
       setPolicies([]);
       setUndertakings([
         { id: id * 10 + 3, application_id: id, created_by_user_id: null, undertaking_type: 'Regulatory Compliance Declaration', statement: 'The institution undertakes to comply with applicable approval regulations, maintain required academic and infrastructure standards, and submit accurate supporting records whenever requested by the competent authority.', status: id === 142 || id === 172 ? 'draft' : id === 161 ? 'changes_requested' : 'submitted', version: 1, submitted_at: id === 142 || id === 172 ? null : sample.updated_at, reviewed_by_user_id: null, reviewed_at: null, reviewer_notes: id === 161 ? 'Clarify the compliance officer designation and resubmit the declaration.' : id === 142 || id === 172 ? null : 'Declaration received and queued for review.', created_at: sample.created_at },
@@ -236,6 +245,15 @@ export default function ApplicationDetailPage() {
   const downloadEvidence = async (item: Evidence) => {
     setError('');
     try {
+      const localDemoFile = readDemoEvidence(id).find(row => row.id === item.id) as DemoEvidenceRecord | undefined;
+      if (localDemoFile?.data_url) {
+        const anchor = document.createElement('a');
+        anchor.href = localDemoFile.data_url;
+        anchor.download = localDemoFile.original_filename;
+        document.body.appendChild(anchor); anchor.click(); anchor.remove();
+        setNotice('Downloaded the file attached to this demo evidence record.');
+        return;
+      }
       // Demo evidence records are illustrative and have no server-side file object.
       // Generate a valid, clearly labelled PDF locally instead of calling the protected API.
       if (item.original_filename === 'Institution_Approval_Application.pdf' || item.original_filename === 'Compliance_and_Infrastructure_Report.pdf') {
@@ -317,6 +335,18 @@ export default function ApplicationDetailPage() {
     if (notes === null) return;
 
     if (notes.trim().length < 3) { setError('A review reason of at least 3 characters is required.'); return; }
+
+    if (demoMode) {
+      try {
+        const key = 'pravaah-demo-evidence-v1';
+        const rows = JSON.parse(localStorage.getItem(key) || '[]') as DemoEvidenceRecord[];
+        const updated = rows.map(row => row.id === item.id && row.application_id === id ? { ...row, review_status: decision, reviewer_notes: notes.trim(), reviewed_at: new Date().toISOString() } : row);
+        localStorage.setItem(key, JSON.stringify(updated));
+        setEvidence(current => current.map(row => row.id === item.id ? { ...row, review_status: decision, reviewer_notes: notes.trim() } : row));
+        setNotice('Demo evidence review saved in this browser: ' + formatStatus(decision) + '. No live backend record was changed.');
+      } catch { setError('Could not save the demo review in browser storage.'); }
+      return;
+    }
 
     return runAction(() => api.reviewEvidence(item.id, decision, notes.trim()), 'Evidence review recorded.');
 
