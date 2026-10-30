@@ -68,7 +68,7 @@ export default function DocumentUploadPage() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError(''); setNotice('');
-    if (!uploadRoles.includes(normaliseRole(user.role))) { setError('Your account role does not have document upload permission.'); return; }
+    if (!demoMode && !uploadRoles.includes(normaliseRole(user.role))) { setError('Your account role does not have document upload permission.'); return; }
     if (!selectedApplication) { setError('Find and confirm an application number first.'); return; }
     if (!file) { setError('Choose a photo or document to upload.'); return; }
     if (!['draft', 'changes_requested'].includes(selectedApplication.status)) {
@@ -98,7 +98,7 @@ export default function DocumentUploadPage() {
     } finally { setWorking(false); }
   };
 
-  if (!uploadRoles.includes(normaliseRole(user.role))) return <div className="v3-upload-page"><section className="v3-upload-card"><AlertCircle size={24}/><h1>Upload permission required</h1><p>Your current role cannot upload evidence. Ask an authorised institution coordinator or administrator.</p></section></div>;
+  if (!demoMode && !uploadRoles.includes(normaliseRole(user.role))) return <div className="v3-upload-page"><section className="v3-upload-card"><AlertCircle size={24}/><h1>Upload permission required</h1><p>Your current role cannot upload evidence. Ask an authorised institution coordinator or administrator.</p></section></div>;
 
   return <div className="v3-upload-page">
     <div className="v3-upload-heading"><div><span className="v3-kicker"><span className="v3-kicker-line"/>DOCUMENT MANAGEMENT</span><h1>Document upload centre</h1><p>Attach a photo, scanned document, or PDF to an existing application and set its review priority.</p></div><div className="v3-upload-heading-icon"><UploadCloud size={25}/></div></div>
