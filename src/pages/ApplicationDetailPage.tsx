@@ -139,7 +139,7 @@ export default function ApplicationDetailPage() {
 
       }
 
-    } catch (reason) {
+    } catch {
 
       // Keep application details available in every demo portal when the protected API
       // is unavailable or demo credentials are not configured. These records are read-only.
