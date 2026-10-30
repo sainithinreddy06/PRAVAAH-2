@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, Workflow, Search, ChevronRight, Phone } from 'lucide-react';
+import { ArrowRight, Building2, Landmark, FileCheck2, MapPin, Layers, ShieldCheck, Workflow, Search, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
