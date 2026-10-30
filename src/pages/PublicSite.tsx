@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowUpRight, Award, Building2, Check, CheckCircle2,
   ChevronDown, ChevronRight, CircleHelp, ClipboardCheck, Clock, Database,
   FileCheck2, FileText, Headphones, Layers, Landmark, Lock, MapPin,
-  Menu, Phone, Search, Send, ShieldCheck, Workflow, X, Eye, Scale, Users,
+  Menu, Search, Send, ShieldCheck, Workflow, X, Eye, Scale, Users,
   BadgeCheck, Bell, Info
 } from 'lucide-react';
 
