@@ -317,6 +317,7 @@ export default function ApplicationDetailPage() {
     }
   };
 
+  // Referenced by the demo workflow buttons rendered below.
   const transitionDemoApplication = (status: string) => {
     if (!application) return;
     try { const key = 'pravaah-demo-applications-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, Application>; const next = { ...application, status, updated_at: new Date().toISOString() } as Application; saved[String(id)] = next; localStorage.setItem(key, JSON.stringify(saved)); setApplication(next); setNotice('Application status changed to ' + formatStatus(status) + '. Saved in this browser demo only.'); setError(''); } catch { setError('Could not save the demo status change.'); }
