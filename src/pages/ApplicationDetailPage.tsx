@@ -236,6 +236,51 @@ export default function ApplicationDetailPage() {
   const downloadEvidence = async (item: Evidence) => {
     setError('');
     try {
+      // Demo evidence records are illustrative and have no server-side file object.
+      // Generate a valid, clearly labelled PDF locally instead of calling the protected API.
+      if (item.original_filename === 'Institution_Approval_Application.pdf' || item.original_filename === 'Compliance_and_Infrastructure_Report.pdf') {
+        const lines = [
+          'PRAVAAH - Synthetic Evidence Sample',
+          'DEMONSTRATION ONLY - NOT AN OFFICIAL SUBMISSION',
+          '',
+          'Application reference: APP-DEMO-' + String(id).padStart(4, '0'),
+          'Document: ' + item.original_filename,
+          'Review status: ' + item.review_status,
+          'Reviewer note: ' + (item.reviewer_notes || 'No reviewer note recorded.'),
+          '',
+          'This illustrative document is generated locally for UI testing.',
+          'It contains no official institutional records or verified submissions.',
+        ];
+        const escapePdf = (value: string) => value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+        const stream = 'BT\n/F1 12 Tf\n50 790 Td\n' + lines.map((line, index) => (index ? '0 -22 Td\n' : '') + '(' + escapePdf(line) + ') Tj\n').join('') + 'ET';
+        const objects = [
+          '<< /Type /Catalog /Pages 2 0 R >>',
+          '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+          '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+          '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+          '<< /Length ' + new TextEncoder().encode(stream).length + ' >>\nstream\n' + stream + '\nendstream',
+        ];
+        let pdf = '%PDF-1.4\n';
+        const offsets = [0];
+        for (let index = 0; index < objects.length; index++) {
+          offsets.push(new TextEncoder().encode(pdf).length);
+          pdf += (index + 1) + ' 0 obj\n' + objects[index] + '\nendobj\n';
+        }
+        const xrefOffset = new TextEncoder().encode(pdf).length;
+        pdf += 'xref\n0 ' + (objects.length + 1) + '\n0000000000 65535 f \n';
+        for (const offset of offsets.slice(1)) pdf += String(offset).padStart(10, '0') + ' 00000 n \n';
+        pdf += 'trailer\n<< /Size ' + (objects.length + 1) + ' /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF';
+        const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = item.original_filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setNotice('Downloaded a locally generated synthetic demo PDF. It is not an original server-stored document.');
+        return;
+      }
       const blob = await api.downloadEvidence(item.id);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
