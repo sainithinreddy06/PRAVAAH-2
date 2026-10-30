@@ -110,7 +110,7 @@ export default function ApplicationDetailPage() {
       ];
       let demoUndertakings = defaultDemoUndertakings;
       try { const saved = JSON.parse(localStorage.getItem('pravaah-demo-undertakings-v1') || '{}') as Record<string, Undertaking[]>; demoUndertakings = saved[String(id)] || defaultDemoUndertakings; } catch { /* use sample data */ }
-      setEvidence([...demoEvidence, ...readDemoEvidence(id)]); setPolicies([]); setUndertakings(demoUndertakings); setAssessments([]); setEvcVisits([]); setVisitReports({}); setRecommendations(null);
+      const demoAssessment: EvcAssessment = { id: id * 100 + 1, application_id: id, assessed_by_user_id: null, evidence_total: demoEvidence.length + readDemoEvidence(id).length, evidence_accepted: id === 142 ? 0 : 1, evidence_pending: 1, evidence_rejected: 0, open_obligations: 2, undertaking_count: demoUndertakings.filter(item => item.status !== 'accepted').length, outcome: 'preliminary_review', notes: 'Illustrative demo snapshot. Verify evidence, open obligations, and undertaking declarations before any official decision.', created_at: '2026-10-30T09:00:00Z' }; const demoVisit: EvcVisit = { id: id * 10 + 1, application_id: id, scheduled_by_user_id: null, assigned_to_user_id: user.id, scheduled_at: '2026-11-03T09:30:00Z', status: 'scheduled', checklist_json: JSON.stringify([{ item_id: 'infra', label: 'Infrastructure and facilities verified', required: true }, { item_id: 'faculty', label: 'Faculty records verified', required: true }, { item_id: 'records', label: 'Institutional records sampled', required: false }]), results_json: '[]', findings: null, report_revision: 0, started_at: null, completed_at: null, created_at: '2026-10-30T09:00:00Z', updated_at: '2026-10-30T09:00:00Z' }; const demoRecommendation: ApplicationRecommendations = { application_id: id, risk_score: 46, risk_level: 'moderate', assessed_at: '2026-10-30T09:00:00Z', factors: ['Evidence review is incomplete', 'Two illustrative obligations remain open', 'Undertakings require review'], recommendations: [{ code: 'EVIDENCE_REVIEW', severity: 'medium', title: 'Complete evidence scrutiny', explanation: 'Evidence review should be completed before the application advances.', suggested_action: 'Review the pending document and record a reasoned outcome.', evidence_count: 1 }, { code: 'OBLIGATIONS', severity: 'medium', title: 'Review outstanding obligations', explanation: 'Confirm owners and due dates for open obligations.', suggested_action: 'Open Obligations & Compliance and review the two illustrative open items.', evidence_count: 0 }], disclaimer: 'Illustrative demo guidance only. This is not an official approval decision.' }; setEvidence([...demoEvidence, ...readDemoEvidence(id)]); setPolicies([]); setUndertakings(demoUndertakings); setAssessments([demoAssessment]); setEvcVisits([demoVisit]); setVisitReports({}); setRecommendations(demoRecommendation);
       setNotice('Demo workflow actions are saved in this browser only; live service records are unchanged.');
       setLoading(false);
       return;
@@ -501,7 +501,7 @@ export default function ApplicationDetailPage() {
       })}</div> : <p className="empty-copy">No EVC visits have been scheduled for this application.</p>}
     </section>
 
-    {reviewRole(user.role) && <section className="panel workflow-section">
+    {(reviewRole(user.role) || demoMode) && <section className="panel workflow-section">
 
       <header className="panel-heading"><div><h3>EVC readiness snapshots</h3><p>Workflow aid only; not an official AICTE score or compliance verdict. Each assessment is a timestamped snapshot.</p></div><button className="secondary-button" type="button" disabled={working} onClick={() => void runAction(() => api.createAssessment(id), 'Readiness snapshot created.') }><ClipboardCheck size={15} /> Create snapshot</button></header>
 
@@ -509,7 +509,7 @@ export default function ApplicationDetailPage() {
 
     </section>}
 
-    {reviewRole(user.role) && <section className="panel workflow-section">
+    {(reviewRole(user.role) || demoMode) && <section className="panel workflow-section">
 
       <header className="panel-heading"><div><h3>Recommendations</h3><p>Rule-based operational guidance. Use authoritative policy sources for actual requirements.</p></div><button className="secondary-button" type="button" disabled={working} onClick={() => void runAction(async () => setRecommendations(await api.recommendations(id)), 'Recommendations refreshed.')}>Refresh guidance</button></header>
 
