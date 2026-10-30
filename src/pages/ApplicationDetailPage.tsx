@@ -463,6 +463,8 @@ export default function ApplicationDetailPage() {
 
     </section>
 
+    {demoMode && <section className="panel workflow-section"><header className="panel-heading"><div><h3>Related obligations</h3><p>Illustrative obligation records linked to this demo application. They are not saved to the live service.</p></div></header><div className="workflow-list"><article className="workflow-item"><div className="workflow-item-main"><strong>Submit verified faculty and staffing records</strong><p>Type: Documentation · Status: Open · Due: 15 November 2026</p><p>Provide current faculty roster and supporting qualifications for regulatory scrutiny.</p></div></article><article className="workflow-item"><div className="workflow-item-main"><strong>Resolve institutional facility evidence gaps</strong><p>Type: Compliance evidence · Status: In progress · Due: 20 November 2026</p><p>Ensure facilities evidence is complete and aligned with the applicable policy checklist.</p></div></article></div></section>}
+
     <section className="panel workflow-section">
       <header className="panel-heading"><div><h3>EVC visits and inspection reports</h3><p>Scheduled inspections, required checklist results, findings and immutable report history.</p></div></header>
 
