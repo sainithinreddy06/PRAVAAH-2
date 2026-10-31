@@ -409,6 +409,21 @@ def extract_evidence_text_preview(
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
+    # Record the extraction event without storing extracted document text in the audit trail.
+    # The original file digest binds this event to the evidence version that was processed.
+    _audit(
+        db, actor, 'evidence', evidence.id, 'evidence.text_extracted',
+        'Evidence text extracted for human review',
+        {
+            'application_id': evidence.application_id,
+            'method': result['method'],
+            'character_count': result['character_count'],
+            'truncated': result['truncated'],
+            'sha256_digest': evidence.sha256_digest,
+        },
+    )
+    db.commit()
+
     return {
         'evidence_id': evidence.id,
         'application_id': evidence.application_id,
