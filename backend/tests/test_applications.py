@@ -283,3 +283,22 @@ def test_list_is_scoped_to_applicant_and_region(client: TestClient) -> None:
 
     admin_list = client.get('/api/v1/applications', headers=_headers(3))
     assert len(admin_list.json()) == 2
+
+
+def test_preliminary_scrutiny_reports_missing_evidence_without_claiming_compliance(
+    client: TestClient,
+) -> None:
+    created = client.post(
+        '/api/v1/applications',
+        headers=_headers(1),
+        json={'institution_id': 1, 'reference_code': 'TS-SCRUTINY-001'},
+    )
+    assert created.status_code == 201
+
+    response = client.get('/api/v1/applications/1/scrutiny', headers=_headers(1))
+    assert response.status_code == 200
+    report = response.json()
+    assert report['assessment_type'] == 'deterministic_metadata_checks'
+    assert report['counts']['evidence_total'] == 0
+    assert report['findings'][0]['code'] == 'no_evidence'
+    assert 'does not perform OCR' in report['disclaimer']
