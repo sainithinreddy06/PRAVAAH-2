@@ -15,7 +15,7 @@ from app.api.deps import ensure_region_access, get_current_user, require_roles
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.application import Application
-from app.models.audit_event import AuditEvent
+from app.models.audit_event import AuditChainState, AuditEvent, calculate_audit_hash
 from app.models.evidence import Evidence
 from app.models.institution import Institution
 from app.models.policy import Policy
@@ -436,6 +436,62 @@ def extract_evidence_text_preview(
         'disclaimer': (
             'Text extraction is not AI validation, identity verification, or an official compliance '
             'decision. OCR can be inaccurate; an authorised reviewer must verify the original file.'
+        ),
+    }
+
+
+@router.get('/audit/integrity', summary='Verify tamper-evident audit chain')
+def verify_audit_integrity(
+    actor: User = Depends(require_roles('platform_admin')),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    """Verify the complete audit hash chain without returning event payloads."""
+    events = db.scalars(select(AuditEvent).order_by(AuditEvent.id.asc())).all()
+    expected_previous = '0' * 64
+    first_invalid_event_id: int | None = None
+
+    for item in events:
+        if item.previous_hash != expected_previous:
+            first_invalid_event_id = item.id
+            break
+        try:
+            calculated = calculate_audit_hash(
+                event_id=item.id,
+                actor_user_id=item.actor_user_id,
+                entity_type=item.entity_type,
+                entity_id=item.entity_id,
+                action=item.action,
+                reason=item.reason,
+                details_json=item.details_json or '{}',
+                created_at=item.created_at,
+                previous_hash=item.previous_hash,
+            )
+        except (TypeError, ValueError):
+            first_invalid_event_id = item.id
+            break
+        if calculated != item.event_hash:
+            first_invalid_event_id = item.id
+            break
+        expected_previous = item.event_hash
+
+    chain_state = db.get(AuditChainState, 1)
+    stored_head = chain_state.head_hash if chain_state else '0' * 64
+    if first_invalid_event_id is None and stored_head != expected_previous:
+        first_invalid_event_id = events[-1].id if events else None
+
+    valid = first_invalid_event_id is None and stored_head == expected_previous
+    return {
+        'valid': valid,
+        'events_checked': len(events) if valid else next(
+            (index for index, item in enumerate(events) if item.id == first_invalid_event_id),
+            len(events),
+        ) + (1 if first_invalid_event_id is not None else 0),
+        'first_invalid_event_id': first_invalid_event_id,
+        'stored_head_matches': stored_head == expected_previous,
+        'verified_at': datetime.now(UTC).isoformat(),
+        'message': (
+            'Audit hash chain verified.' if valid
+            else 'Audit chain integrity check failed. Review the indicated event and chain state.'
         ),
     }
 
