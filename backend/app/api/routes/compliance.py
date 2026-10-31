@@ -236,6 +236,126 @@ async def upload_evidence(
 
 
 @router.get(
+    '/applications/{application_id}/scrutiny',
+    response_model=dict[str, object],
+    summary='Generate a deterministic preliminary evidence-scrutiny report',
+)
+def evidence_scrutiny_report(
+    application_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    """Check evidence metadata and review state; this is not OCR or an official compliance decision."""
+    _application_for_actor(db, application_id, actor)
+    evidence_items = list(
+        db.scalars(
+            select(Evidence)
+            .where(Evidence.application_id == application_id)
+            .order_by(Evidence.id)
+        ).all()
+    )
+
+    findings: list[dict[str, object]] = []
+    counts = {
+        'evidence_total': len(evidence_items),
+        'pending_review': 0,
+        'accepted': 0,
+        'rejected_or_changes_requested': 0,
+        'missing_policy_link': 0,
+        'missing_integrity_digest': 0,
+        'expired': 0,
+    }
+    now = datetime.now(UTC)
+
+    if not evidence_items:
+        findings.append({
+            'code': 'no_evidence',
+            'severity': 'high',
+            'evidence_id': None,
+            'message': 'No evidence files are attached to this application.',
+            'recommended_action': 'Review the applicable checklist and attach required evidence.',
+        })
+
+    for item in evidence_items:
+        if item.review_status == 'pending':
+            counts['pending_review'] += 1
+            findings.append({
+                'code': 'review_pending',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'Evidence has not yet been reviewed by an authorised officer.',
+                'recommended_action': 'Assign an authorised reviewer and record a reasoned outcome.',
+            })
+        elif item.review_status in {'rejected', 'needs_changes'}:
+            counts['rejected_or_changes_requested'] += 1
+            findings.append({
+                'code': 'review_action_required',
+                'severity': 'high',
+                'evidence_id': item.id,
+                'message': item.reviewer_notes or 'Evidence requires correction or replacement.',
+                'recommended_action': 'Review the officer notes and upload corrected evidence.',
+            })
+        elif item.review_status == 'accepted':
+            counts['accepted'] += 1
+
+        if item.policy_id is None:
+            counts['missing_policy_link'] += 1
+            findings.append({
+                'code': 'policy_link_missing',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'No policy version is linked to this evidence record.',
+                'recommended_action': 'Link the applicable, verified policy version if one exists.',
+            })
+        elif db.get(Policy, item.policy_id) is None:
+            counts['missing_policy_link'] += 1
+            findings.append({
+                'code': 'policy_reference_unavailable',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'The linked policy record could not be found.',
+                'recommended_action': 'Verify the policy reference and evidence association.',
+            })
+
+        if not item.sha256_digest:
+            counts['missing_integrity_digest'] += 1
+            findings.append({
+                'code': 'integrity_digest_missing',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'No integrity digest is recorded for this evidence item.',
+                'recommended_action': 'Verify the stored file and ensure its integrity digest is recorded.',
+            })
+
+        if item.valid_until is not None:
+            expiry = item.valid_until
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=UTC)
+            if expiry < now:
+                counts['expired'] += 1
+                findings.append({
+                    'code': 'evidence_expired',
+                    'severity': 'high',
+                    'evidence_id': item.id,
+                    'message': 'The recorded evidence validity date has passed.',
+                    'recommended_action': 'Request current evidence and verify the applicable validity requirement.',
+                })
+
+    return {
+        'application_id': application_id,
+        'generated_at': now.isoformat(),
+        'assessment_type': 'deterministic_metadata_checks',
+        'counts': counts,
+        'findings': findings,
+        'disclaimer': (
+            'Preliminary metadata and workflow checks only. This report does not perform OCR, '
+            'establish legal compliance, apply an authoritative AICTE rulebook, or make an approval '
+            'decision. An authorised officer must verify the source requirements and evidence.'
+        ),
+    }
+
+
+@router.get(
     '/applications/{application_id}/evidence',
     response_model=list[EvidenceResponse],
 )
