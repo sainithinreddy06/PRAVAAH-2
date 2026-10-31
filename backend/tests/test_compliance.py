@@ -481,3 +481,53 @@ def test_evidence_file_is_removed_if_audit_persistence_fails(
     assert list(Path(settings.evidence_storage_dir).iterdir()) == []
     with _Session() as db:
         assert db.query(Evidence).filter_by(original_filename='rollback.pdf').count() == 0
+
+
+def test_evidence_text_extraction_endpoint_returns_bounded_preview(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+
+    def fake_extract(content: bytes, content_type: str | None) -> dict[str, object]:
+        assert content.startswith(b'%PDF-')
+        assert content_type == 'application/pdf'
+        return {
+            'method': 'pdf_text_layer',
+            'text': 'Institution Name: Example Institute',
+            'character_count': 34,
+            'truncated': False,
+            'message': 'Extracted text is unverified.',
+        }
+
+    monkeypatch.setattr('app.api.routes.compliance.extract_evidence_text', fake_extract)
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(1),
+    )
+    assert response.status_code == 200
+    assert response.json()['method'] == 'pdf_text_layer'
+    assert response.json()['text'] == 'Institution Name: Example Institute'
+    assert 'not AI validation' in response.json()['disclaimer']
+
+
+def test_evidence_text_extraction_obeys_application_access(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(4),
+    )
+    assert response.status_code == 403
