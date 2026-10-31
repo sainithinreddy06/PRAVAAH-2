@@ -600,3 +600,39 @@ def test_evidence_text_extraction_obeys_application_access(
         headers=_headers(4),
     )
     assert response.status_code == 403
+
+
+
+def test_audit_integrity_endpoint_verifies_chain_and_requires_admin(client: TestClient) -> None:
+    valid = client.get('/api/v1/audit/integrity', headers=_headers(3))
+    assert valid.status_code == 200
+    assert valid.json()['valid'] is True
+    assert valid.json()['events_checked'] == 0
+
+    denied = client.get('/api/v1/audit/integrity', headers=_headers(2))
+    assert denied.status_code == 403
+
+
+def test_audit_integrity_endpoint_detects_modified_event(client: TestClient) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('integrity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+
+    with _Session() as db:
+        audit_event = db.scalar(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.action == 'evidence.uploaded',
+            )
+        )
+        assert audit_event is not None
+        audit_event.details_json = json.dumps({'tampered': True})
+        db.commit()
+
+    response = client.get('/api/v1/audit/integrity', headers=_headers(3))
+    assert response.status_code == 200
+    assert response.json()['valid'] is False
+    assert response.json()['first_invalid_event_id'] is not None
