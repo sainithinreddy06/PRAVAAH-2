@@ -440,6 +440,56 @@ def extract_evidence_text_preview(
     }
 
 
+@router.get('/evidence/{evidence_id}/audit-history', summary='List safe evidence audit metadata')
+def evidence_audit_history(
+    evidence_id: int,
+    actor: User = Depends(require_roles('regional_officer', 'platform_admin')),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    evidence = db.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail='Evidence not found')
+    _application_for_actor(db, evidence.application_id, actor)
+
+    events = db.scalars(
+        select(AuditEvent)
+        .where(
+            AuditEvent.entity_type == 'evidence',
+            AuditEvent.entity_id == str(evidence_id),
+        )
+        .order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc())
+        .limit(100)
+    ).all()
+
+    safe_detail_keys = {
+        'application_id', 'method', 'character_count', 'truncated',
+        'sha256_digest', 'review_status', 'policy_id', 'policy_key',
+        'policy_version', 'policy_source_reference',
+    }
+    history: list[dict[str, object]] = []
+    for item in events:
+        try:
+            details = json.loads(item.details_json or '{}')
+        except (TypeError, json.JSONDecodeError):
+            details = {}
+        safe_details = {
+            key: value for key, value in details.items()
+            if key in safe_detail_keys
+            and isinstance(value, (str, int, float, bool, type(None)))
+        }
+        history.append({
+            'id': item.id,
+            'actor_user_id': item.actor_user_id,
+            'action': item.action,
+            'reason': item.reason,
+            'created_at': item.created_at.isoformat() if item.created_at else None,
+            'details': safe_details,
+            'event_hash': item.event_hash,
+            'previous_hash': item.previous_hash,
+        })
+    return history
+
+
 @router.get('/evidence/{evidence_id}/download')
 def download_evidence(
     evidence_id: int,
