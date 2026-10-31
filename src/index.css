@@ -2223,3 +2223,13 @@ tbody tr:hover{
     transition:none!important;
   }
 }
+
+
+/* Evidence text extraction preview */
+.evidence-extracted-text{grid-column:1/-1;margin-top:14px;padding:14px 16px;border:1px solid #dce6ed;border-radius:8px;background:rgba(246,249,251,.85);min-width:0}
+.evidence-extracted-text>strong{display:block;font-size:11px;color:#2e4559}
+.evidence-extracted-text>p{font-size:11px;line-height:1.55;color:#63798c;margin:7px 0}
+.evidence-extracted-text pre{max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid #e2e9ef;border-radius:6px;padding:12px;font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:#293b4d}
+.evidence-extracted-text small{display:block;font-size:10px;line-height:1.6;color:#7b8b9b}
+.workflow-item{min-width:0}
+.workflow-item>div{min-width:0}
