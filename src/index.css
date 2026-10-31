@@ -525,6 +525,12 @@ body { background: var(--workspace-canvas); }
 .workflow-form input[type="file"] { padding: 7px; }
 .workflow-form small, .workflow-form .primary-button { grid-column: 1 / -1; justify-self: start; }
 .full-field { grid-column: 1 / -1; }
+.workflow-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 0 21px 16px; }
+.workflow-metrics > div { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 13px; border: 1px solid #e3e9ef; border-radius: 5px; background: #f8fafc; }
+.workflow-metrics .eyebrow { font-size: 9px; }
+.workflow-metrics strong { color: #263a51; font-size: 22px; font-weight: 700; }
+.workflow-section > .muted { padding: 0 21px 18px; font-size: 10px; line-height: 1.7; }
+@media (max-width: 680px) { .workflow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .workflow-list { padding: 0 21px; }
 .workflow-list > .panel-heading { padding-top: 18px; }
 .workflow-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 17px 0; border-bottom: 1px solid #e9edf2; }
