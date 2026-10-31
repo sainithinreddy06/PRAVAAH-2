@@ -531,6 +531,60 @@ def test_evidence_text_extraction_endpoint_returns_bounded_preview(
     assert 'Example Institute' not in audit_event.details_json
 
 
+
+def test_evidence_audit_history_exposes_safe_metadata_to_reviewers(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+
+    monkeypatch.setattr(
+        'app.api.routes.compliance.extract_evidence_text',
+        lambda content, content_type: {
+            'method': 'pdf_text_layer',
+            'text': 'Private extracted institution details',
+            'character_count': 36,
+            'truncated': False,
+            'message': 'Extracted text is unverified.',
+        },
+    )
+    extracted = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(1),
+    )
+    assert extracted.status_code == 200
+
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/audit-history',
+        headers=_headers(2),
+    )
+    assert response.status_code == 200
+    events = response.json()
+    assert [item['action'] for item in events] == [
+        'evidence.text_extracted',
+        'evidence.uploaded',
+    ]
+    extraction_event = events[0]
+    assert extraction_event['details']['method'] == 'pdf_text_layer'
+    assert extraction_event['details']['character_count'] == 36
+    assert 'text' not in extraction_event['details']
+    assert 'Private extracted institution details' not in json.dumps(events)
+    assert extraction_event['event_hash']
+    assert extraction_event['previous_hash']
+
+    denied = client.get(
+        f'/api/v1/evidence/{evidence_id}/audit-history',
+        headers=_headers(1),
+    )
+    assert denied.status_code == 403
+
+
+
 def test_evidence_text_extraction_obeys_application_access(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
