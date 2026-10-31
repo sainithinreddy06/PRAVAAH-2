@@ -6,7 +6,7 @@ import { AlertCircle, ArrowLeft, CalendarClock, ClipboardCheck, Download, FileUp
 
 import { useAuth } from '../components/AuthGate';
 
-import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations, type EvidenceScrutinyReport, type EvidenceTextExtraction } from '../lib/api';
+import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations, type EvidenceScrutinyReport } from '../lib/api';
 
 const reviewRole = (role: string) => role === 'regional_officer' || role === 'platform_admin';
 
