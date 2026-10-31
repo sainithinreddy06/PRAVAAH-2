@@ -515,6 +515,21 @@ def test_evidence_text_extraction_endpoint_returns_bounded_preview(
     assert response.json()['text'] == 'Institution Name: Example Institute'
     assert 'not AI validation' in response.json()['disclaimer']
 
+    with _Session() as db:
+        audit_event = db.scalar(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.entity_id == str(evidence_id),
+                AuditEvent.action == 'evidence.text_extracted',
+            )
+        )
+    assert audit_event is not None
+    details = json.loads(audit_event.details_json)
+    assert details['method'] == 'pdf_text_layer'
+    assert details['character_count'] == 34
+    assert 'text' not in details
+    assert 'Example Institute' not in audit_event.details_json
+
 
 def test_evidence_text_extraction_obeys_application_access(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
