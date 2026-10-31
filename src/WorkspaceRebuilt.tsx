@@ -6,6 +6,7 @@ import SecurityDepositRepository from './SecurityDepositRepository';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import DocumentUploadPage from './pages/DocumentUploadPage';
+import { api, ApiError, type AuditIntegrityReport } from './lib/api';
 
 type RecordRow = { ref: string; institution: string; stage: string; status: string; due: string; priority: 'High'|'Medium'|'Normal'; owner: string };
 const records: RecordRow[] = [
@@ -111,7 +112,7 @@ function ScrutinyQueue(){
   <p className="v3-disclaimer"><ShieldCheck size={14}/> Demonstration interface. Confirm authoritative requirements and production records in the connected service before making a regulatory decision.</p>
  </div>;
 }
-function ApplicationRecordRoute(){const {id}=useParams();return id&&/^\d+$/.test(id)?<ApplicationDetailPage/>:<DataPage path="/applications/detail"/>;}
+function ApplicationRecordRoute(){const {id}=useParams();const {user}=useAuth();const [integrityReport,setIntegrityReport]=useState<AuditIntegrityReport|null>(null);const [integrityLoading,setIntegrityLoading]=useState(false);const [integrityError,setIntegrityError]=useState('');const canVerifyIntegrity=(user.role||'').trim().toLowerCase()==='platform_admin';const verifyIntegrity=async()=>{setIntegrityLoading(true);setIntegrityError('');setIntegrityReport(null);try{setIntegrityReport(await api.verifyAuditIntegrity());}catch(reason){setIntegrityError(reason instanceof ApiError?reason.detail:'Could not verify the audit chain.');}finally{setIntegrityLoading(false);}};return id&&/^\d+$/.test(id)?<ApplicationDetailPage/>:<DataPage path="/applications/detail"/>;}
 
 function Metric({item}:{item:[string,string,string,string]}){const [label,value,note,tone]=item;return <article className="v3-metric"><div className="v3-metric-top"><span>{label}</span><span className={'v3-metric-icon tone-'+tone}><Activity size={16}/></span></div><strong>{value}</strong><small><span className={'v3-note-dot tone-'+tone}/>{note}</small></article>}
 function PanelTitle({title,sub,action}:{title:string,sub?:string,action?:React.ReactNode}){return <div className="v3-panel-title"><div><h3>{title}</h3>{sub&&<p>{sub}</p>}</div>{action}</div>}
