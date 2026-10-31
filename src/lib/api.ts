@@ -65,6 +65,18 @@ export type AuditEvent = { id: number; actor_user_id: number | null; entity_type
 export type AuditCheckpoint = { event_count: number; head_hash: string; generated_at: string; signature_algorithm: string; signature: string };
 export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
 
+export type EvidenceTextExtraction = {
+  evidence_id: number;
+  application_id: number;
+  filename: string;
+  method: 'pdf_text_layer' | 'tesseract_ocr';
+  text: string;
+  character_count: number;
+  truncated: boolean;
+  message: string;
+  disclaimer: string;
+};
+
 export type ScrutinyFinding = {
   code: string;
   severity: 'high' | 'medium' | 'low';
@@ -213,6 +225,7 @@ export const api = {
   uploadEvidence: (id: number, file: File, policyId?: number) => { const body = new FormData(); body.append('file', file); if (policyId) body.append('policy_id', String(policyId)); return request<Evidence>('/api/v1/applications/' + id + '/evidence', { method: 'POST', body }); },
   reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
   downloadEvidence: (id: number) => requestBlob('/api/v1/evidence/' + id + '/download'),
+  extractEvidenceText: (id: number) => request<EvidenceTextExtraction>('/api/v1/evidence/' + id + '/extract-text'),
   listObligations: (filters: { status?: string; due_before?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<Obligation[]>('/api/v1/obligations?' + query.toString()); },
   createObligation: (payload: { application_id: number; owner_user_id?: number; obligation_type: string; title: string; description?: string; due_at?: string; policy_reference?: string; policy_id?: number; deadline_rule?: 'manual' | 'fixed_days_from_creation'; deadline_days?: number }) => request<Obligation>('/api/v1/obligations', { method: 'POST', body: JSON.stringify(payload) }),
   updateObligation: (id: number, payload: Partial<Pick<Obligation, 'title' | 'description' | 'due_at' | 'status' | 'policy_reference'>>) => request<Obligation>('/api/v1/obligations/' + id, { method: 'PATCH', body: JSON.stringify(payload) }),
