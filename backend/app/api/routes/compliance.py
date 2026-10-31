@@ -15,12 +15,13 @@ from app.api.deps import ensure_region_access, get_current_user, require_roles
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.application import Application
-from app.models.audit_event import AuditEvent
+from app.models.audit_event import AuditChainState, AuditEvent, calculate_audit_hash
 from app.models.evidence import Evidence
 from app.models.institution import Institution
 from app.models.policy import Policy
 from app.models.user import User
 from app.services.evidence_storage import get_evidence_storage, scan_evidence
+from app.services.evidence_extraction import EvidenceExtractionError, extract_evidence_text
 from app.schemas.compliance import (
     EvidenceResponse,
     EvidenceReviewRequest,
@@ -236,6 +237,126 @@ async def upload_evidence(
 
 
 @router.get(
+    '/applications/{application_id}/scrutiny',
+    response_model=dict[str, object],
+    summary='Generate a deterministic preliminary evidence-scrutiny report',
+)
+def evidence_scrutiny_report(
+    application_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    """Check evidence metadata and review state; this is not OCR or an official compliance decision."""
+    _application_for_actor(db, application_id, actor)
+    evidence_items = list(
+        db.scalars(
+            select(Evidence)
+            .where(Evidence.application_id == application_id)
+            .order_by(Evidence.id)
+        ).all()
+    )
+
+    findings: list[dict[str, object]] = []
+    counts = {
+        'evidence_total': len(evidence_items),
+        'pending_review': 0,
+        'accepted': 0,
+        'rejected_or_changes_requested': 0,
+        'missing_policy_link': 0,
+        'missing_integrity_digest': 0,
+        'expired': 0,
+    }
+    now = datetime.now(UTC)
+
+    if not evidence_items:
+        findings.append({
+            'code': 'no_evidence',
+            'severity': 'high',
+            'evidence_id': None,
+            'message': 'No evidence files are attached to this application.',
+            'recommended_action': 'Review the applicable checklist and attach required evidence.',
+        })
+
+    for item in evidence_items:
+        if item.review_status == 'pending':
+            counts['pending_review'] += 1
+            findings.append({
+                'code': 'review_pending',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'Evidence has not yet been reviewed by an authorised officer.',
+                'recommended_action': 'Assign an authorised reviewer and record a reasoned outcome.',
+            })
+        elif item.review_status in {'rejected', 'needs_changes'}:
+            counts['rejected_or_changes_requested'] += 1
+            findings.append({
+                'code': 'review_action_required',
+                'severity': 'high',
+                'evidence_id': item.id,
+                'message': item.reviewer_notes or 'Evidence requires correction or replacement.',
+                'recommended_action': 'Review the officer notes and upload corrected evidence.',
+            })
+        elif item.review_status == 'accepted':
+            counts['accepted'] += 1
+
+        if item.policy_id is None:
+            counts['missing_policy_link'] += 1
+            findings.append({
+                'code': 'policy_link_missing',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'No policy version is linked to this evidence record.',
+                'recommended_action': 'Link the applicable, verified policy version if one exists.',
+            })
+        elif db.get(Policy, item.policy_id) is None:
+            counts['missing_policy_link'] += 1
+            findings.append({
+                'code': 'policy_reference_unavailable',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'The linked policy record could not be found.',
+                'recommended_action': 'Verify the policy reference and evidence association.',
+            })
+
+        if not item.sha256_digest:
+            counts['missing_integrity_digest'] += 1
+            findings.append({
+                'code': 'integrity_digest_missing',
+                'severity': 'medium',
+                'evidence_id': item.id,
+                'message': 'No integrity digest is recorded for this evidence item.',
+                'recommended_action': 'Verify the stored file and ensure its integrity digest is recorded.',
+            })
+
+        if item.valid_until is not None:
+            expiry = item.valid_until
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=UTC)
+            if expiry < now:
+                counts['expired'] += 1
+                findings.append({
+                    'code': 'evidence_expired',
+                    'severity': 'high',
+                    'evidence_id': item.id,
+                    'message': 'The recorded evidence validity date has passed.',
+                    'recommended_action': 'Request current evidence and verify the applicable validity requirement.',
+                })
+
+    return {
+        'application_id': application_id,
+        'generated_at': now.isoformat(),
+        'assessment_type': 'deterministic_metadata_checks',
+        'counts': counts,
+        'findings': findings,
+        'disclaimer': (
+            'Preliminary metadata and workflow checks only. This report does not perform OCR, '
+            'establish legal compliance, apply an authoritative AICTE rulebook, or make an approval '
+            'decision. An authorised officer must verify the source requirements and evidence.'
+        ),
+    }
+
+
+@router.get(
     '/applications/{application_id}/evidence',
     response_model=list[EvidenceResponse],
 )
@@ -252,6 +373,177 @@ def list_evidence(
             .order_by(Evidence.created_at.desc(), Evidence.id.desc())
         ).all()
     )
+
+
+@router.get(
+    '/evidence/{evidence_id}/extract-text',
+    summary='Extract a bounded text preview from an evidence file',
+)
+def extract_evidence_text_preview(
+    evidence_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    evidence = db.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail='Evidence not found')
+
+    _application_for_actor(db, evidence.application_id, actor)
+    if evidence.review_status == 'expired':
+        raise HTTPException(status_code=410, detail='Evidence has expired under the retention policy')
+
+    try:
+        content = get_evidence_storage().get(evidence.storage_key)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail='Evidence file not found') from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Evidence storage is unavailable') from exc
+
+    if evidence.sha256_digest and hashlib.sha256(content).hexdigest() != evidence.sha256_digest:
+        raise HTTPException(status_code=409, detail='Evidence integrity check failed')
+
+    try:
+        result = extract_evidence_text(content, evidence.content_type)
+    except EvidenceExtractionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    # Record the extraction event without storing extracted document text in the audit trail.
+    # The original file digest binds this event to the evidence version that was processed.
+    _audit(
+        db, actor, 'evidence', evidence.id, 'evidence.text_extracted',
+        'Evidence text extracted for human review',
+        {
+            'application_id': evidence.application_id,
+            'method': result['method'],
+            'character_count': result['character_count'],
+            'truncated': result['truncated'],
+            'sha256_digest': evidence.sha256_digest,
+        },
+    )
+    db.commit()
+
+    return {
+        'evidence_id': evidence.id,
+        'application_id': evidence.application_id,
+        'filename': evidence.original_filename,
+        'method': result['method'],
+        'text': result['text'],
+        'character_count': result['character_count'],
+        'truncated': result['truncated'],
+        'message': result['message'],
+        'disclaimer': (
+            'Text extraction is not AI validation, identity verification, or an official compliance '
+            'decision. OCR can be inaccurate; an authorised reviewer must verify the original file.'
+        ),
+    }
+
+
+@router.get('/audit/integrity', summary='Verify tamper-evident audit chain')
+def verify_audit_integrity(
+    actor: User = Depends(require_roles('platform_admin')),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    """Verify the complete audit hash chain without returning event payloads."""
+    events = db.scalars(select(AuditEvent).order_by(AuditEvent.id.asc())).all()
+    expected_previous = '0' * 64
+    first_invalid_event_id: int | None = None
+
+    for item in events:
+        if item.previous_hash != expected_previous:
+            first_invalid_event_id = item.id
+            break
+        try:
+            calculated = calculate_audit_hash(
+                event_id=item.id,
+                actor_user_id=item.actor_user_id,
+                entity_type=item.entity_type,
+                entity_id=item.entity_id,
+                action=item.action,
+                reason=item.reason,
+                details_json=item.details_json or '{}',
+                created_at=item.created_at,
+                previous_hash=item.previous_hash,
+            )
+        except (TypeError, ValueError):
+            first_invalid_event_id = item.id
+            break
+        if calculated != item.event_hash:
+            first_invalid_event_id = item.id
+            break
+        expected_previous = item.event_hash
+
+    chain_state = db.get(AuditChainState, 1)
+    stored_head = chain_state.head_hash if chain_state else '0' * 64
+    if first_invalid_event_id is None and stored_head != expected_previous:
+        first_invalid_event_id = events[-1].id if events else None
+
+    valid = first_invalid_event_id is None and stored_head == expected_previous
+    return {
+        'valid': valid,
+        'events_checked': len(events) if valid else next(
+            (index for index, item in enumerate(events) if item.id == first_invalid_event_id),
+            len(events),
+        ) + (1 if first_invalid_event_id is not None else 0),
+        'first_invalid_event_id': first_invalid_event_id,
+        'stored_head_matches': stored_head == expected_previous,
+        'verified_at': datetime.now(UTC).isoformat(),
+        'message': (
+            'Audit hash chain verified.' if valid
+            else 'Audit chain integrity check failed. Review the indicated event and chain state.'
+        ),
+    }
+
+
+@router.get('/evidence/{evidence_id}/audit-history', summary='List safe evidence audit metadata')
+def evidence_audit_history(
+    evidence_id: int,
+    actor: User = Depends(require_roles('regional_officer', 'platform_admin')),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    evidence = db.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail='Evidence not found')
+    _application_for_actor(db, evidence.application_id, actor)
+
+    events = db.scalars(
+        select(AuditEvent)
+        .where(
+            AuditEvent.entity_type == 'evidence',
+            AuditEvent.entity_id == str(evidence_id),
+        )
+        .order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc())
+        .limit(100)
+    ).all()
+
+    safe_detail_keys = {
+        'application_id', 'method', 'character_count', 'truncated',
+        'sha256_digest', 'review_status', 'policy_id', 'policy_key',
+        'policy_version', 'policy_source_reference',
+    }
+    history: list[dict[str, object]] = []
+    for item in events:
+        try:
+            details = json.loads(item.details_json or '{}')
+        except (TypeError, json.JSONDecodeError):
+            details = {}
+        safe_details = {
+            key: value for key, value in details.items()
+            if key in safe_detail_keys
+            and isinstance(value, (str, int, float, bool, type(None)))
+        }
+        history.append({
+            'id': item.id,
+            'actor_user_id': item.actor_user_id,
+            'action': item.action,
+            'reason': item.reason,
+            'created_at': item.created_at.isoformat() if item.created_at else None,
+            'details': safe_details,
+            'event_hash': item.event_hash,
+            'previous_hash': item.previous_hash,
+        })
+    return history
 
 
 @router.get('/evidence/{evidence_id}/download')

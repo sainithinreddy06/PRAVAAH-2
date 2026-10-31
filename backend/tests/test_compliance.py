@@ -481,3 +481,158 @@ def test_evidence_file_is_removed_if_audit_persistence_fails(
     assert list(Path(settings.evidence_storage_dir).iterdir()) == []
     with _Session() as db:
         assert db.query(Evidence).filter_by(original_filename='rollback.pdf').count() == 0
+
+
+def test_evidence_text_extraction_endpoint_returns_bounded_preview(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+
+    def fake_extract(content: bytes, content_type: str | None) -> dict[str, object]:
+        assert content.startswith(b'%PDF-')
+        assert content_type == 'application/pdf'
+        return {
+            'method': 'pdf_text_layer',
+            'text': 'Institution Name: Example Institute',
+            'character_count': 35,
+            'truncated': False,
+            'message': 'Extracted text is unverified.',
+        }
+
+    monkeypatch.setattr('app.api.routes.compliance.extract_evidence_text', fake_extract)
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(1),
+    )
+    assert response.status_code == 200
+    assert response.json()['method'] == 'pdf_text_layer'
+    assert response.json()['text'] == 'Institution Name: Example Institute'
+    assert 'not AI validation' in response.json()['disclaimer']
+
+    with _Session() as db:
+        audit_event = db.scalar(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.entity_id == str(evidence_id),
+                AuditEvent.action == 'evidence.text_extracted',
+            )
+        )
+    assert audit_event is not None
+    details = json.loads(audit_event.details_json)
+    assert details['method'] == 'pdf_text_layer'
+    assert details['character_count'] == 35
+    assert 'text' not in details
+    assert 'Example Institute' not in audit_event.details_json
+
+
+
+def test_evidence_audit_history_exposes_safe_metadata_to_reviewers(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+
+    monkeypatch.setattr(
+        'app.api.routes.compliance.extract_evidence_text',
+        lambda content, content_type: {
+            'method': 'pdf_text_layer',
+            'text': 'Private extracted institution details',
+            'character_count': 36,
+            'truncated': False,
+            'message': 'Extracted text is unverified.',
+        },
+    )
+    extracted = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(1),
+    )
+    assert extracted.status_code == 200
+
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/audit-history',
+        headers=_headers(2),
+    )
+    assert response.status_code == 200
+    events = response.json()
+    assert [item['action'] for item in events] == [
+        'evidence.text_extracted',
+        'evidence.uploaded',
+    ]
+    extraction_event = events[0]
+    assert extraction_event['details']['method'] == 'pdf_text_layer'
+    assert extraction_event['details']['character_count'] == 36
+    assert 'text' not in extraction_event['details']
+    assert 'Private extracted institution details' not in json.dumps(events)
+    assert extraction_event['event_hash']
+    assert extraction_event['previous_hash']
+
+    denied = client.get(
+        f'/api/v1/evidence/{evidence_id}/audit-history',
+        headers=_headers(1),
+    )
+    assert denied.status_code == 403
+
+
+
+def test_evidence_text_extraction_obeys_application_access(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('identity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+    evidence_id = upload.json()['id']
+    response = client.get(
+        f'/api/v1/evidence/{evidence_id}/extract-text',
+        headers=_headers(4),
+    )
+    assert response.status_code == 403
+
+
+
+def test_audit_integrity_endpoint_verifies_chain_and_requires_admin(client: TestClient) -> None:
+    valid = client.get('/api/v1/audit/integrity', headers=_headers(3))
+    assert valid.status_code == 200
+    assert valid.json()['valid'] is True
+    assert valid.json()['events_checked'] == 0
+
+    denied = client.get('/api/v1/audit/integrity', headers=_headers(2))
+    assert denied.status_code == 403
+
+
+def test_audit_integrity_endpoint_detects_modified_event(client: TestClient) -> None:
+    upload = client.post(
+        '/api/v1/applications/1/evidence',
+        headers=_headers(1),
+        files={'file': ('integrity.pdf', b'%PDF-1.7\\nfixture', 'application/pdf')},
+    )
+    assert upload.status_code == 201
+
+    with _Session() as db:
+        audit_event = db.scalar(
+            select(AuditEvent).where(
+                AuditEvent.entity_type == 'evidence',
+                AuditEvent.action == 'evidence.uploaded',
+            )
+        )
+        assert audit_event is not None
+        audit_event.details_json = json.dumps({'tampered': True})
+        db.commit()
+
+    response = client.get('/api/v1/audit/integrity', headers=_headers(3))
+    assert response.status_code == 200
+    assert response.json()['valid'] is False
+    assert response.json()['first_invalid_event_id'] is not None

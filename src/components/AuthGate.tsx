@@ -42,6 +42,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   ];
   const demoProfilesToShow: Array<{ portal: string; profile: typeof demoProfiles[string] }> =
     visibleDemoPortals.map((portal) => ({ portal, profile: demoProfiles[portal] }));
+  const isPlatformAdminPortal = selectedPortal === 'Platform Administrator Dashboard';
   const demoEmail = activeDemoProfile?.email || 'demo@pravaah.local';
   const workspaceConfig: Record<string, { eyebrow: string; emailLabel: string; emailPlaceholder: string; guidance: string; icon: typeof Building2 }> = {
     'Institution Coordinator Dashboard': { eyebrow: 'INSTITUTION WORKSPACE', emailLabel: 'Institutional work email', emailPlaceholder: 'name@institution.edu.in', guidance: 'Use the email registered to your institution account.', icon: Building2 },
@@ -118,6 +119,31 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     event.preventDefault();
     setBusy(true);
     setError('');
+    if (demoMode && isPlatformAdminPortal) {
+      // Administrator integrity checks must use a real backend-authenticated account.
+      // Never create a synthetic platform_admin browser session in demo mode.
+      try {
+        const token = await api.login(email.trim(), password);
+        setAccessToken(token.access_token);
+        const currentUser = await api.me();
+        if (currentUser.role !== 'platform_admin') {
+          setAccessToken(null);
+          setUser(null);
+          setError('This account is not authorised as a Platform Administrator.');
+        } else {
+          setUser(currentUser);
+          setPassword('');
+        }
+      } catch (reason) {
+        setAccessToken(null);
+        setUser(null);
+        setError(reason instanceof Error ? reason.message : 'Administrator sign-in failed. Check that the account is provisioned in the backend.');
+      } finally {
+        setBusy(false);
+        setChecking(false);
+      }
+      return;
+    }
     if (demoMode) {
       const profile = activeDemoProfile;
       if (profile && email.trim().toLowerCase() === profile.email && password === demoPassword) {
@@ -186,7 +212,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             {selectedPortal && <div className="auth-selected-workspace"><span><WorkspaceIcon size={18}/></span><div><small>SELECTED WORKSPACE</small><strong>{selectedPortal}</strong><p>{activeWorkspace?.guidance || 'Use the account assigned to your organisation.'}</p></div></div>}
             {!selectedPortal && <p>Use your authorised account to access the PRAVAAH workspace.</p>}
           </div>
-          <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO ACCOUNTS</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setSelectedPortal(portal); sessionStorage.setItem('pravaah-selected-portal', portal); setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}</div></div>
+          <div className="auth-demo-notice" role="note"><div className="auth-demo-heading"><strong>DEMO ACCOUNTS</strong><span>Password for all profiles: <code>{demoPassword}</code></span></div><div className="auth-demo-profiles">{demoProfilesToShow.map(({ portal, profile }) => <button type="button" className={email === profile.email ? 'auth-demo-profile active' : 'auth-demo-profile'} key={profile.email} onClick={() => { setSelectedPortal(portal); sessionStorage.setItem('pravaah-selected-portal', portal); setEmail(profile.email); setPassword(demoPassword); setError(''); }}><strong>{profile.name}</strong><small>{portal}</small><span>{profile.email}</span></button>)}
+            <button type="button" className={isPlatformAdminPortal ? 'auth-demo-profile active' : 'auth-demo-profile'} key="platform-admin-backend" onClick={() => { const portal = 'Platform Administrator Dashboard'; setSelectedPortal(portal); sessionStorage.setItem('pravaah-selected-portal', portal); setEmail('platform-admin.demo@pravaah.local'); setPassword(demoPassword); setError(''); }}><strong>Platform Administrator</strong><small>Administrator access · backend authentication required</small><span>platform-admin.demo@pravaah.local</span></button></div></div>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="signin-email">{activeWorkspace?.emailLabel || 'Work email'}</label>
             <div className="auth-email-field"><Mail size={16}/><input id="signin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} placeholder={activeWorkspace?.emailPlaceholder || 'name@organisation.in'} /></div>
@@ -197,7 +224,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
               {busy ? 'Verifying account…' : 'Continue securely'} {!busy && <ArrowRight size={16} />}
             </button>
           </form>
-          <p className="auth-footnote">{demoMode ? <>Demo profile for this workspace: <strong>{demoEmail}</strong><br />Shared demo password: <strong>{demoPassword}</strong><br />UI preview only — demo profiles do not authenticate against the backend.</> : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
+          <p className="auth-footnote">{demoMode && !isPlatformAdminPortal ? <>Demo profile for this workspace: <strong>{demoEmail}</strong><br />Shared demo password: <strong>{demoPassword}</strong><br />UI preview only — demo profiles do not authenticate against the backend.</> : isPlatformAdminPortal ? 'Platform Administrator access requires a real account provisioned in the backend. The shared demo password does not apply.' : 'Only an account provisioned for the selected workspace can access its authorised functions.'}</p>
           </section>
         </div>
         <p className="auth-disclaimer">PRAVAAH-2 demonstration platform · Not an official AICTE service</p>

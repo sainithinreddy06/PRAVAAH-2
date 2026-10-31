@@ -6,7 +6,7 @@ import { AlertCircle, ArrowLeft, CalendarClock, ClipboardCheck, Download, FileUp
 
 import { useAuth } from '../components/AuthGate';
 
-import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations } from '../lib/api';
+import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations, type EvidenceScrutinyReport, type EvidenceTextExtraction, type EvidenceAuditEvent } from '../lib/api';
 
 const reviewRole = (role: string) => role === 'regional_officer' || role === 'platform_admin';
 
@@ -65,6 +65,16 @@ export default function ApplicationDetailPage() {
   const [visitResults, setVisitResults] = useState<Record<number, Record<string, string>>>({});
 
   const [recommendations, setRecommendations] = useState<ApplicationRecommendations | null>(null);
+
+  const [scrutinyReport, setScrutinyReport] = useState<EvidenceScrutinyReport | null>(null);
+
+  const [extractedEvidence, setExtractedEvidence] = useState<Record<number, EvidenceTextExtraction>>({});
+
+  const [extractingEvidenceId, setExtractingEvidenceId] = useState<number | null>(null);
+
+  const [evidenceHistory, setEvidenceHistory] = useState<Record<number, EvidenceAuditEvent[]>>({});
+
+  const [loadingEvidenceHistoryId, setLoadingEvidenceHistoryId] = useState<number | null>(null);
 
   const [error, setError] = useState('');
 
@@ -125,6 +135,7 @@ export default function ApplicationDetailPage() {
       ]);
 
       setApplication(applicationResult); setEvidence(evidenceResult); setPolicies(policyResult);
+      setScrutinyReport(await api.evidenceScrutiny(id).catch(() => null));
 
       setUndertakings(undertakingResult); setAssessments(assessmentResult); setEvcVisits(visitResult);
 
@@ -169,6 +180,7 @@ export default function ApplicationDetailPage() {
       setEvcVisits([]);
       setVisitReports({});
       setRecommendations(null);
+      setScrutinyReport(null);
       setNotice('Demo application details are shown for preview. This illustrative record is read-only; live changes require valid backend authentication.');
       setError('');
 
@@ -244,6 +256,29 @@ export default function ApplicationDetailPage() {
       () => api.completeEvcVisit(visit.id, { findings, results }),
       'Inspection completed and report revision 1 saved.',
     );
+  };
+
+  const extractEvidenceText = async (item: Evidence) => {
+    if (demoMode) { setNotice('Text extraction is available only for real evidence files in the live service. Demo documents are synthetic.'); return; }
+    setError(''); setNotice(''); setExtractingEvidenceId(item.id);
+    try {
+      const result = await api.extractEvidenceText(item.id);
+      setExtractedEvidence(current => ({ ...current, [item.id]: result }));
+      setNotice('Text extracted for review. The extracted content is unverified and must be checked by an authorized reviewer.');
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.detail : 'Could not extract text from this evidence file.');
+    } finally { setExtractingEvidenceId(null); }
+  };
+
+  const loadEvidenceHistory = async (item: Evidence) => {
+    if (demoMode) { setNotice('Audit history is available only for real evidence records in the live service.'); return; }
+    setError(''); setNotice(''); setLoadingEvidenceHistoryId(item.id);
+    try {
+      const history = await api.evidenceAuditHistory(item.id);
+      setEvidenceHistory(current => ({ ...current, [item.id]: history }));
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.detail : 'Could not load evidence audit history.');
+    } finally { setLoadingEvidenceHistoryId(null); }
   };
 
   const downloadEvidence = async (item: Evidence) => {
@@ -413,6 +448,20 @@ export default function ApplicationDetailPage() {
 
     </div>
 
+    {scrutinyReport && <section className="panel workflow-section">
+      <header className="panel-heading"><div><h3>Preliminary evidence scrutiny</h3><p>Deterministic checks of stored evidence metadata and review state. This does not perform OCR or apply an authoritative rulebook.</p></div><button className="secondary-button" type="button" onClick={() => void api.evidenceScrutiny(id).then(setScrutinyReport).catch(reason => setError(reason instanceof Error ? reason.message : 'Could not refresh scrutiny report.'))} disabled={working}><RefreshCw size={14} /> Re-run checks</button></header>
+      <div className="workflow-metrics">
+        <div><span className="eyebrow">Evidence files</span><strong>{scrutinyReport.counts.evidence_total}</strong></div>
+        <div><span className="eyebrow">Pending review</span><strong>{scrutinyReport.counts.pending_review}</strong></div>
+        <div><span className="eyebrow">Needs correction</span><strong>{scrutinyReport.counts.rejected_or_changes_requested}</strong></div>
+        <div><span className="eyebrow">Expired</span><strong>{scrutinyReport.counts.expired}</strong></div>
+      </div>
+      {scrutinyReport.findings.length ? <div className="workflow-list">{scrutinyReport.findings.map((finding, index) => <article className="workflow-item" key={finding.code + '-' + String(finding.evidence_id) + '-' + index}>
+        <div><strong>{formatStatus(finding.severity)} · {formatStatus(finding.code)}</strong><p>{finding.message}</p><p><b>Suggested next step:</b> {finding.recommended_action}</p>{finding.evidence_id !== null && <small>Evidence #{finding.evidence_id}</small>}</div>
+      </article>)}</div> : <p className="empty-copy">No metadata or review-state issues were found by these checks. This is not a compliance certification.</p>}
+      <p className="muted">{scrutinyReport.disclaimer}</p>
+    </section>}
+
     <section className="panel workflow-section">
 
       <header className="panel-heading"><div><h3>Evidence</h3><p>Application-linked files and review outcomes. Downloads are authorized and checked against the stored SHA-256 digest.</p></div></header>
@@ -433,8 +482,10 @@ export default function ApplicationDetailPage() {
 
         <div><strong>{item.original_filename}</strong><p>Evidence #{item.id} · {item.content_type || 'Type unavailable'} · added {prettyDate(item.created_at)}</p><p>Review: <b>{formatStatus(item.review_status)}</b>{item.policy_id ? ' · Policy #' + item.policy_id : ''}</p>{item.reviewer_notes && <p>Reviewer note: {item.reviewer_notes}</p>}{item.sha256_digest && <code className="digest">SHA-256 {item.sha256_digest}</code>}</div>
 
-        <div className="workflow-actions"><button type="button" disabled={working} onClick={() => void downloadEvidence(item)}><Download size={14} /> Download</button>{reviewRole(user.role) && item.review_status === 'pending' && <><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'accepted')}>Accept</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'needs_changes')}>Request changes</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'rejected')}>Reject</button></>}</div>
+        <div className="workflow-actions"><button type="button" disabled={working} onClick={() => void downloadEvidence(item)}><Download size={14} /> Download</button><button type="button" disabled={working || extractingEvidenceId === item.id || demoMode} onClick={() => void extractEvidenceText(item)}>{extractingEvidenceId === item.id ? 'Extracting…' : extractedEvidence[item.id] ? 'Extract again' : 'Extract text'}</button><button type="button" disabled={working || loadingEvidenceHistoryId === item.id || demoMode} onClick={() => void loadEvidenceHistory(item)}>{loadingEvidenceHistoryId === item.id ? 'Loading history…' : evidenceHistory[item.id] ? 'Refresh audit history' : 'Audit history'}</button>{reviewRole(user.role) && item.review_status === 'pending' && <><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'accepted')}>Accept</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'needs_changes')}>Request changes</button><button type="button" disabled={working} onClick={() => void reviewEvidence(item, 'rejected')}>Reject</button></>}</div>
 
+        {evidenceHistory[item.id] && <div className="evidence-extracted-text evidence-audit-history"><strong>Evidence audit history</strong>{evidenceHistory[item.id].length ? <ol>{evidenceHistory[item.id].map(event => <li key={event.id}><b>{event.action.replace(/\./g, ' ')}</b><span>{prettyDate(event.created_at)}</span>{event.reason && <p>{event.reason}</p>}<small>Actor #{event.actor_user_id ?? 'system'} · Event hash {event.event_hash.slice(0, 16)}…</small>{event.details.method && <small>Extraction method: {event.details.method}; characters: {event.details.character_count ?? 'not recorded'}; truncated: {String(event.details.truncated ?? false)}</small>}</li>)}</ol> : <p>No audit events recorded for this evidence item.</p>}<small>Audit history displays safe event metadata only; extracted document text is not included.</small></div>}
+        {extractedEvidence[item.id] && <div className="evidence-extracted-text"><strong>Extracted text · {extractedEvidence[item.id].method === 'tesseract_ocr' ? 'OCR' : 'PDF text layer'}</strong><p>{extractedEvidence[item.id].message}</p><pre>{extractedEvidence[item.id].text || 'No readable text was found.'}</pre><small>{extractedEvidence[item.id].character_count} characters{extractedEvidence[item.id].truncated ? ' · preview truncated' : ''}. {extractedEvidence[item.id].disclaimer}</small></div>}
       </article>)}</div> : <p className="empty-copy">No evidence records are attached to this application.</p>}
 
     </section>

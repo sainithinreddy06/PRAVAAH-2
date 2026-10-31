@@ -63,7 +63,55 @@ export type Recommendation = { code: string; severity: 'high' | 'medium' | 'low'
 export type ApplicationRecommendations = { application_id: number; risk_score: number; risk_level: string; assessed_at: string; factors: string[]; recommendations: Recommendation[]; disclaimer: string };
 export type AuditEvent = { id: number; actor_user_id: number | null; entity_type: string; entity_id: string; action: string; reason: string | null; details_json: string; previous_hash: string; event_hash: string; created_at: string };
 export type AuditCheckpoint = { event_count: number; head_hash: string; generated_at: string; signature_algorithm: string; signature: string };
+export type AuditIntegrityReport = { valid: boolean; events_checked: number; first_invalid_event_id: number | null; stored_head_matches: boolean; verified_at: string; message: string };
 export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
+
+export type EvidenceTextExtraction = {
+  evidence_id: number;
+  application_id: number;
+  filename: string;
+  method: 'pdf_text_layer' | 'tesseract_ocr';
+  text: string;
+  character_count: number;
+  truncated: boolean;
+  message: string;
+  disclaimer: string;
+};
+
+export type EvidenceAuditEvent = {
+  id: number;
+  actor_user_id: number | null;
+  action: string;
+  reason: string | null;
+  created_at: string | null;
+  details: Record<string, string | number | boolean | null>;
+  event_hash: string;
+  previous_hash: string;
+};
+
+export type ScrutinyFinding = {
+  code: string;
+  severity: 'high' | 'medium' | 'low';
+  evidence_id: number | null;
+  message: string;
+  recommended_action: string;
+};
+export type EvidenceScrutinyReport = {
+  application_id: number;
+  generated_at: string;
+  assessment_type: string;
+  counts: {
+    evidence_total: number;
+    pending_review: number;
+    accepted: number;
+    rejected_or_changes_requested: number;
+    missing_policy_link: number;
+    missing_integrity_digest: number;
+    expired: number;
+  };
+  findings: ScrutinyFinding[];
+  disclaimer: string;
+};
 
 export class ApiError extends Error {
   status: number;
@@ -185,9 +233,12 @@ export const api = {
   listPolicies: (activeOnly = true) => request<Policy[]>('/api/v1/policies?active_only=' + activeOnly),
   createPolicy: (payload: { policy_key: string; version: number; title: string; description?: string; source_reference?: string; effective_from?: string; effective_until?: string }) => request<Policy>('/api/v1/policies', { method: 'POST', body: JSON.stringify(payload) }),
   listEvidence: (id: number) => request<Evidence[]>('/api/v1/applications/' + id + '/evidence'),
+  evidenceScrutiny: (id: number) => request<EvidenceScrutinyReport>('/api/v1/applications/' + id + '/scrutiny'),
   uploadEvidence: (id: number, file: File, policyId?: number) => { const body = new FormData(); body.append('file', file); if (policyId) body.append('policy_id', String(policyId)); return request<Evidence>('/api/v1/applications/' + id + '/evidence', { method: 'POST', body }); },
   reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
   downloadEvidence: (id: number) => requestBlob('/api/v1/evidence/' + id + '/download'),
+  extractEvidenceText: (id: number) => request<EvidenceTextExtraction>('/api/v1/evidence/' + id + '/extract-text'),
+  evidenceAuditHistory: (id: number) => request<EvidenceAuditEvent[]>('/api/v1/evidence/' + id + '/audit-history'),
   listObligations: (filters: { status?: string; due_before?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<Obligation[]>('/api/v1/obligations?' + query.toString()); },
   createObligation: (payload: { application_id: number; owner_user_id?: number; obligation_type: string; title: string; description?: string; due_at?: string; policy_reference?: string; policy_id?: number; deadline_rule?: 'manual' | 'fixed_days_from_creation'; deadline_days?: number }) => request<Obligation>('/api/v1/obligations', { method: 'POST', body: JSON.stringify(payload) }),
   updateObligation: (id: number, payload: Partial<Pick<Obligation, 'title' | 'description' | 'due_at' | 'status' | 'policy_reference'>>) => request<Obligation>('/api/v1/obligations/' + id, { method: 'PATCH', body: JSON.stringify(payload) }),
@@ -208,6 +259,7 @@ export const api = {
   recommendations: (id: number) => request<ApplicationRecommendations>('/api/v1/applications/' + id + '/recommendations'),
   listAuditEvents: (filters: { entity_type?: string; entity_id?: string; action?: string; actor_user_id?: number; since?: string; until?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<AuditEvent[]>('/api/v1/audit/events?' + query.toString()); },
   createAuditCheckpoint: () => request<AuditCheckpoint>('/api/v1/audit/checkpoint'),
+  verifyAuditIntegrity: () => request<AuditIntegrityReport>('/api/v1/audit/integrity'),
   metrics: () => request<OperationalMetrics>('/api/v1/operations/metrics'),
 };
 
