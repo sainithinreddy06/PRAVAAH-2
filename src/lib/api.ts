@@ -77,6 +77,17 @@ export type EvidenceTextExtraction = {
   disclaimer: string;
 };
 
+export type EvidenceAuditEvent = {
+  id: number;
+  actor_user_id: number | null;
+  action: string;
+  reason: string | null;
+  created_at: string | null;
+  details: Record<string, string | number | boolean | null>;
+  event_hash: string;
+  previous_hash: string;
+};
+
 export type ScrutinyFinding = {
   code: string;
   severity: 'high' | 'medium' | 'low';
@@ -226,6 +237,7 @@ export const api = {
   reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
   downloadEvidence: (id: number) => requestBlob('/api/v1/evidence/' + id + '/download'),
   extractEvidenceText: (id: number) => request<EvidenceTextExtraction>('/api/v1/evidence/' + id + '/extract-text'),
+  evidenceAuditHistory: (id: number) => request<EvidenceAuditEvent[]>('/api/v1/evidence/' + id + '/audit-history'),
   listObligations: (filters: { status?: string; due_before?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<Obligation[]>('/api/v1/obligations?' + query.toString()); },
   createObligation: (payload: { application_id: number; owner_user_id?: number; obligation_type: string; title: string; description?: string; due_at?: string; policy_reference?: string; policy_id?: number; deadline_rule?: 'manual' | 'fixed_days_from_creation'; deadline_days?: number }) => request<Obligation>('/api/v1/obligations', { method: 'POST', body: JSON.stringify(payload) }),
   updateObligation: (id: number, payload: Partial<Pick<Obligation, 'title' | 'description' | 'due_at' | 'status' | 'policy_reference'>>) => request<Obligation>('/api/v1/obligations/' + id, { method: 'PATCH', body: JSON.stringify(payload) }),
