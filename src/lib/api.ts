@@ -63,6 +63,7 @@ export type Recommendation = { code: string; severity: 'high' | 'medium' | 'low'
 export type ApplicationRecommendations = { application_id: number; risk_score: number; risk_level: string; assessed_at: string; factors: string[]; recommendations: Recommendation[]; disclaimer: string };
 export type AuditEvent = { id: number; actor_user_id: number | null; entity_type: string; entity_id: string; action: string; reason: string | null; details_json: string; previous_hash: string; event_hash: string; created_at: string };
 export type AuditCheckpoint = { event_count: number; head_hash: string; generated_at: string; signature_algorithm: string; signature: string };
+export type AuditIntegrityReport = { valid: boolean; events_checked: number; first_invalid_event_id: number | null; stored_head_matches: boolean; verified_at: string; message: string };
 export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
 
 export type EvidenceTextExtraction = {
@@ -258,6 +259,7 @@ export const api = {
   recommendations: (id: number) => request<ApplicationRecommendations>('/api/v1/applications/' + id + '/recommendations'),
   listAuditEvents: (filters: { entity_type?: string; entity_id?: string; action?: string; actor_user_id?: number; since?: string; until?: string; limit?: number; offset?: number } = {}) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); }); return request<AuditEvent[]>('/api/v1/audit/events?' + query.toString()); },
   createAuditCheckpoint: () => request<AuditCheckpoint>('/api/v1/audit/checkpoint'),
+  verifyAuditIntegrity: () => request<AuditIntegrityReport>('/api/v1/audit/integrity'),
   metrics: () => request<OperationalMetrics>('/api/v1/operations/metrics'),
 };
 
