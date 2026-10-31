@@ -500,7 +500,7 @@ def test_evidence_text_extraction_endpoint_returns_bounded_preview(
         return {
             'method': 'pdf_text_layer',
             'text': 'Institution Name: Example Institute',
-            'character_count': 34,
+            'character_count': 35,
             'truncated': False,
             'message': 'Extracted text is unverified.',
         }
@@ -526,7 +526,7 @@ def test_evidence_text_extraction_endpoint_returns_bounded_preview(
     assert audit_event is not None
     details = json.loads(audit_event.details_json)
     assert details['method'] == 'pdf_text_layer'
-    assert details['character_count'] == 34
+    assert details['character_count'] == 35
     assert 'text' not in details
     assert 'Example Institute' not in audit_event.details_json
 
