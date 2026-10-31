@@ -6,7 +6,7 @@ import { AlertCircle, ArrowLeft, CalendarClock, ClipboardCheck, Download, FileUp
 
 import { useAuth } from '../components/AuthGate';
 
-import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations } from '../lib/api';
+import { api, ApiError, formatStatus, type Application, type EvcAssessment, type EvcChecklistItem, type EvcChecklistResult, type EvcVisit, type EvcVisitReport, type Evidence, type Policy, type Undertaking, type ApplicationRecommendations, type EvidenceScrutinyReport } from '../lib/api';
 
 const reviewRole = (role: string) => role === 'regional_officer' || role === 'platform_admin';
 
@@ -65,6 +65,8 @@ export default function ApplicationDetailPage() {
   const [visitResults, setVisitResults] = useState<Record<number, Record<string, string>>>({});
 
   const [recommendations, setRecommendations] = useState<ApplicationRecommendations | null>(null);
+
+  const [scrutinyReport, setScrutinyReport] = useState<EvidenceScrutinyReport | null>(null);
 
   const [error, setError] = useState('');
 
@@ -125,6 +127,7 @@ export default function ApplicationDetailPage() {
       ]);
 
       setApplication(applicationResult); setEvidence(evidenceResult); setPolicies(policyResult);
+      setScrutinyReport(await api.evidenceScrutiny(id).catch(() => null));
 
       setUndertakings(undertakingResult); setAssessments(assessmentResult); setEvcVisits(visitResult);
 
@@ -169,6 +172,7 @@ export default function ApplicationDetailPage() {
       setEvcVisits([]);
       setVisitReports({});
       setRecommendations(null);
+      setScrutinyReport(null);
       setNotice('Demo application details are shown for preview. This illustrative record is read-only; live changes require valid backend authentication.');
       setError('');
 
@@ -412,6 +416,20 @@ export default function ApplicationDetailPage() {
       <div><span className="eyebrow">SUBMITTED BY</span><strong>{application.submitted_by_user_id ? 'User #' + application.submitted_by_user_id : 'Not recorded'}</strong></div>
 
     </div>
+
+    {scrutinyReport && <section className="panel workflow-section">
+      <header className="panel-heading"><div><h3>Preliminary evidence scrutiny</h3><p>Deterministic checks of stored evidence metadata and review state. This does not perform OCR or apply an authoritative rulebook.</p></div><button className="secondary-button" type="button" onClick={() => void api.evidenceScrutiny(id).then(setScrutinyReport).catch(reason => setError(reason instanceof Error ? reason.message : 'Could not refresh scrutiny report.'))} disabled={working}><RefreshCw size={14} /> Re-run checks</button></header>
+      <div className="workflow-metrics">
+        <div><span className="eyebrow">Evidence files</span><strong>{scrutinyReport.counts.evidence_total}</strong></div>
+        <div><span className="eyebrow">Pending review</span><strong>{scrutinyReport.counts.pending_review}</strong></div>
+        <div><span className="eyebrow">Needs correction</span><strong>{scrutinyReport.counts.rejected_or_changes_requested}</strong></div>
+        <div><span className="eyebrow">Expired</span><strong>{scrutinyReport.counts.expired}</strong></div>
+      </div>
+      {scrutinyReport.findings.length ? <div className="workflow-list">{scrutinyReport.findings.map((finding, index) => <article className="workflow-item" key={finding.code + '-' + String(finding.evidence_id) + '-' + index}>
+        <div><strong>{formatStatus(finding.severity)} · {formatStatus(finding.code)}</strong><p>{finding.message}</p><p><b>Suggested next step:</b> {finding.recommended_action}</p>{finding.evidence_id !== null && <small>Evidence #{finding.evidence_id}</small>}</div>
+      </article>)}</div> : <p className="empty-copy">No metadata or review-state issues were found by these checks. This is not a compliance certification.</p>}
+      <p className="muted">{scrutinyReport.disclaimer}</p>
+    </section>}
 
     <section className="panel workflow-section">
 
