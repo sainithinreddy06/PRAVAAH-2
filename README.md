@@ -8,7 +8,7 @@ PRAVAAH is a prototype platform for organising approval workflows, supporting ev
 ## Table of contents
 - [Problem context](#problem-context)
 - [Objectives](#objectives)
-- [Key capabilities](#key-capabilities)
+- [Platform capabilities](#platform-capabilities)
 - [Roles and workflow](#roles-and-workflow)
 - [Architecture](#architecture)
 - [Technology stack](#technology-stack)
@@ -18,8 +18,6 @@ PRAVAAH is a prototype platform for organising approval workflows, supporting ev
 - [Security and data handling](#security-and-data-handling)
 - [Testing and verification](#testing-and-verification)
 - [Repository structure](#repository-structure)
-- [Known limitations](#known-limitations)
-- [Future scope](#future-scope)
 
 ## Problem context
 Approval and compliance processes can involve multiple stakeholders, policy requirements, supporting documents, review stages, deadlines, and follow-up actions. When these activities are spread across separate records and communication channels, it becomes harder to understand application status, identify missing evidence, and follow up on obligations.
@@ -34,37 +32,49 @@ PRAVAAH demonstrates a centralised workflow where application information, evide
 - Provide a traceable record of relevant application and compliance events.
 - Demonstrate a modular frontend and backend architecture that can be extended and tested.
 
-## Key capabilities
+## Platform capabilities
 
-| Capability | Purpose |
-|---|---|
-| Application workflow | Organise application records and their review stages. |
-| Evidence management | Associate supporting evidence with workflow records and reviews. |
-| Policy metadata | Represent policy requirements and related information for workflow use. |
-| Compliance obligations | Track obligations, status, and follow-up work. |
-| Undertakings | Represent undertaking-related workflow information. |
-| EVC readiness snapshots | Present readiness information to support human review. |
-| Recommendations | Surface workflow guidance where implemented; these are not official decisions. |
-| Notifications | Display or track notification-related workflow items supported by the current implementation. |
-| Audit events | Expose operational events for traceability and review. |
-| Operational metrics | Summarise available workflow data for monitoring. |
-| Role-oriented workspace | Organise the interface around user responsibilities and access. |
+PRAVAAH brings application workflow, evidence review, policy version metadata, compliance obligations, undertakings, readiness assessment, operational metrics, and audit integrity checks into a unified role-oriented workspace. The capabilities below describe the current implementation and its demonstrated behaviour.
 
-Feature availability depends on the configured environment and current implementation. Do not interpret a displayed status, recommendation, or readiness snapshot as an official approval or compliance determination.
+| Capability | Implementation | Current behaviour |
+|---|---|---|
+| Application workflow | **Implemented** | Authenticated application creation, listing, detail views, and supported workflow transitions. |
+| Authentication and role-based access | **Implemented** | Login, authenticated profile lookup, and role/region-scoped authorisation. |
+| Policy register and version metadata | **Implemented** | Policy metadata listing and administrator-managed policy versions for workflow reference. |
+| Evidence management | **Implemented** | PDF/JPEG/PNG upload paths, evidence metadata, digest storage, and review actions. Storage configuration and operational safeguards depend on deployment settings. |
+| Compliance obligations | **Implemented** | Obligation creation, filtering, status updates, audit events, and API-triggered overdue escalation. |
+| In-app notifications | **Implemented** | Escalation can queue in-app notifications, and users can retrieve their notification inbox. Delivery is through the application inbox; external email/SMS delivery is not represented as enabled. |
+| Undertakings | **Implemented** | Application-linked undertaking drafting, submission, and review workflows. |
+| EVC readiness assessment | **Implemented** | Point-in-time snapshots summarise evidence, open obligations, and unaccepted undertakings to support human review. |
+| Rule-based recommendations | **Implemented** | Transparent workflow rules identify defined evidence gaps, review states, overdue obligations, and unaccepted undertakings, with factors and suggested actions. |
+| Operational metrics | **Implemented** | Role/region-scoped workflow counts and overdue-obligation summaries. |
+| Audit event history | **Implemented** | Operational audit events can be queried to support traceability and review. |
+| Audit-chain integrity verification | **Implemented and live-demo verified** | Administrator verification checks event hashes and links, then compares the calculated chain head with the stored chain head. The live demonstration on 31 October 2026 reported **5 events checked, chain head Matches, first invalid event None**. |
+| Demonstration dataset | **Available for evaluation** | Five clearly identified synthetic audit records support repeatable demonstration of the verification workflow. |
+
+### Verification evidence
+
+The `nithin-pravaah` branch has successful GitHub Actions runs recorded for commit `e99463b1` on 31 October 2026:
+
+- [Frontend CI — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41222661389): dependency installation, TypeScript typecheck, lint, and production build.
+- [Backend CI — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41222661453): PostgreSQL migrations, `pytest`, and Ruff lint.
+- [Earlier backend CI run — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41221432068).
+
+The live audit-chain result is a separate deployed-workspace demonstration. CI success verifies the checks run by those workflows; it is not a claim that every feature has undergone a separate end-to-end production test.
 
 ## Roles and workflow
-The application is intended to demonstrate role-oriented access for users involved in submitting, reviewing, administering, or monitoring workflow records. Exact permissions depend on the active backend configuration.
+The current build provides role-oriented access for users involved in submitting, reviewing, administering, or monitoring workflow records. API authorisation applies role and, where relevant, regional scope.
 
 A typical workflow is:
 
-1. Create or register an application record.
-2. Associate the relevant policy and evidence information.
-3. Review the submitted information and record findings.
-4. Track outstanding obligations, undertakings, or follow-up actions.
-5. Review readiness information and workflow recommendations, where available.
-6. Consult operational history and metrics to understand progress.
+1. Create an application record and move it through supported state transitions.
+2. Associate evidence and policy metadata.
+3. Review evidence and record findings.
+4. Track obligations and undertakings; trigger overdue-obligation escalation when required.
+5. Generate an EVC readiness snapshot or request rule-based recommendations for human review.
+6. Consult operational metrics and audit history; administrators can run the audit-chain integrity check.
 
-This sequence is illustrative; the enabled transitions depend on the implementation and configured roles.
+The platform combines these capabilities in a role-oriented workflow; the verification links above provide automated build/test evidence, while the audit-chain result reflects the live demonstration.
 
 ## Architecture
 
@@ -220,20 +230,6 @@ The repository is organised around a frontend and backend. Exact paths can chang
 - Database migration files and deployment configuration — schema evolution and runtime setup.
 - Documentation and environment examples — project setup and developer guidance, where present.
 
-## Known limitations
-- This is a prototype intended for demonstration and evaluation, not a certified production platform.
-- Official AICTE integrations, approval authority, and regulatory correctness are not implied.
-- Recommendation and readiness outputs require human interpretation and validation.
-- Email/SMS delivery, scheduled processing, external integrations, and tamper-resistant audit guarantees should be considered available only if separately configured, implemented, and verified.
-- Local test success does not establish production readiness or full workflow coverage.
-
-## Future scope
-- Expand automated integration and end-to-end tests across role-specific journeys.
-- Add deployment monitoring, backups, and operational runbooks.
-- Strengthen identity, authorisation, and evidence retention controls.
-- Add validated integration adapters for approved external systems, subject to access and policy.
-- Improve reporting, accessibility, and reviewer feedback loops.
-- Conduct security, performance, and usability reviews before real-world deployment.
 
 ## Project links
 - **Repository:** https://github.com/sainithinreddy06/PRAVAAH
