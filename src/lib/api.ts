@@ -65,6 +65,30 @@ export type AuditEvent = { id: number; actor_user_id: number | null; entity_type
 export type AuditCheckpoint = { event_count: number; head_hash: string; generated_at: string; signature_algorithm: string; signature: string };
 export type OperationalMetrics = { applications_total: number; applications_by_status: Record<string, number>; evidence_total: number; evidence_by_review_status: Record<string, number>; obligations_total: number; obligations_by_status: Record<string, number>; undertakings_total: number; undertakings_by_status: Record<string, number>; overdue_obligations: number };
 
+export type ScrutinyFinding = {
+  code: string;
+  severity: 'high' | 'medium' | 'low';
+  evidence_id: number | null;
+  message: string;
+  recommended_action: string;
+};
+export type EvidenceScrutinyReport = {
+  application_id: number;
+  generated_at: string;
+  assessment_type: string;
+  counts: {
+    evidence_total: number;
+    pending_review: number;
+    accepted: number;
+    rejected_or_changes_requested: number;
+    missing_policy_link: number;
+    missing_integrity_digest: number;
+    expired: number;
+  };
+  findings: ScrutinyFinding[];
+  disclaimer: string;
+};
+
 export class ApiError extends Error {
   status: number;
   detail: string;
@@ -185,6 +209,7 @@ export const api = {
   listPolicies: (activeOnly = true) => request<Policy[]>('/api/v1/policies?active_only=' + activeOnly),
   createPolicy: (payload: { policy_key: string; version: number; title: string; description?: string; source_reference?: string; effective_from?: string; effective_until?: string }) => request<Policy>('/api/v1/policies', { method: 'POST', body: JSON.stringify(payload) }),
   listEvidence: (id: number) => request<Evidence[]>('/api/v1/applications/' + id + '/evidence'),
+  evidenceScrutiny: (id: number) => request<EvidenceScrutinyReport>('/api/v1/applications/' + id + '/scrutiny'),
   uploadEvidence: (id: number, file: File, policyId?: number) => { const body = new FormData(); body.append('file', file); if (policyId) body.append('policy_id', String(policyId)); return request<Evidence>('/api/v1/applications/' + id + '/evidence', { method: 'POST', body }); },
   reviewEvidence: (id: number, review_status: 'accepted' | 'rejected' | 'needs_changes', reviewer_notes: string) => request<Evidence>('/api/v1/evidence/' + id + '/review', { method: 'PATCH', body: JSON.stringify({ review_status, reviewer_notes }) }),
   downloadEvidence: (id: number) => requestBlob('/api/v1/evidence/' + id + '/download'),
