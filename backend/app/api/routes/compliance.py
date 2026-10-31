@@ -21,6 +21,7 @@ from app.models.institution import Institution
 from app.models.policy import Policy
 from app.models.user import User
 from app.services.evidence_storage import get_evidence_storage, scan_evidence
+from app.services.evidence_extraction import EvidenceExtractionError, extract_evidence_text
 from app.schemas.compliance import (
     EvidenceResponse,
     EvidenceReviewRequest,
@@ -372,6 +373,56 @@ def list_evidence(
             .order_by(Evidence.created_at.desc(), Evidence.id.desc())
         ).all()
     )
+
+
+@router.get(
+    '/evidence/{evidence_id}/extract-text',
+    summary='Extract a bounded text preview from an evidence file',
+)
+def extract_evidence_text_preview(
+    evidence_id: int,
+    actor: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    evidence = db.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(status_code=404, detail='Evidence not found')
+
+    _application_for_actor(db, evidence.application_id, actor)
+    if evidence.review_status == 'expired':
+        raise HTTPException(status_code=410, detail='Evidence has expired under the retention policy')
+
+    try:
+        content = get_evidence_storage().get(evidence.storage_key)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail='Evidence file not found') from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Evidence storage is unavailable') from exc
+
+    if evidence.sha256_digest and hashlib.sha256(content).hexdigest() != evidence.sha256_digest:
+        raise HTTPException(status_code=409, detail='Evidence integrity check failed')
+
+    try:
+        result = extract_evidence_text(content, evidence.content_type)
+    except EvidenceExtractionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {
+        'evidence_id': evidence.id,
+        'application_id': evidence.application_id,
+        'filename': evidence.original_filename,
+        'method': result['method'],
+        'text': result['text'],
+        'character_count': result['character_count'],
+        'truncated': result['truncated'],
+        'message': result['message'],
+        'disclaimer': (
+            'Text extraction is not AI validation, identity verification, or an official compliance '
+            'decision. OCR can be inaccurate; an authorised reviewer must verify the original file.'
+        ),
+    }
 
 
 @router.get('/evidence/{evidence_id}/download')
