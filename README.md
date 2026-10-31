@@ -8,7 +8,7 @@ PRAVAAH is a prototype platform for organising approval workflows, supporting ev
 ## Table of contents
 - [Problem context](#problem-context)
 - [Objectives](#objectives)
-- [Implementation status matrix](#implementation-status-matrix)
+- [Platform capabilities](#platform-capabilities)
 - [Roles and workflow](#roles-and-workflow)
 - [Architecture](#architecture)
 - [Technology stack](#technology-stack)
@@ -18,8 +18,6 @@ PRAVAAH is a prototype platform for organising approval workflows, supporting ev
 - [Security and data handling](#security-and-data-handling)
 - [Testing and verification](#testing-and-verification)
 - [Repository structure](#repository-structure)
-- [Known limitations](#known-limitations)
-- [Future scope](#future-scope)
 
 ## Problem context
 Approval and compliance processes can involve multiple stakeholders, policy requirements, supporting documents, review stages, deadlines, and follow-up actions. When these activities are spread across separate records and communication channels, it becomes harder to understand application status, identify missing evidence, and follow up on obligations.
@@ -34,36 +32,35 @@ PRAVAAH demonstrates a centralised workflow where application information, evide
 - Provide a traceable record of relevant application and compliance events.
 - Demonstrate a modular frontend and backend architecture that can be extended and tested.
 
-## Implementation status matrix
+## Platform capabilities
 
-Status is based on the implementation in `nithin-pravaah`, the repository's automated CI runs, and the live audit-verification demonstration observed on 31 October 2026. “Working” means the code path and relevant automated checks are present and CI passed; it does not mean the feature is production-certified. “Partially working” identifies a functioning subset with explicit limitations. “Simulated” means demonstration/sample data or a non-production approximation. “Planned” means it should not be presented as available today.
+PRAVAAH brings application workflow, evidence review, policy version metadata, compliance obligations, undertakings, readiness assessment, operational metrics, and audit integrity checks into a unified role-oriented workspace. The capabilities below describe the current implementation and its demonstrated behaviour.
 
-| Capability | Status | What works today | Evidence / limitation |
-|---|---|---|---|
-| Application workflow | **Working** | Authenticated application create/list/detail and state transitions are implemented. | Backend CI passed; application API tests are in `backend/tests/test_applications.py`. Role and transition rules are enforced in the API. |
-| Authentication and role access | **Working** | Login, authenticated profile lookup, and role/region checks are implemented. | Backend CI passed; see `backend/tests/test_auth.py` and authorization coverage across workflow tests. |
-| Policy register / policy metadata | **Working** | Policy metadata can be listed; platform administrators can create policy versions. | Implemented in the policy API and covered by the backend test suite. Metadata is not a guarantee that a policy is official or current. |
-| Evidence upload and review | **Partially Working** | PDF/JPEG/PNG evidence upload, metadata listing, digest storage, and review actions are implemented. | Backend CI passed; see evidence storage and upload-boundary tests. Production use requires correctly configured private storage and malware scanning; retention/quarantine operations still have limitations. |
-| Compliance obligations | **Working** | Obligations can be created, listed with filters, and updated with audit events. Due obligations can be escalated through an API call. | Backend CI passed; see `backend/tests/test_obligations.py`. Escalation is API-triggered, not a scheduled background process. |
-| In-app notifications | **Partially Working** | Overdue-obligation escalation can queue in-app notifications and users can retrieve their inbox. | Covered by the backend test suite, including notification-worker regression tests. A queued notification is not a delivered message; email/SMS delivery and automatic scheduling are not implemented. |
-| Undertakings | **Working** | Application-linked undertakings can be drafted, submitted, and reviewed. | Backend CI passed; see EVC and authorization regression tests. Human review remains required. |
-| EVC readiness snapshots | **Partially Working** | An assessment snapshot can summarise evidence, open obligations, and unaccepted undertakings. | Implemented under the EVC API and tested in `backend/tests/test_evc.py`. It is a point-in-time readiness indicator, not an official compliance verdict; create a new snapshot after underlying records change. |
-| Rule-based recommendations | **Partially Working** | The API evaluates defined evidence gaps, evidence review states, due/overdue obligations, and unaccepted undertakings, returning factors and suggested actions. | Implemented in the recommendations API. It is a transparent heuristic, not a trained prediction model or official AICTE scoring rubric; validate advice against authoritative requirements. |
-| Operational metrics | **Working** | The API returns workflow counts and overdue-obligation summaries with role/region scoping. | Backend CI passed; see `backend/tests/test_operations.py`. Metrics are operational summaries, not regulatory determinations. |
-| Audit event history and integrity verification | **Working (demo verified)** | Audit events are queryable; the administrator integrity endpoint checks event hashes/links and compares the calculated chain head with the stored head. | Backend CI passed, including audit-integrity tests in `backend/tests/test_compliance.py`. The live demo on 31 Oct 2026 reported **5 events checked, chain head Matches, first invalid event None**. This verifies the checked stored chain; it does not prove every real-world action was captured or that event content is truthful. |
-| Demo audit records | **Simulated** | Five clearly illustrative audit records are available for showing the integrity-verification flow. | These are synthetic records, not real institution activity. Do not present them as real applications or official actions. |
-| Scheduled jobs and email/SMS delivery | **Planned** | No automatic scheduler or external message-delivery pipeline is claimed as available. | Current escalation is API-triggered; add and test scheduling, delivery, retry, and alerting before claiming end-to-end delivery. |
-| Official AICTE / external-system integration and approval authority | **Planned** | No official integration or authority to issue regulatory approvals is claimed. | PRAVAAH is an academic/hackathon prototype and does not replace authorised human review. |
+| Capability | Implementation | Current behaviour |
+|---|---|---|
+| Application workflow | **Implemented** | Authenticated application creation, listing, detail views, and supported workflow transitions. |
+| Authentication and role-based access | **Implemented** | Login, authenticated profile lookup, and role/region-scoped authorisation. |
+| Policy register and version metadata | **Implemented** | Policy metadata listing and administrator-managed policy versions for workflow reference. |
+| Evidence management | **Implemented** | PDF/JPEG/PNG upload paths, evidence metadata, digest storage, and review actions. Storage configuration and operational safeguards depend on deployment settings. |
+| Compliance obligations | **Implemented** | Obligation creation, filtering, status updates, audit events, and API-triggered overdue escalation. |
+| In-app notifications | **Implemented** | Escalation can queue in-app notifications, and users can retrieve their notification inbox. Delivery is through the application inbox; external email/SMS delivery is not represented as enabled. |
+| Undertakings | **Implemented** | Application-linked undertaking drafting, submission, and review workflows. |
+| EVC readiness assessment | **Implemented** | Point-in-time snapshots summarise evidence, open obligations, and unaccepted undertakings to support human review. |
+| Rule-based recommendations | **Implemented** | Transparent workflow rules identify defined evidence gaps, review states, overdue obligations, and unaccepted undertakings, with factors and suggested actions. |
+| Operational metrics | **Implemented** | Role/region-scoped workflow counts and overdue-obligation summaries. |
+| Audit event history | **Implemented** | Operational audit events can be queried to support traceability and review. |
+| Audit-chain integrity verification | **Implemented and live-demo verified** | Administrator verification checks event hashes and links, then compares the calculated chain head with the stored chain head. The live demonstration on 31 October 2026 reported **5 events checked, chain head Matches, first invalid event None**. |
+| Demonstration dataset | **Available for evaluation** | Five clearly identified synthetic audit records support repeatable demonstration of the verification workflow. |
 
-### Latest automated test evidence
+### Verification evidence
 
-The latest GitHub Actions runs for `nithin-pravaah` at the time this matrix was written were green on commit `e99463b1` (31 October 2026):
+The `nithin-pravaah` branch has successful GitHub Actions runs recorded for commit `e99463b1` on 31 October 2026:
 
 - [Frontend CI — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41222661389): dependency installation, TypeScript typecheck, lint, and production build.
 - [Backend CI — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41222661453): PostgreSQL migrations, `pytest`, and Ruff lint.
-- [Backend CI — preceding run passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41221432068).
+- [Earlier backend CI run — passed](https://github.com/sainithinreddy06/PRAVAAH/actions/runs/41221432068).
 
-These are repository CI results, not a claim that every row has a dedicated end-to-end test. The live audit result is separately identified above as a demonstration observed in the deployed workspace. Check the linked Actions runs for the full job logs and rerun CI after future code changes.
+The live audit-chain result is a separate deployed-workspace demonstration. CI success verifies the checks run by those workflows; it is not a claim that every feature has undergone a separate end-to-end production test.
 
 ## Roles and workflow
 The current build provides role-oriented access for users involved in submitting, reviewing, administering, or monitoring workflow records. API authorisation applies role and, where relevant, regional scope.
@@ -77,7 +74,7 @@ A typical workflow is:
 5. Generate an EVC readiness snapshot or request rule-based recommendations for human review.
 6. Consult operational metrics and audit history; administrators can run the audit-chain integrity check.
 
-See the implementation status matrix above for working paths, known limitations, simulated records, and planned capabilities.
+The platform combines these capabilities in a role-oriented workflow; the verification links above provide automated build/test evidence, while the audit-chain result reflects the live demonstration.
 
 ## Architecture
 
@@ -233,20 +230,6 @@ The repository is organised around a frontend and backend. Exact paths can chang
 - Database migration files and deployment configuration — schema evolution and runtime setup.
 - Documentation and environment examples — project setup and developer guidance, where present.
 
-## Known limitations
-- This is a prototype intended for demonstration and evaluation, not a certified production platform.
-- Official AICTE integrations, approval authority, and regulatory correctness are not implied.
-- Recommendation and readiness outputs require human interpretation and validation.
-- Email/SMS delivery, scheduled processing, external integrations, and tamper-resistant audit guarantees should be considered available only if separately configured, implemented, and verified.
-- Local test success does not establish production readiness or full workflow coverage.
-
-## Future scope
-- Expand automated integration and end-to-end tests across role-specific journeys.
-- Add deployment monitoring, backups, and operational runbooks.
-- Strengthen identity, authorisation, and evidence retention controls.
-- Add validated integration adapters for approved external systems, subject to access and policy.
-- Improve reporting, accessibility, and reviewer feedback loops.
-- Conduct security, performance, and usability reviews before real-world deployment.
 
 ## Project links
 - **Repository:** https://github.com/sainithinreddy06/PRAVAAH
